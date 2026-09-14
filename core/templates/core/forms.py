@@ -5,110 +5,204 @@ from .models import Tenant, RentalAgreement, Property
 # =========================================================
 # TENANT FORM
 # =========================================================
-
 class TenantForm(forms.ModelForm):
 
-    class Meta:
-        model = Tenant
 
-        fields = [
-            "full_name",
-            "father_name",
-            "mobile",
-            "email",
-            "permanent_address",
-            "id_type",
-            "id_number",
-            "move_in_date",
-            "security_deposit",
-            "status",
-        ]
+ID_CHOICES = [
+    ("", "-- Select ID Type --"),
+    ("aadhaar", "Aadhaar"),
+    ("pan", "PAN"),
+    ("passport", "Passport"),
+    ("driving_license", "Driving License"),
+    ("voter_id", "Voter ID"),
+    ("other", "Other"),
+]
 
-        labels = {
-            "full_name": "Full Name",
-            "father_name": "Father Name",
-            "mobile": "Mobile Number",
-            "email": "Email",
-            "permanent_address": "Permanent Address",
-            "id_type": "ID Type",
-            "id_number": "ID Number",
-            "move_in_date": "Move-in Date",
-            "security_deposit": "Security Deposit",
-            "status": "Status",
-        }
+id_type_1 = forms.ChoiceField(
+    choices=ID_CHOICES,
+    required=True,
+    widget=forms.Select(attrs={"class": "form-control"}),
+)
 
-        widgets = {
+id_type_2 = forms.ChoiceField(
+    choices=ID_CHOICES,
+    required=True,
+    widget=forms.Select(attrs={"class": "form-control"}),
+)
 
-            "full_name": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter tenant full name",
-                }
-            ),
+id_type_3 = forms.ChoiceField(
+    choices=ID_CHOICES,
+    required=False,
+    widget=forms.Select(attrs={"class": "form-control"}),
+)
 
-            "father_name": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter father's name",
-                }
-            ),
+class Meta:
+    model = Tenant
 
-            "mobile": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter mobile number",
-                }
-            ),
+    fields = [
+        "full_name",
+        "father_name",
+        "mobile",
+        "email",
+        "permanent_address",
+        "id_type_1",
+        "id_number_1",
+        "id_type_2",
+        "id_number_2",
+        "id_type_3",
+        "id_number_3",
+        "security_deposit",
+        "status",
+    ]
 
-            "email": forms.EmailInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter email address",
-                }
-            ),
+    widgets = {
+        "full_name": forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter tenant full name",
+            }
+        ),
+        "father_name": forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter father's name",
+            }
+        ),
+        "mobile": forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter mobile number",
+            }
+        ),
+        "email": forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter email address",
+            }
+        ),
+        "permanent_address": forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter permanent address",
+                "rows": 3,
+            }
+        ),
+        "id_number_1": forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter ID 1 number",
+            }
+        ),
+        "id_number_2": forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter ID 2 number",
+            }
+        ),
+        "id_number_3": forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter ID 3 number",
+            }
+        ),
+        "security_deposit": forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter security deposit",
+                "step": "0.01",
+                "min": "0",
+            }
+        ),
+        "status": forms.Select(
+            attrs={
+                "class": "form-control",
+            }
+        ),
+    }
 
-            "permanent_address": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter permanent address",
-                    "rows": 3,
-                }
-            ),
+    labels = {
+        "full_name": "Full Name",
+        "father_name": "Father Name",
+        "mobile": "Mobile Number",
+        "email": "Email",
+        "permanent_address": "Permanent Address",
+        "id_type_1": "ID 1 Type",
+        "id_number_1": "ID 1 Number",
+        "id_type_2": "ID 2 Type",
+        "id_number_2": "ID 2 Number",
+        "id_type_3": "ID 3 Type",
+        "id_number_3": "ID 3 Number",
+        "security_deposit": "Security Deposit",
+        "status": "Status",
+    }
 
-            "id_type": forms.Select(
-                attrs={
-                    "class": "form-control",
-                }
-            ),
+def clean(self):
+    cleaned_data = super().clean()
 
-            "id_number": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter ID number",
-                }
-            ),
+    id_type_1 = cleaned_data.get("id_type_1")
+    id_number_1 = cleaned_data.get("id_number_1")
 
-            "move_in_date": forms.DateInput(
-                attrs={
-                    "class": "form-control",
-                    "type": "date",
-                }
-            ),
+    id_type_2 = cleaned_data.get("id_type_2")
+    id_number_2 = cleaned_data.get("id_number_2")
 
-            "security_deposit": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter security deposit",
-                    "step": "0.01",
-                }
-            ),
+    id_type_3 = cleaned_data.get("id_type_3")
+    id_number_3 = cleaned_data.get("id_number_3")
 
-            "status": forms.Select(
-                attrs={
-                    "class": "form-control",
-                }
-            ),
-        }
+    if not id_type_1:
+        self.add_error(
+            "id_type_1",
+            "ID 1 Type is required.",
+        )
+
+    if not id_number_1:
+        self.add_error(
+            "id_number_1",
+            "ID 1 Number is required.",
+        )
+
+    if not id_type_2:
+        self.add_error(
+            "id_type_2",
+            "ID 2 Type is required.",
+        )
+
+    if not id_number_2:
+        self.add_error(
+            "id_number_2",
+            "ID 2 Number is required.",
+        )
+
+    if id_type_3 and not id_number_3:
+        self.add_error(
+            "id_number_3",
+            "ID 3 Number is required when ID 3 Type is selected.",
+        )
+
+    if id_number_3 and not id_type_3:
+        self.add_error(
+            "id_type_3",
+            "ID 3 Type is required when ID 3 Number is entered.",
+        )
+
+    id_types = [
+        id_type_1,
+        id_type_2,
+        id_type_3,
+    ]
+
+    id_types = [
+        value for value in id_types
+        if value
+    ]
+
+    if len(id_types) != len(set(id_types)):
+        self.add_error(
+            "id_type_2",
+            "Duplicate ID Type is not allowed.",
+        )
+
+    return cleaned_data
+
 
 
 # =========================================================
