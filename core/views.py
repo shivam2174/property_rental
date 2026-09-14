@@ -24,7 +24,7 @@ from .models import (
     InvoiceItem,
     Payment,
 )
-
+from .forms import TenantForm, AgreementForm
 
 # =========================================================
 # COMMON HELPERS
@@ -1279,65 +1279,71 @@ def tenant_add(request):
 
     if request.method == "POST":
 
-        full_name = request.POST.get(
-            "full_name",
-            "",
-        ).strip()
+        form = TenantForm(request.POST)
 
-        father_name = request.POST.get(
-            "father_name",
-            "",
-        ).strip()
+        if form.is_valid():
 
-        mobile = request.POST.get(
-            "mobile",
-            "",
-        ).strip()
+            try:
+                form.save()
 
-        email = request.POST.get(
-            "email",
-            "",
-        ).strip()
+                messages.success(
+                    request,
+                    "Tenant added successfully.",
+                )
 
-        permanent_address = request.POST.get(
-            "permanent_address",
-            "",
-        ).strip()
+                return redirect("tenant_list")
 
-        id_type_1 = request.POST.get(
-            "id_type_1",
-            "",
-        ).strip()
+            except IntegrityError:
 
-        id_number_1 = request.POST.get(
-            "id_number_1",
-            "",
-        ).strip()
+                messages.error(
+                    request,
+                    "Unable to add tenant. Please check the entered information.",
+                )
 
-        id_type_2 = request.POST.get(
-            "id_type_2",
-            "",
-        ).strip()
+        return render(
+            request,
+            "core/tenant_form.html",
+            {
+                "form": form,
+            },
+        )
 
-        id_number_2 = request.POST.get(
-            "id_number_2",
-            "",
-        ).strip()
+    form = TenantForm()
 
-        id_type_3 = request.POST.get(
-            "id_type_3",
-            "",
-        ).strip()
+    return render(
+        request,
+        "core/tenant_form.html",
+        {
+            "form": form,
+        },
+    )
 
-        id_number_3 = request.POST.get(
-            "id_number_3",
-            "",
-        ).strip()
+def tenant_edit(request, pk):
+
+    tenant = get_object_or_404(
+        Tenant,
+        pk=pk,
+    )
+
+    if request.method == "POST":
+
+        full_name = request.POST.get("full_name", "").strip()
+        father_name = request.POST.get("father_name", "").strip()
+        mobile = request.POST.get("mobile", "").strip()
+        email = request.POST.get("email", "").strip()
+        permanent_address = request.POST.get("permanent_address", "").strip()
+
+        id_type_1 = request.POST.get("id_type_1", "").strip()
+        id_number_1 = request.POST.get("id_number_1", "").strip()
+
+        id_type_2 = request.POST.get("id_type_2", "").strip()
+        id_number_2 = request.POST.get("id_number_2", "").strip()
+
+        id_type_3 = request.POST.get("id_type_3", "").strip()
+        id_number_3 = request.POST.get("id_number_3", "").strip()
 
         security_deposit = parse_decimal(
-            request.POST.get(
-                "security_deposit"
-            )
+            request.POST.get("security_deposit")
         )
 
         status = request.POST.get(
@@ -1345,68 +1351,74 @@ def tenant_add(request):
             "active",
         )
 
-        # -------------------------------------------------
-        # VALIDATION
-        # -------------------------------------------------
-
         if not full_name:
-
             messages.error(
                 request,
                 "Tenant name is required.",
             )
-
             return render(
                 request,
                 "core/tenant_form.html",
+                {
+                    "tenant": tenant,
+                    "edit_mode": True,
+                },
             )
 
         if not id_type_1 or not id_number_1:
-
             messages.error(
                 request,
                 "ID 1 Type and ID 1 Number are required.",
             )
-
             return render(
                 request,
                 "core/tenant_form.html",
+                {
+                    "tenant": tenant,
+                    "edit_mode": True,
+                },
             )
 
         if not id_type_2 or not id_number_2:
-
             messages.error(
                 request,
                 "ID 2 Type and ID 2 Number are required.",
             )
-
             return render(
                 request,
                 "core/tenant_form.html",
+                {
+                    "tenant": tenant,
+                    "edit_mode": True,
+                },
             )
 
         if id_type_3 and not id_number_3:
-
             messages.error(
                 request,
                 "Please enter ID 3 Number.",
             )
-
             return render(
                 request,
                 "core/tenant_form.html",
+                {
+                    "tenant": tenant,
+                    "edit_mode": True,
+                },
             )
 
         if id_number_3 and not id_type_3:
-
             messages.error(
                 request,
                 "Please select ID 3 Type.",
             )
-
             return render(
                 request,
                 "core/tenant_form.html",
+                {
+                    "tenant": tenant,
+                    "edit_mode": True,
+                },
             )
 
         selected_id_types = [
@@ -1415,82 +1427,67 @@ def tenant_add(request):
         ]
 
         if id_type_3:
+            selected_id_types.append(id_type_3)
 
-            selected_id_types.append(
-                id_type_3
-            )
-
-        if len(selected_id_types) != len(
-            set(selected_id_types)
-        ):
-
+        if len(selected_id_types) != len(set(selected_id_types)):
             messages.error(
                 request,
                 "The same ID type cannot be selected more than once.",
             )
-
             return render(
                 request,
                 "core/tenant_form.html",
+                {
+                    "tenant": tenant,
+                    "edit_mode": True,
+                },
             )
 
-        # -------------------------------------------------
-        # CREATE TENANT
-        # -------------------------------------------------
+        tenant.full_name = full_name
+        tenant.father_name = father_name
+        tenant.mobile = mobile
+        tenant.email = email
+        tenant.permanent_address = permanent_address
+
+        tenant.id_type_1 = id_type_1
+        tenant.id_number_1 = id_number_1
+
+        tenant.id_type_2 = id_type_2
+        tenant.id_number_2 = id_number_2
+
+        tenant.id_type_3 = id_type_3
+        tenant.id_number_3 = id_number_3
+
+        tenant.security_deposit = security_deposit
+        tenant.status = status
 
         try:
-
-            Tenant.objects.create(
-
-                full_name=full_name,
-                father_name=father_name,
-
-                mobile=mobile,
-                email=email,
-
-                permanent_address=(
-                    permanent_address
-                ),
-
-                id_type_1=id_type_1,
-                id_number_1=id_number_1,
-
-                id_type_2=id_type_2,
-                id_number_2=id_number_2,
-
-                id_type_3=id_type_3,
-                id_number_3=id_number_3,
-
-                security_deposit=(
-                    security_deposit
-                ),
-
-                status=status,
-            )
+            tenant.save()
 
             messages.success(
                 request,
-                "Tenant added successfully.",
+                "Tenant updated successfully.",
             )
 
             return redirect(
-                "tenant_list"
+                "tenant_detail",
+                pk=tenant.pk,
             )
 
         except IntegrityError:
-
             messages.error(
                 request,
-                "Unable to add tenant. Please check the entered information.",
+                "Unable to update tenant.",
             )
 
     return render(
         request,
         "core/tenant_form.html",
+        {
+            "tenant": tenant,
+            "edit_mode": True,
+        },
     )
-
-
-def tenant_edit(request, pk):
 
     tenant = get_object_or_404(
         Tenant,

@@ -1,153 +1,196 @@
 <!DOCTYPE html>
+
 <html>
 <head>
-
     <title>Add Tenant</title>
 
-    <style>
 
-        * {
-            box-sizing: border-box;
-        }
+<style>
+    * {
+        box-sizing: border-box;
+    }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-        }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+    }
 
-        .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+    .container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-        }
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    }
 
-        .header {
-            margin-bottom: 30px;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 15px;
-        }
+    .header {
+        margin-bottom: 30px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 15px;
+    }
 
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            color: #111827;
-        }
+    .header h1 {
+        margin: 0;
+        font-size: 28px;
+        color: #111827;
+    }
 
-        .header p {
-            margin: 8px 0 0;
-            color: #6b7280;
-        }
+    .header p {
+        margin: 8px 0 0;
+        color: #6b7280;
+    }
 
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin: 25px 0 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 7px;
+        color: #374151;
+    }
+
+    .required {
+        color: #dc2626;
+    }
+
+    .optional {
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: normal;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+        font-size: 14px;
+        background: white;
+        outline: none;
+        font-family: Arial, sans-serif;
+    }
+
+    select {
+        cursor: pointer;
+        appearance: auto;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 90px;
+    }
+
+    .id-section {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 18px;
+        margin-bottom: 15px;
+    }
+
+    .id-title {
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 15px;
+    }
+
+    .error-message {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+
+    .field-error {
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .buttons {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        border: none;
+        padding: 11px 22px;
+        border-radius: 7px;
+        font-size: 15px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-save {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-save:hover {
+        background: #1d4ed8;
+    }
+
+    .btn-cancel {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-cancel:hover {
+        background: #4b5563;
+    }
+
+    @media (max-width: 700px) {
         .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
+            grid-template-columns: 1fr;
         }
 
         .full-width {
-            grid-column: 1 / -1;
+            grid-column: auto;
         }
-
-        label {
-            font-weight: 600;
-            margin-bottom: 7px;
-            color: #374151;
-        }
-
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            font-size: 14px;
-            background: white;
-            outline: none;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 90px;
-        }
-
-        .error-message {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
-
-        .buttons {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            border: none;
-            padding: 11px 22px;
-            border-radius: 7px;
-            font-size: 15px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .btn-save {
-            background: #2563eb;
-            color: white;
-        }
-
-        .btn-save:hover {
-            background: #1d4ed8;
-        }
-
-        .btn-cancel {
-            background: #6b7280;
-            color: white;
-        }
-
-        .btn-cancel:hover {
-            background: #4b5563;
-        }
-
-        @media (max-width: 700px) {
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .full-width {
-                grid-column: auto;
-            }
-
-        }
-
-    </style>
+    }
+</style>
+```
 
 </head>
 
@@ -155,248 +198,424 @@
 
 <div class="container">
 
-    <div class="card">
+```
+<div class="card">
 
-        <div class="header">
-            <h1>Add Tenant</h1>
-            <p>Enter tenant master information</p>
-        </div>
+    <div class="header">
+        <h1>Add Tenant</h1>
+        <p>Enter tenant master information</p>
+    </div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="error-message">
-                    {{ message }}
-                </div>
-            {% endfor %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="error-message">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="error-message">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
         {% endif %}
 
-        <form method="post">
+        <!-- TENANT INFORMATION -->
 
-            {% csrf_token %}
+        <div class="section-title">
+            Tenant Information
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="{{ form.full_name.id_for_label }}">
+                    Full Name <span class="required">*</span>
+                </label>
+
+                {{ form.full_name }}
+
+                {% for error in form.full_name.errors %}
+                    <div class="field-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+
+            <div class="form-group">
+                <label for="{{ form.father_name.id_for_label }}">
+                    Father Name
+                </label>
+
+                {{ form.father_name }}
+
+                {% for error in form.father_name.errors %}
+                    <div class="field-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+
+            <div class="form-group">
+                <label for="{{ form.mobile.id_for_label }}">
+                    Mobile Number
+                </label>
+
+                {{ form.mobile }}
+
+                {% for error in form.mobile.errors %}
+                    <div class="field-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">
+                    Email
+                </label>
+
+                {{ form.email }}
+
+                {% for error in form.email.errors %}
+                    <div class="field-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+
+            <div class="form-group full-width">
+                <label for="{{ form.permanent_address.id_for_label }}">
+                    Permanent Address
+                </label>
+
+                {{ form.permanent_address }}
+
+                {% for error in form.permanent_address.errors %}
+                    <div class="field-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+
+        <!-- IDENTITY DOCUMENTS -->
+
+        <div class="section-title">
+            Identity Documents
+        </div>
+
+
+        <!-- ID 1 -->
+
+        <div class="id-section">
+
+            <div class="id-title">
+                ID 1 <span class="required">*</span>
+            </div>
 
             <div class="form-grid">
 
-                <!-- FULL NAME -->
                 <div class="form-group">
 
-                    <label for="full_name">
-                        Full Name
+                    <label for="id_id_type_1">
+                        ID 1 Type <span class="required">*</span>
                     </label>
 
-                    <input
-                        type="text"
-                        id="full_name"
-                        name="full_name"
-                        placeholder="Enter tenant full name"
+                    <select
+                        name="id_type_1"
+                        id="id_id_type_1"
+                        class="form-control"
                         required
                     >
+                        <option value="">-- Select ID Type --</option>
 
-                </div>
-
-
-                <!-- FATHER NAME -->
-                <div class="form-group">
-
-                    <label for="father_name">
-                        Father Name
-                    </label>
-
-                    <input
-                        type="text"
-                        id="father_name"
-                        name="father_name"
-                        placeholder="Enter father's name"
-                    >
-
-                </div>
-
-
-                <!-- MOBILE -->
-                <div class="form-group">
-
-                    <label for="mobile">
-                        Mobile Number
-                    </label>
-
-                    <input
-                        type="text"
-                        id="mobile"
-                        name="mobile"
-                        placeholder="Enter mobile number"
-                    >
-
-                </div>
-
-
-                <!-- EMAIL -->
-                <div class="form-group">
-
-                    <label for="email">
-                        Email
-                    </label>
-
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        placeholder="Enter email address"
-                    >
-
-                </div>
-
-
-                <!-- PERMANENT ADDRESS -->
-                <div class="form-group full-width">
-
-                    <label for="permanent_address">
-                        Permanent Address
-                    </label>
-
-                    <textarea
-                        id="permanent_address"
-                        name="permanent_address"
-                        placeholder="Enter permanent address"
-                    ></textarea>
-
-                </div>
-
-
-                <!-- ID TYPE -->
-                <div class="form-group">
-
-                    <label for="id_type">
-                        ID Type
-                    </label>
-
-                    <select id="id_type" name="id_type">
-
-                        <option value="aadhaar">
+                        <option value="aadhaar"
+                            {% if form.id_type_1.value == "aadhaar" %}selected{% endif %}>
                             Aadhaar
                         </option>
 
-                        <option value="pan">
+                        <option value="pan"
+                            {% if form.id_type_1.value == "pan" %}selected{% endif %}>
                             PAN
                         </option>
 
-                        <option value="passport">
+                        <option value="passport"
+                            {% if form.id_type_1.value == "passport" %}selected{% endif %}>
                             Passport
                         </option>
 
-                        <option value="driving_license">
+                        <option value="driving_license"
+                            {% if form.id_type_1.value == "driving_license" %}selected{% endif %}>
                             Driving License
                         </option>
 
-                        <option value="voter_id">
+                        <option value="voter_id"
+                            {% if form.id_type_1.value == "voter_id" %}selected{% endif %}>
                             Voter ID
                         </option>
 
-                        <option value="other">
+                        <option value="other"
+                            {% if form.id_type_1.value == "other" %}selected{% endif %}>
                             Other
                         </option>
-
                     </select>
 
-                </div>
-
-
-                <!-- ID NUMBER -->
-                <div class="form-group">
-
-                    <label for="id_number">
-                        ID Number
-                    </label>
-
-                    <input
-                        type="text"
-                        id="id_number"
-                        name="id_number"
-                        placeholder="Enter ID number"
-                    >
+                    {% for error in form.id_type_1.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
 
                 </div>
 
 
-                <!-- MOVE IN DATE -->
                 <div class="form-group">
 
-                    <label for="move_in_date">
-                        Move-in Date
+                    <label for="{{ form.id_number_1.id_for_label }}">
+                        ID 1 Number <span class="required">*</span>
                     </label>
 
-                    <input
-                        type="date"
-                        id="move_in_date"
-                        name="move_in_date"
-                    >
+                    {{ form.id_number_1 }}
 
-                </div>
-
-
-                <!-- SECURITY DEPOSIT -->
-                <div class="form-group">
-
-                    <label for="security_deposit">
-                        Security Deposit
-                    </label>
-
-                    <input
-                        type="number"
-                        id="security_deposit"
-                        name="security_deposit"
-                        placeholder="Enter security deposit"
-                        step="0.01"
-                        min="0"
-                        value="0"
-                    >
-
-                </div>
-
-
-                <!-- STATUS -->
-                <div class="form-group">
-
-                    <label for="status">
-                        Status
-                    </label>
-
-                    <select id="status" name="status">
-
-                        <option value="active" selected>
-                            Active
-                        </option>
-
-                        <option value="inactive">
-                            Inactive
-                        </option>
-
-                    </select>
+                    {% for error in form.id_number_1.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
 
                 </div>
 
             </div>
 
+        </div>
 
-            <div class="buttons">
 
-                <button
-                    type="submit"
-                    class="btn btn-save"
-                >
-                    Save Tenant
-                </button>
+        <!-- ID 2 -->
 
-                <a
-                    href="{% url 'tenant_list' %}"
-                    class="btn btn-cancel"
-                >
-                    Cancel
-                </a>
+        <div class="id-section">
+
+            <div class="id-title">
+                ID 2 <span class="required">*</span>
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="id_id_type_2">
+                        ID 2 Type <span class="required">*</span>
+                    </label>
+
+                    <select
+                        name="id_type_2"
+                        id="id_id_type_2"
+                        class="form-control"
+                        required
+                    >
+                        <option value="">-- Select ID Type --</option>
+
+                        <option value="aadhaar"
+                            {% if form.id_type_2.value == "aadhaar" %}selected{% endif %}>
+                            Aadhaar
+                        </option>
+
+                        <option value="pan"
+                            {% if form.id_type_2.value == "pan" %}selected{% endif %}>
+                            PAN
+                        </option>
+
+                        <option value="passport"
+                            {% if form.id_type_2.value == "passport" %}selected{% endif %}>
+                            Passport
+                        </option>
+
+                        <option value="driving_license"
+                            {% if form.id_type_2.value == "driving_license" %}selected{% endif %}>
+                            Driving License
+                        </option>
+
+                        <option value="voter_id"
+                            {% if form.id_type_2.value == "voter_id" %}selected{% endif %}>
+                            Voter ID
+                        </option>
+
+                        <option value="other"
+                            {% if form.id_type_2.value == "other" %}selected{% endif %}>
+                            Other
+                        </option>
+                    </select>
+
+                    {% for error in form.id_type_2.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.id_number_2.id_for_label }}">
+                        ID 2 Number <span class="required">*</span>
+                    </label>
+
+                    {{ form.id_number_2 }}
+
+                    {% for error in form.id_number_2.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+
+                </div>
 
             </div>
 
-        </form>
+        </div>
 
-    </div>
+
+        <!-- ID 3 -->
+
+        <div class="id-section">
+
+            <div class="id-title">
+                ID 3 <span class="optional">(Optional)</span>
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="id_id_type_3">
+                        ID 3 Type
+                        <span class="optional">(Optional)</span>
+                    </label>
+
+                    <select
+                        name="id_type_3"
+                        id="id_id_type_3"
+                        class="form-control"
+                    >
+                        <option value="">-- Select ID Type --</option>
+
+                        <option value="aadhaar"
+                            {% if form.id_type_3.value == "aadhaar" %}selected{% endif %}>
+                            Aadhaar
+                        </option>
+
+                        <option value="pan"
+                            {% if form.id_type_3.value == "pan" %}selected{% endif %}>
+                            PAN
+                        </option>
+
+                        <option value="passport"
+                            {% if form.id_type_3.value == "passport" %}selected{% endif %}>
+                            Passport
+                        </option>
+
+                        <option value="driving_license"
+                            {% if form.id_type_3.value == "driving_license" %}selected{% endif %}>
+                            Driving License
+                        </option>
+
+                        <option value="voter_id"
+                            {% if form.id_type_3.value == "voter_id" %}selected{% endif %}>
+                            Voter ID
+                        </option>
+
+                        <option value="other"
+                            {% if form.id_type_3.value == "other" %}selected{% endif %}>
+                            Other
+                        </option>
+                    </select>
+
+                    {% for error in form.id_type_3.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.id_number_3.id_for_label }}">
+                        ID 3 Number
+                        <span class="optional">(Optional)</span>
+                    </label>
+
+                    {{ form.id_number_3 }}
+
+                    {% for error in form.id_number_3.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- OTHER INFORMATION -->
+
+        <div class="section-title">
+            Other Information
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label for="{{ form.security_deposit.id_for_label }}">
+                    Security Deposit
+                </label>
+
+                {{ form.security_deposit }}
+
+                {% for error in form.security_deposit.errors %}
+                    <div class="field-error">{{ error }}</div>
+                {% endfor %}
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="{{ form.status.id_for_label }}">
+                    Status
+                </label>
+
+                {{ form.status }}
+
+                {% for error in form.status.errors %}
+                    <div class="field-error">{{ error }}</div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <!-- BUTTONS -->
+
+        <div class="buttons">
+
+            <button
+                type="submit"
+                class="btn btn-save"
+            >
+                Save Tenant
+            </button>
+
+            <a
+                href="{% url 'tenant_list' %}"
+                class="btn btn-cancel"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
 
 </div>
 
