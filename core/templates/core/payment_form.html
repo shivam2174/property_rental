@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Record Payment - Invoice #{{ invoice.invoice_number }}</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f2f2f2;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #222;
+        }
+
+        .payment-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 35px;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #222;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0 0 10px;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 5px 0;
+        }
+
+        .invoice-info {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 18px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+
+        .invoice-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .invoice-info td {
+            padding: 8px;
+        }
+
+        .invoice-info td:first-child {
+            font-weight: bold;
+            width: 45%;
+        }
+
+        .balance {
+            color: #d97706;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            font-size: 15px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #198754;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .buttons button,
+        .buttons a {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .save-button {
+            background: #198754;
+            color: white;
+        }
+
+        .save-button:hover {
+            background: #157347;
+        }
+
+        .cancel-button {
+            background: #6c757d;
+            color: white;
+        }
+
+        .cancel-button:hover {
+            background: #5c636a;
+        }
+
+        .amount-note {
+            margin-top: 5px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .payment-container {
+                padding: 20px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="payment-container">
+
+    <div class="header">
+        <h1>Record Payment</h1>
+        <p>Invoice #{{ invoice.invoice_number }}</p>
+    </div>
+
+
+    <div class="invoice-info">
+
+        <table>
+
+            <tr>
+                <td>Invoice Number</td>
+                <td>#{{ invoice.invoice_number }}</td>
+            </tr>
+
+            <tr>
+                <td>Tenant</td>
+                <td>{{ invoice.tenant_name }}</td>
+            </tr>
+
+            <tr>
+                <td>Property</td>
+                <td>{{ invoice.property_name }}</td>
+            </tr>
+
+            {% if invoice.unit_number %}
+            <tr>
+                <td>Unit Number</td>
+                <td>{{ invoice.unit_number }}</td>
+            </tr>
+            {% endif %}
+
+            <tr>
+                <td>Invoice Total</td>
+                <td>₹{{ invoice.total_amount }}</td>
+            </tr>
+
+            <tr>
+                <td>Already Paid</td>
+                <td>₹{{ invoice.total_amount|add:"-"|add:balance }}</td>
+            </tr>
+
+            <tr>
+                <td>Outstanding Balance</td>
+                <td class="balance">₹{{ balance }}</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="{% url 'record_payment' invoice_id=invoice.invoice_number %}"
+    >
+
+        {% csrf_token %}
+
+
+        <div class="form-group">
+
+            <label for="amount">
+                Payment Amount <span class="required">*</span>
+            </label>
+
+            <input
+                type="number"
+                id="amount"
+                name="amount"
+                step="0.01"
+                min="0.01"
+                max="{{ balance }}"
+                placeholder="Enter payment amount"
+                required
+            >
+
+            <div class="amount-note">
+                Maximum payment allowed: ₹{{ balance }}
+            </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="payment_date">
+                Payment Date <span class="required">*</span>
+            </label>
+
+            <input
+                type="date"
+                id="payment_date"
+                name="payment_date"
+                value="{{ today|date:'Y-m-d' }}"
+                required
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="payment_method">
+                Payment Method <span class="required">*</span>
+            </label>
+
+            <select
+                id="payment_method"
+                name="payment_method"
+                required
+            >
+
+                <option value="">
+                    -- Select Payment Method --
+                </option>
+
+                <option value="cash">
+                    Cash
+                </option>
+
+                <option value="bank_transfer">
+                    Bank Transfer
+                </option>
+
+                <option value="upi">
+                    UPI
+                </option>
+
+                <option value="cheque">
+                    Cheque
+                </option>
+
+                <option value="other">
+                    Other
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="transaction_reference">
+                Transaction Reference
+
+            </label>
+
+            <input
+                type="text"
+                id="transaction_reference"
+                name="transaction_reference"
+                placeholder="Enter UTR, cheque number, transaction ID, etc."
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="notes">
+                Notes
+            </label>
+
+            <textarea
+                id="notes"
+                name="notes"
+                placeholder="Enter any additional notes..."
+            ></textarea>
+
+        </div>
+
+
+        <div class="buttons">
+
+            <button
+                type="submit"
+                class="save-button"
+            >
+                💳 Save Payment
+            </button>
+
+            <a
+                href="{% url 'invoice_detail' invoice.pk %}"
+                class="cancel-button"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Rental Agreement</title>
+</head>
+<body>
+
+    <h1>Delete Rental Agreement</h1>
+
+    <p>
+        Are you sure you want to delete this rental agreement?
+    </p>
+
+    <p>
+        <strong>Renter:</strong>
+        {{ agreement.renter.full_name }}
+    </p>
+
+    <p>
+        <strong>Property:</strong>
+        {{ agreement.renter.unit.property.name }}
+    </p>
+
+    <p>
+        <strong>Unit:</strong>
+        {{ agreement.renter.unit.unit_number }}
+    </p>
+
+    <p>
+        <strong>Monthly Rent:</strong>
+        ₹{{ agreement.monthly_rent }}
+    </p>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <button type="submit">
+            Yes, Delete
+        </button>
+
+        <a href="{% url 'agreement_list' %}">
+            Cancel
+        </a>
+
+    </form>
+
+</body>
+</html>

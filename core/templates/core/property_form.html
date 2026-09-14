@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>
+        {% if property %}
+            Edit Property
+        {% else %}
+            Add Property
+        {% endif %}
+    </title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #222;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: #f1f5f9;
+            border-left: 4px solid #2563eb;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 25px;
+        }
+
+        .full {
+            grid-column: span 2;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 11px 22px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .message {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 700px) {
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: span 1;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>
+        {% if property %}
+            Edit Property
+        {% else %}
+            Property Master
+        {% endif %}
+    </h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+
+        <!-- ================================================= -->
+        <!-- BASIC PROPERTY DETAILS -->
+        <!-- ================================================= -->
+
+        <div class="section-title">
+            Property Details
+        </div>
+
+        <div class="form-grid">
+
+            <div>
+                <label>Property Owner</label>
+
+                <select name="owner">
+
+                    <option value="">
+                        -- Select Owner --
+                    </option>
+
+                    {% for owner in owners %}
+
+                        <option
+                            value="{{ owner.id }}"
+                            {% if property and property.owner_id == owner.id %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ owner }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div>
+                <label>Property Description</label>
+
+                <input
+                    type="text"
+                    name="name"
+                    value="{{ property.name|default:'' }}"
+                    required
+                >
+
+            </div>
+
+
+            <div class="full">
+
+                <label>Property Address</label>
+
+                <textarea name="address">{{ property.address|default:'' }}</textarea>
+
+            </div>
+
+
+            <div>
+
+                <label>Unit No</label>
+
+                <input
+                    type="text"
+                    name="unit_no"
+                    value="{{ property.unit_no|default:'' }}"
+                    placeholder="Example: 101"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Tower</label>
+
+                <input
+                    type="text"
+                    name="tower"
+                    value="{{ property.tower|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>City</label>
+
+                <input
+                    type="text"
+                    name="city"
+                    value="{{ property.city|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>State</label>
+
+                <input
+                    type="text"
+                    name="state"
+                    value="{{ property.state|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Pin Code</label>
+
+                <input
+                    type="text"
+                    name="pincode"
+                    value="{{ property.pincode|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Purchased On</label>
+
+                <input
+                    type="date"
+                    name="purchased_on"
+                    value="{{ property.purchased_on|date:'Y-m-d' }}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- PURCHASE DETAILS -->
+        <!-- ================================================= -->
+
+        <div class="section-title">
+            Purchase Details
+        </div>
+
+        <div class="form-grid">
+
+            <div>
+
+                <label>Total Area (sq. ft.)</label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="total_area"
+                    value="{{ property.total_area|default:'0' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Price</label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="price"
+                    value="{{ property.price|default:'0' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Per Sqft Rate</label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="per_sqft_rate"
+                    value="{{ property.per_sqft_rate|default:'0' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Stamp Duty</label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="stamp_duty"
+                    value="{{ property.stamp_duty|default:'0' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Total Purchase Price</label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="total_purchase_price"
+                    value="{{ property.total_purchase_price|default:'0' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>GST Number</label>
+
+                <input
+                    type="text"
+                    name="gst_number"
+                    value="{{ property.gst_number|default:'' }}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- LAP DETAILS -->
+        <!-- ================================================= -->
+
+        <div class="section-title">
+            Loan Against Property (LAP)
+        </div>
+
+        <div class="form-grid">
+
+            <div>
+
+                <label>LAP Amount</label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="lap_amount"
+                    value="{{ property.lap_amount|default:'0' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Monthly Installment</label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name="monthly_installment"
+                    value="{{ property.monthly_installment|default:'0' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>LAP Maturity</label>
+
+                <input
+                    type="date"
+                    name="lap_maturity"
+                    value="{{ property.lap_maturity|date:'Y-m-d' }}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- PARKING & STATUS -->
+        <!-- ================================================= -->
+
+        <div class="section-title">
+            Parking & Status
+        </div>
+
+        <div class="form-grid">
+
+            <div>
+
+                <label>Parking Slot</label>
+
+                <input
+                    type="text"
+                    name="parking_slot"
+                    value="{{ property.parking_slot|default:'' }}"
+                    placeholder="Example: P-101"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Status</label>
+
+                <select name="status">
+
+                    <option
+                        value="active"
+                        {% if not property or property.status == "active" %}
+                            selected
+                        {% endif %}
+                    >
+                        Active
+                    </option>
+
+                    <option
+                        value="sold_out"
+                        {% if property.status == "sold_out" %}
+                            selected
+                        {% endif %}
+                    >
+                        Sold-out
+                    </option>
+
+                    <option
+                        value="inactive"
+                        {% if property.status == "inactive" %}
+                            selected
+                        {% endif %}
+                    >
+                        Inactive
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- BUTTONS -->
+        <!-- ================================================= -->
+
+        <div class="buttons">
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                {% if property %}
+                    Update Property
+                {% else %}
+                    Add Property
+                {% endif %}
+            </button>
+
+
+            <a
+                href="{% url 'property_list' %}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+</html>

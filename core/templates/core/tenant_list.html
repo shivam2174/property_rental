@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tenants</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+
+        /* HEADER */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #222;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .add-btn,
+        .add-tenant {
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            padding: 11px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .add-btn:hover,
+        .add-tenant:hover {
+            background: #1d4ed8;
+        }
+
+
+        /* DASHBOARD BUTTON */
+
+        .home-btn {
+            background: #64748b;
+            color: white;
+            text-decoration: none;
+            padding: 11px 17px;
+            border-radius: 7px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .home-btn:hover {
+            background: #475569;
+        }
+
+
+        /* MAIN LAYOUT */
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 260px;
+            gap: 25px;
+            align-items: start;
+        }
+
+
+        /* TENANT LIST */
+
+        .tenant-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .tenant-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tenant-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 7px;
+        }
+
+        .tenant-email {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .view-btn {
+            background: #e8eefc;
+            color: #2563eb;
+            text-decoration: none;
+            padding: 9px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .view-btn:hover {
+            background: #dbe5ff;
+        }
+
+
+        /* SIDEBAR */
+
+        .sidebar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .status-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 12px;
+            margin-bottom: 8px;
+
+            border-radius: 6px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .status-link:hover {
+            background: #f3f4f6;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .active-dot {
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+
+        .inactive-dot {
+            width: 10px;
+            height: 10px;
+            background: #9ca3af;
+            border-radius: 50%;
+        }
+
+        .count {
+            background: #f1f5f9;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+
+        /* EMPTY */
+
+        .empty {
+            background: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            color: #777;
+        }
+
+
+        /* MOBILE */
+
+        @media (max-width: 800px) {
+
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+
+            .header-actions {
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header-actions">
+
+        <a href="{% url 'dashboard' %}" class="home-btn">
+            🏠 Dashboard
+        </a>
+
+        <a href="{% url 'tenant_add' %}" class="add-tenant">
+            + Add Tenant
+        </a>
+
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+
+    <div class="main-layout">
+
+
+        <!-- TENANT LIST -->
+
+        <div class="tenant-list">
+
+            {% for tenant in tenants %}
+
+                <div class="tenant-card">
+
+                    <div>
+
+                        <div class="tenant-name">
+                            {{ tenant.full_name }}
+                        </div>
+
+                        <div class="tenant-email">
+
+                            {% if tenant.email %}
+                                {{ tenant.email }}
+                            {% else %}
+                                No email provided
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <a
+                            href="{% url 'tenant_detail' tenant.pk %}"
+                            class="view-btn"
+                        >
+                            View Details
+                        </a>
+
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <div class="empty">
+                    No tenants found.
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- RIGHT SIDEBAR -->
+
+        <div class="sidebar">
+
+            <div class="sidebar-title">
+                Tenant Status
+            </div>
+
+
+            <!-- ACTIVE -->
+
+            <a
+                href="?status=Active"
+                class="status-link"
+            >
+
+                <div class="status-left">
+
+                    <span class="active-dot"></span>
+
+                    <span>
+                        Active
+                    </span>
+
+                </div>
+
+                <span class="count">
+                    {{ active_count }}
+                </span>
+
+            </a>
+
+
+            <!-- INACTIVE -->
+
+            <a
+                href="?status=Inactive"
+                class="status-link"
+            >
+
+                <div class="status-left">
+
+                    <span class="inactive-dot"></span>
+
+                    <span>
+                        Inactive
+                    </span>
+
+                </div>
+
+                <span class="count">
+                    {{ inactive_count }}
+                </span>
+
+            </a>
+
+
+            <!-- ALL -->
+
+            <a
+                href="{% url 'tenant_list' %}"
+                class="status-link"
+            >
+
+                <div class="status-left">
+
+                    <span>
+                        All Tenants
+                    </span>
+
+                </div>
+
+                <span class="count">
+                    {{ total_count }}
+                </span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

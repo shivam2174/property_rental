@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Unit</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 24px;
+        }
+
+        .header-inner {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .header p {
+            margin: 6px 0 0;
+            color: #cbd5e1;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox input {
+            width: auto;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        button,
+        .btn {
+            border: none;
+            padding: 11px 18px;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .save {
+            background: #2563eb;
+            color: white;
+        }
+
+        .save:hover {
+            background: #1d4ed8;
+        }
+
+        .back {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .dashboard {
+            background: #111827;
+            color: white;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 7px;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .buttons {
+                flex-direction: column;
+            }
+
+            .btn,
+            button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="header-inner">
+        <h1>Edit Unit {{ unit.unit_number }}</h1>
+        <p>{{ unit.property.name }}</p>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="card">
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Property *</label>
+
+                <select name="property" required>
+
+                    <option value="">
+                        Select Property
+                    </option>
+
+                    {% for property in properties %}
+
+                        <option
+                            value="{{ property.id }}"
+                            {% if unit.property_id == property.id %}selected{% endif %}
+                        >
+                            {{ property.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Unit Number *</label>
+
+                <input
+                    type="text"
+                    name="unit_number"
+                    value="{{ unit.unit_number }}"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Monthly Rent *</label>
+
+                <input
+                    type="number"
+                    name="monthly_rent"
+                    value="{{ unit.monthly_rent }}"
+                    min="0"
+                    step="0.01"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Status</label>
+
+                <select name="status">
+
+                    <option
+                        value="vacant"
+                        {% if unit.status == "vacant" %}selected{% endif %}
+                    >
+                        Vacant
+                    </option>
+
+                    <option
+                        value="occupied"
+                        {% if unit.status == "occupied" %}selected{% endif %}
+                    >
+                        Occupied
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label class="checkbox">
+
+                    <input
+                        type="checkbox"
+                        name="parking_available"
+                        {% if unit.parking_available %}checked{% endif %}
+                    >
+
+                    Parking Available
+
+                </label>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Parking Charge / Month</label>
+
+                <input
+                    type="number"
+                    name="parking_charge"
+                    value="{{ unit.parking_charge }}"
+                    min="0"
+                    step="0.01"
+                >
+
+            </div>
+
+
+            <div class="buttons">
+
+                <button type="submit" class="save">
+                    Save Changes
+                </button>
+
+                <a
+                    href="{% url 'unit_list' %}"
+                    class="btn back"
+                >
+                    ← Back to Units
+                </a>
+
+                <a
+                    href="{% url 'dashboard' %}"
+                    class="btn dashboard"
+                >
+                    Dashboard
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

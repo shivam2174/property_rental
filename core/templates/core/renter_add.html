@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Renter</title>
+</head>
+<body>
+
+    <h1>Add Renter</h1>
+
+    <form method="POST" action="{% url 'renter_add' %}">
+        {% csrf_token %}
+
+        <div>
+            <label for="unit">Unit:</label>
+
+            <select id="unit" name="unit" required>
+                <option value="">-- Select Vacant Unit --</option>
+
+                {% for unit in units %}
+                    <option value="{{ unit.id }}">
+                        {{ unit.property.name }} -
+                        Unit {{ unit.unit_number }} -
+                        Rent ₹{{ unit.monthly_rent }}
+
+                        {% if unit.parking_available %}
+                            - Parking ₹{{ unit.parking_charge }}
+                        {% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="full_name">Full Name:</label>
+
+            <input
+                type="text"
+                id="full_name"
+                name="full_name"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="father_name">Father Name:</label>
+
+            <input
+                type="text"
+                id="father_name"
+                name="father_name"
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="mobile">Mobile:</label>
+
+            <input
+                type="text"
+                id="mobile"
+                name="mobile"
+                maxlength="15"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="email">Email:</label>
+
+            <input
+                type="email"
+                id="email"
+                name="email"
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="permanent_address">
+                Permanent Address:
+            </label>
+
+            <br>
+
+            <textarea
+                id="permanent_address"
+                name="permanent_address"
+                rows="4"
+                cols="50"
+                required
+            ></textarea>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="id_type">ID Type:</label>
+
+            <select id="id_type" name="id_type" required>
+                <option value="aadhaar">Aadhaar</option>
+                <option value="pan">PAN</option>
+                <option value="passport">Passport</option>
+                <option value="driving_license">
+                    Driving License
+                </option>
+                <option value="voter_id">Voter ID</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="id_number">ID Number:</label>
+
+            <input
+                type="text"
+                id="id_number"
+                name="id_number"
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="move_in_date">
+                Move In Date:
+            </label>
+
+            <input
+                type="date"
+                id="move_in_date"
+                name="move_in_date"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="security_deposit">
+                Security Deposit:
+            </label>
+
+            <input
+                type="number"
+                id="security_deposit"
+                name="security_deposit"
+                step="0.01"
+                min="0"
+                value="0"
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="status">Status:</label>
+
+            <select id="status" name="status" required>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+
+        <br>
+
+        <button type="submit">
+            Save Renter
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{% url 'tenant_list' %}">
+        Back to Renters
+    </a>
+
+</body>
+</html>

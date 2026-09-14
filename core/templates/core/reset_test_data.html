@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Reset Test Data | Property Rental</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 25px;
+        }
+
+        .header-inner {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #cbd5e1;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .warning {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .warning h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .data-list {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .data-list div {
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .data-list div:last-child {
+            border-bottom: none;
+        }
+
+        .keep {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 13px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .cancel {
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+        }
+
+        .delete {
+            background: #dc2626;
+            color: white;
+            border: none;
+        }
+
+        .delete:hover {
+            background: #b91c1c;
+        }
+
+        @media (max-width: 600px) {
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="header">
+
+        <div class="header-inner">
+
+            <h1>Reset Test Data</h1>
+
+            <p>
+                Property Rental Management System
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="container">
+
+        <div class="card">
+
+            <div class="warning">
+
+                <h2>⚠ Warning</h2>
+
+                <p>
+                    This action will permanently delete your
+                    test transaction data.
+                </p>
+
+                <p>
+                    <strong>
+                        This action cannot be undone.
+                    </strong>
+                </p>
+
+            </div>
+
+
+            <h2>
+                The following data will be deleted:
+            </h2>
+
+
+            <div class="data-list">
+
+                <div>
+                    💳 <strong>Payments</strong>
+                </div>
+
+                <div>
+                    🧾 <strong>Invoice Items</strong>
+                </div>
+
+                <div>
+                    📄 <strong>Invoices</strong>
+                </div>
+
+                <div>
+                    📝 <strong>Rental Agreements</strong>
+                </div>
+
+                <div>
+                    👤 <strong>Renters</strong>
+                </div>
+
+                <div>
+                    🏠 <strong>Units</strong>
+                </div>
+
+            </div>
+
+
+            <div class="keep">
+
+                <strong>✓ The following will NOT be deleted:</strong>
+
+                <p>
+                    • Owners
+                </p>
+
+                <p>
+                    • Properties
+                </p>
+
+            </div>
+
+
+            <form
+                method="POST"
+                onsubmit="
+                    return confirm(
+                        'WARNING: This will permanently delete all test payments, invoices, invoice items, rental agreements, renters, and units. Continue?'
+                    );
+                "
+            >
+
+                {% csrf_token %}
+
+                <div class="actions">
+
+                    <a
+                        href="{% url 'dashboard' %}"
+                        class="btn cancel"
+                    >
+                        ← Cancel
+                    </a>
+
+
+                    <button
+                        type="submit"
+                        class="btn delete"
+                    >
+                        🗑 DELETE TEST DATA
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

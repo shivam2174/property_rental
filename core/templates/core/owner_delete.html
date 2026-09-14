@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Delete Owner</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 50px;
+        }
+
+        .box {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #dc2626;
+        }
+
+        .buttons {
+            margin-top: 25px;
+        }
+
+        button,
+        a {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button {
+            background: #dc2626;
+            color: white;
+        }
+
+        a {
+            background: #6b7280;
+            color: white;
+            margin-right: 10px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="box">
+
+    <h2>Delete Owner?</h2>
+
+    <p>
+        Are you sure you want to delete
+        <strong>{{ owner.name }}</strong>?
+    </p>
+
+    <div class="buttons">
+
+        <a href="{% url 'owner_detail' owner.pk %}">
+            Cancel
+        </a>
+
+        <form
+            method="POST"
+            style="display:inline;"
+        >
+
+            {% csrf_token %}
+
+            <button type="submit">
+                Yes, Delete
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

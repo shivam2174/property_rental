@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Unit</title>
+</head>
+
+<body>
+
+    <h1>Add Unit</h1>
+
+    <form method="POST" action="{% url 'unit_add' %}">
+        {% csrf_token %}
+
+        <div>
+            <label for="property">Property:</label>
+
+            <select id="property" name="property" required>
+                <option value="">-- Select Property --</option>
+
+                {% for property in properties %}
+                    <option value="{{ property.id }}">
+                        {{ property.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="unit_number">Unit / Room Number:</label>
+
+            <input
+                type="text"
+                id="unit_number"
+                name="unit_number"
+                placeholder="Example: 101"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="monthly_rent">Monthly Rent:</label>
+
+            <input
+                type="number"
+                id="monthly_rent"
+                name="monthly_rent"
+                step="0.01"
+                min="0"
+                placeholder="Example: 10000"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="status">Status:</label>
+
+            <select id="status" name="status" required>
+                <option value="vacant">Vacant</option>
+                <option value="occupied">Occupied</option>
+            </select>
+        </div>
+
+        <br>
+
+        <div>
+            <label>
+                <input
+                    type="checkbox"
+                    id="parking_available"
+                    name="parking_available"
+                >
+                Parking Available
+            </label>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="parking_charge">Monthly Parking Charge:</label>
+
+            <input
+                type="number"
+                id="parking_charge"
+                name="parking_charge"
+                step="0.01"
+                min="0"
+                value="0"
+            >
+        </div>
+
+        <br>
+
+        <button type="submit">
+            Save Unit
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{% url 'unit_list' %}">
+        Back to Units
+    </a>
+
+</body>
+</html>
+

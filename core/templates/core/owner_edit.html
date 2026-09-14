@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Edit Owner</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 30px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        button {
+            margin-top: 25px;
+            padding: 10px 20px;
+            background: #222;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .back {
+            margin-left: 10px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Edit Owner / Company</h1>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <label>
+            Owner Name *
+        </label>
+
+        <input
+            type="text"
+            name="name"
+            value="{{ owner.name }}"
+            required
+        >
+
+
+        <label>
+            Company Name
+        </label>
+
+        <input
+            type="text"
+            name="company_name"
+            value="{{ owner.company_name }}"
+        >
+
+
+        <label>
+            Address *
+        </label>
+
+        <textarea
+            name="address"
+            required
+        >{{ owner.address }}</textarea>
+
+
+        <label>
+            City
+        </label>
+
+        <input
+            type="text"
+            name="city"
+            value="{{ owner.city }}"
+        >
+
+
+        <label>
+            State
+        </label>
+
+        <input
+            type="text"
+            name="state"
+            value="{{ owner.state }}"
+        >
+
+
+        <label>
+            PIN Code
+        </label>
+
+        <input
+            type="text"
+            name="pincode"
+            value="{{ owner.pincode }}"
+            maxlength="10"
+        >
+
+
+        <label>
+            Mobile
+        </label>
+
+        <input
+            type="text"
+            name="mobile"
+            value="{{ owner.mobile }}"
+            maxlength="15"
+        >
+
+
+        <label>
+            Email
+        </label>
+
+        <input
+            type="email"
+            name="email"
+            value="{{ owner.email }}"
+        >
+
+
+        <label>
+            GSTIN
+        </label>
+
+        <input
+            type="text"
+            name="gstin"
+            value="{{ owner.gstin }}"
+            maxlength="20"
+        >
+
+
+        <label>
+            PAN
+        </label>
+
+        <input
+            type="text"
+            name="pan"
+            value="{{ owner.pan }}"
+            maxlength="20"
+        >
+
+
+        <button type="submit">
+            Update Owner
+        </button>
+
+
+        <a
+            class="back"
+            href="{% url 'owner_list' %}"
+        >
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+</body>
+
+</html>

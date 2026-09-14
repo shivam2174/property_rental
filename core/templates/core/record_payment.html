@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Record Payment - Invoice #{{ invoice.invoice_number }}</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f4f6f9;
+            font-family: Arial, sans-serif;
+            color: #222;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            background: #1f2937;
+            color: white;
+            padding: 22px 25px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .summary-box {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 18px;
+            background: #fafafa;
+        }
+
+        .summary-box span {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .summary-box strong {
+            font-size: 21px;
+        }
+
+        .balance {
+            color: #dc2626;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        button,
+        .btn {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-history {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-history:hover {
+            background: #047857;
+        }
+
+        .note {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 12px 15px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        @media (max-width: 700px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            button,
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>Record Payment</h1>
+
+        <p>
+            Invoice #{{ invoice.invoice_number }}
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <!-- =================================================
+             INVOICE SUMMARY
+        ================================================== -->
+
+        <div class="summary">
+
+            <div class="summary-box">
+
+                <span>Invoice Total</span>
+
+                <strong>
+                    ₹{{ invoice.total_amount|floatformat:2 }}
+                </strong>
+
+            </div>
+
+
+            <div class="summary-box">
+
+                <span>Total Paid</span>
+
+                <strong>
+                    ₹{{ total_paid|floatformat:2 }}
+                </strong>
+
+            </div>
+
+
+            <div class="summary-box">
+
+                <span>Remaining Balance</span>
+
+                <strong class="balance">
+                    ₹{{ balance|floatformat:2 }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             INFORMATION
+        ================================================== -->
+
+        <div class="note">
+
+            You can record a full or partial payment.
+            The system will automatically update the invoice
+            status after the payment is recorded.
+
+        </div>
+
+
+        <!-- =================================================
+             PAYMENT FORM
+        ================================================== -->
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+
+            <!-- PAYMENT DATE -->
+
+            <div class="form-group">
+
+                <label for="payment_date">
+                    Payment Date
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="date"
+                    id="payment_date"
+                    name="payment_date"
+                    value="{{ today|date:'Y-m-d' }}"
+                    required
+                >
+
+            </div>
+
+
+            <!-- PAYMENT AMOUNT -->
+
+            <div class="form-group">
+
+                <label for="amount">
+                    Payment Amount
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="number"
+                    id="amount"
+                    name="amount"
+                    min="0.01"
+                    max="{{ balance }}"
+                    step="0.01"
+                    placeholder="Enter payment amount"
+                    required
+                >
+
+            </div>
+
+
+            <!-- PAYMENT METHOD -->
+
+            <div class="form-group">
+
+                <label for="payment_method">
+                    Payment Method
+                    <span class="required">*</span>
+                </label>
+
+                <select
+                    id="payment_method"
+                    name="payment_method"
+                    required
+                >
+
+                    {% for value, label in payment_methods %}
+
+                        <option
+                            value="{{ value }}"
+                            {% if value == "cash" %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ label }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- TRANSACTION REFERENCE -->
+
+            <div class="form-group">
+
+                <label for="transaction_reference">
+                    Transaction / Reference Number
+                </label>
+
+                <input
+                    type="text"
+                    id="transaction_reference"
+                    name="transaction_reference"
+                    maxlength="100"
+                    placeholder="UPI / Bank / Cheque reference (optional)"
+                >
+
+            </div>
+
+
+            <!-- NOTES -->
+
+            <div class="form-group">
+
+                <label for="notes">
+                    Notes
+                </label>
+
+                <textarea
+                    id="notes"
+                    name="notes"
+                    placeholder="Optional payment notes"
+                ></textarea>
+
+            </div>
+
+
+            <!-- =================================================
+                 BUTTONS
+            ================================================== -->
+
+            <div class="buttons">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Record Payment
+                </button>
+
+
+                <a
+                    href="{% url 'payment_history' invoice.invoice_number %}"
+                    class="btn btn-history"
+                >
+                    Payment History
+                </a>
+
+
+                <a
+                    href="{% url 'invoice_detail' invoice.invoice_number %}"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

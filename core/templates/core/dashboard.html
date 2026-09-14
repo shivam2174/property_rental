@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Property Rental Dashboard</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 25px;
+            background: #f4f6f9;
+            font-family: Arial, sans-serif;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: auto;
+        }
+
+        /* ================= HEADER ================= */
+
+        .header {
+            background: #1f2937;
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-content h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .header-content p {
+            margin: 0;
+            color: #d1d5db;
+        }
+
+        /* ================= RESET BUTTON ================= */
+
+        .reset-form {
+            margin: 0;
+        }
+
+        .reset-button {
+            border: none;
+            background: #dc2626;
+            color: white;
+
+            padding: 11px 18px;
+
+            border-radius: 7px;
+
+            font-size: 14px;
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s ease;
+        }
+
+        .reset-button:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
+        /* ================= MESSAGES ================= */
+
+        .message {
+            background: #d1fae5;
+            color: #065f46;
+
+            border: 1px solid #a7f3d0;
+
+            padding: 12px 15px;
+
+            border-radius: 7px;
+
+            margin-bottom: 20px;
+
+            font-size: 14px;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        /* ================= SECTION ================= */
+
+        .section-title {
+            margin: 25px 0 15px;
+
+            font-size: 20px;
+
+            font-weight: bold;
+        }
+
+        /* ================= CARDS ================= */
+
+        .cards {
+            display: grid;
+
+            grid-template-columns: repeat(4, 1fr);
+
+            gap: 15px;
+        }
+
+        .card {
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 3px 12px rgba(0, 0, 0, 0.07);
+
+            border: 1px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 13px;
+
+            color: #6b7280;
+
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 25px;
+
+            font-weight: bold;
+        }
+
+        .green {
+            color: #059669;
+        }
+
+        .red {
+            color: #dc2626;
+        }
+
+        .blue {
+            color: #2563eb;
+        }
+
+        .orange {
+            color: #d97706;
+        }
+
+        .purple {
+            color: #7c3aed;
+        }
+
+        /* ================= QUICK ACTIONS ================= */
+
+        .actions {
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 10px;
+
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 3px 12px rgba(0, 0, 0, 0.07);
+        }
+
+        .btn {
+            display: inline-block;
+
+            padding: 11px 16px;
+
+            border-radius: 6px;
+
+            text-decoration: none;
+
+            color: white;
+
+            font-size: 14px;
+
+            transition: 0.2s ease;
+
+            border: none;
+
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            opacity: 0.88;
+
+            transform: translateY(-1px);
+        }
+
+        .btn-blue {
+            background: #2563eb;
+        }
+
+        .btn-green {
+            background: #059669;
+        }
+
+        .btn-orange {
+            background: #d97706;
+        }
+
+        .btn-purple {
+            background: #7c3aed;
+        }
+
+        .btn-gray {
+            background: #6b7280;
+        }
+
+        .reset-action {
+            background: #dc2626;
+        }
+
+        .reset-action:hover {
+            background: #b91c1c;
+        }
+
+        /* ================= MANAGEMENT ================= */
+
+        .management {
+            display: grid;
+
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 15px;
+        }
+
+        .management-card {
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 3px 12px rgba(0, 0, 0, 0.07);
+
+            border: 1px solid #e5e7eb;
+        }
+
+        .management-card h3 {
+            margin-top: 0;
+
+            margin-bottom: 8px;
+        }
+
+        .management-card p {
+            color: #6b7280;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+
+            margin-bottom: 15px;
+        }
+
+        /* ================= TABLES ================= */
+
+        .table-grid {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 20px;
+        }
+
+        .table-card {
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 3px 12px rgba(0, 0, 0, 0.07);
+
+            overflow-x: auto;
+        }
+
+        .table-card h3 {
+            margin-top: 0;
+
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+
+            background: #f3f4f6;
+
+            padding: 11px;
+
+            font-size: 13px;
+
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 11px;
+
+            border-bottom: 1px solid #e5e7eb;
+
+            font-size: 13px;
+        }
+
+        .amount {
+            font-weight: bold;
+        }
+
+        /* ================= STATUS ================= */
+
+        .status {
+            display: inline-block;
+
+            padding: 5px 9px;
+
+            border-radius: 20px;
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            text-transform: uppercase;
+        }
+
+        .status-paid {
+            background: #d1fae5;
+
+            color: #047857;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+
+            color: #92400e;
+        }
+
+        .status-generated {
+            background: #dbeafe;
+
+            color: #1d4ed8;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+
+            color: #b91c1c;
+        }
+
+        /* ================= LINKS ================= */
+
+        a.table-link {
+            color: #2563eb;
+
+            text-decoration: none;
+
+            font-weight: bold;
+        }
+
+        a.table-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 1000px) {
+
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .management {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .table-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+
+            .reset-form {
+                width: 100%;
+            }
+
+            .reset-button {
+                width: 100%;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .management {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+
+                width: 100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="header">
+
+        <div class="header-content">
+
+            <h1>
+                Property Rental Dashboard
+            </h1>
+
+            <p>
+                Overview of your properties, tenants, invoices and payments
+            </p>
+
+        </div>
+
+
+        <!-- RESET TEST DATA -->
+
+        <form
+            method="POST"
+            action="{% url 'reset_test_data' %}"
+            class="reset-form"
+            onsubmit="
+                return confirm(
+                    'WARNING! This will permanently delete all testing Tenants, Rental Agreements, Invoices, Invoice Items, Payments and Rent History. Owners and Properties will NOT be deleted.\\n\\nAre you sure you want to continue?'
+                );
+            "
+        >
+
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="reset-button"
+            >
+                ⚠ Reset Test Data
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         DJANGO MESSAGES
+    ====================================================== -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div
+                class="
+                    message
+                    {% if message.tags == 'error' %}
+                        error
+                    {% endif %}
+                "
+            >
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         PROPERTY OVERVIEW
+    ====================================================== -->
+
+    <div class="section-title">
+        Property Overview
+    </div>
+
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Properties
+            </div>
+
+            <div class="card-value blue">
+                {{ total_properties }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Units
+            </div>
+
+            <div class="card-value blue">
+                {{ total_units }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Occupied Units
+            </div>
+
+            <div class="card-value green">
+                {{ occupied_units }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Vacant Units
+            </div>
+
+            <div class="card-value orange">
+                {{ vacant_units }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Tenants
+            </div>
+
+            <div class="card-value blue">
+                {{ total_tenants|default:total_renters }}
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         OWNER MANAGEMENT
+    ====================================================== -->
+
+    <div class="section-title">
+        Owner Management
+    </div>
+
+
+    <div class="management">
+
+
+        <div class="management-card">
+
+            <h3>
+                Property Owners
+            </h3>
+
+            <p>
+                Manage property owner information used throughout
+                your property and invoice records.
+            </p>
+
+            <a
+                href="{% url 'owner_list' %}"
+                class="btn btn-purple"
+            >
+                View Owners
+            </a>
+
+        </div>
+
+
+        <div class="management-card">
+
+            <h3>
+                Add New Owner
+            </h3>
+
+            <p>
+                Add a new property owner with address,
+                contact, GST and PAN details.
+            </p>
+
+            <a
+                href="{% url 'owner_add' %}"
+                class="btn btn-blue"
+            >
+                Add Owner
+            </a>
+
+        </div>
+
+
+        <div class="management-card">
+
+            <h3>
+                Owner Information
+            </h3>
+
+            <p>
+                Owner information is automatically used when
+                generating invoices for linked properties.
+            </p>
+
+            <a
+                href="{% url 'owner_list' %}"
+                class="btn btn-gray"
+            >
+                Manage Owners
+            </a>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         FINANCIAL OVERVIEW
+    ====================================================== -->
+
+    <div class="section-title">
+        Financial Overview
+    </div>
+
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Invoiced
+            </div>
+
+            <div class="card-value">
+                ₹{{ total_invoice_amount|floatformat:2 }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Collected
+            </div>
+
+            <div class="card-value green">
+                ₹{{ total_collected|floatformat:2 }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Outstanding Amount
+            </div>
+
+            <div class="card-value red">
+                ₹{{ total_outstanding|floatformat:2 }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Invoices
+            </div>
+
+            <div class="card-value blue">
+                {{ total_invoices }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Paid Invoices
+            </div>
+
+            <div class="card-value green">
+                {{ paid_invoices }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Pending Invoices
+            </div>
+
+            <div class="card-value orange">
+                {{ pending_invoices }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Generated Invoices
+            </div>
+
+            <div class="card-value blue">
+                {{ generated_invoices }}
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         QUICK ACTIONS
+    ====================================================== -->
+
+    <div class="section-title">
+        Quick Actions
+    </div>
+
+
+    <div class="actions">
+
+
+        <a
+            href="{% url 'owner_add' %}"
+            class="btn btn-purple"
+        >
+            Add Owner
+        </a>
+
+
+        <a
+            href="{% url 'owner_list' %}"
+            class="btn btn-purple"
+        >
+            View Owners
+        </a>
+
+
+        <a
+            href="{% url 'property_add' %}"
+            class="btn btn-blue"
+        >
+            Add Property
+        </a>
+
+
+        <a
+            href="{% url 'property_list' %}"
+            class="btn btn-blue"
+        >
+            Manage Properties
+        </a>
+
+
+        <a
+            href="{% url 'renter_add' %}"
+            class="btn btn-blue"
+        >
+            Add Tenant
+        </a>
+
+
+        <a
+            href="{% url 'agreement_add' %}"
+            class="btn btn-orange"
+        >
+            Add Agreement
+        </a>
+
+
+        <a
+            href="{% url 'invoice_generate' %}"
+            class="btn btn-green"
+        >
+            Generate Invoice
+        </a>
+
+
+        <a
+            href="{% url 'invoice_list' %}"
+            class="btn btn-gray"
+        >
+            View Invoices
+        </a>
+
+
+        <!-- RESET TEST DATA -->
+
+        <form
+            method="POST"
+            action="{% url 'reset_test_data' %}"
+            style="display: inline; margin: 0;"
+            onsubmit="
+                return confirm(
+                    'WARNING! This will permanently delete all testing Tenants, Rental Agreements, Invoices, Invoice Items, Payments and Rent History. Owners and Properties will NOT be deleted.\\n\\nAre you sure?'
+                );
+            "
+        >
+
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="btn reset-action"
+            >
+                ⚠ Reset Test Data
+            </button>
+
+        </form>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         RECENT ACTIVITY
+    ====================================================== -->
+
+    <div class="section-title">
+        Recent Activity
+    </div>
+
+
+    <div class="table-grid">
+
+
+        <!-- ================= RECENT PAYMENTS ================= -->
+
+        <div class="table-card">
+
+            <h3>
+                Recent Payments
+            </h3>
+
+
+            {% if recent_payments %}
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Invoice
+                            </th>
+
+                            <th>
+                                Amount
+                            </th>
+
+                            <th>
+                                Method
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for payment in recent_payments %}
+
+                            <tr>
+
+                                <td>
+                                    {{ payment.payment_date|date:"d-m-Y" }}
+                                </td>
+
+
+                                <td>
+
+                                    <a
+                                        href="{% url 'invoice_detail' payment.invoice.invoice_number %}"
+                                        class="table-link"
+                                    >
+                                        #{{ payment.invoice.invoice_number }}
+                                    </a>
+
+                                </td>
+
+
+                                <td class="amount">
+                                    ₹{{ payment.amount|floatformat:2 }}
+                                </td>
+
+
+                                <td>
+                                    {{ payment.get_payment_method_display }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            {% else %}
+
+                <p>
+                    No payments recorded yet.
+                </p>
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- ================= RECENT INVOICES ================= -->
+
+        <div class="table-card">
+
+            <h3>
+                Recent Invoices
+            </h3>
+
+
+            {% if recent_invoices %}
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Invoice
+                            </th>
+
+                            <th>
+                                Tenant
+                            </th>
+
+                            <th>
+                                Amount
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for invoice in recent_invoices %}
+
+                            <tr>
+
+                                <td>
+
+                                    <a
+                                        href="{% url 'invoice_detail' invoice.invoice_number %}"
+                                        class="table-link"
+                                    >
+                                        #{{ invoice.invoice_number }}
+                                    </a>
+
+                                </td>
+
+
+                                <td>
+                                    {{ invoice.tenant_name }}
+                                </td>
+
+
+                                <td class="amount">
+                                    ₹{{ invoice.total_amount|floatformat:2 }}
+                                </td>
+
+
+                                <td>
+
+                                    {% if invoice.status == "paid" %}
+
+                                        <span class="status status-paid">
+                                            Paid
+                                        </span>
+
+                                    {% elif invoice.status == "pending" %}
+
+                                        <span class="status status-pending">
+                                            Pending
+                                        </span>
+
+                                    {% elif invoice.status == "generated" %}
+
+                                        <span class="status status-generated">
+                                            Generated
+                                        </span>
+
+                                    {% elif invoice.status == "cancelled" %}
+
+                                        <span class="status status-cancelled">
+                                            Cancelled
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status">
+                                            {{ invoice.status }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            {% else %}
+
+                <p>
+                    No invoices generated yet.
+                </p>
+
+            {% endif %}
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+</body>
+
+</html>

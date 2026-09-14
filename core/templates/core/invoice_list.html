@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Invoices</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        /* =========================================
+           TOP NAVIGATION
+        ========================================= */
+
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 26px;
+            color: #111827;
+        }
+
+        .brand p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-dashboard {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-dashboard:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-generate {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-generate:hover {
+            background: #15803d;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        /* =========================================
+           MAIN CONTAINER
+        ========================================= */
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* =========================================
+           PAGE HEADER
+        ========================================= */
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .page-header h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #111827;
+        }
+
+        .page-header p {
+            margin: 6px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* =========================================
+           SUMMARY CARDS
+        ========================================= */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .summary-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .summary-label {
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .summary-value {
+            margin-top: 8px;
+            font-size: 25px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .summary-green .summary-value {
+            color: #15803d;
+        }
+
+        .summary-orange .summary-value {
+            color: #d97706;
+        }
+
+        .summary-blue .summary-value {
+            color: #2563eb;
+        }
+
+        /* =========================================
+           TABLE CARD
+        ========================================= */
+
+        .table-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .table-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1100px;
+        }
+
+        thead {
+            background: #f8fafc;
+        }
+
+        th {
+            padding: 13px 14px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 15px 14px;
+            border-bottom: 1px solid #f0f1f3;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        tbody tr {
+            transition: background 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .invoice-number {
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .renter-name {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .property-name {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .unit-name {
+            color: #6b7280;
+        }
+
+        .amount {
+            font-weight: 700;
+            color: #111827;
+            white-space: nowrap;
+        }
+
+        .tax {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        /* =========================================
+           STATUS
+        ========================================= */
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-generated {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* =========================================
+           ACTION BUTTON
+        ========================================= */
+
+        .view-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 13px;
+            background: #eff6ff;
+            color: #2563eb;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: 0.2s ease;
+        }
+
+        .view-btn:hover {
+            background: #dbeafe;
+        }
+
+        /* =========================================
+           EMPTY STATE
+        ========================================= */
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 8px;
+            color: #111827;
+        }
+
+        .empty-state p {
+            margin: 0 0 20px;
+            color: #6b7280;
+        }
+
+        /* =========================================
+           FOOTER NAVIGATION
+        ========================================= */
+
+        .footer-actions {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* =========================================
+           RESPONSIVE
+        ========================================= */
+
+        @media (max-width: 1000px) {
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 650px) {
+
+            .topbar {
+                padding: 15px 18px;
+            }
+
+            .container {
+                padding: 20px 15px;
+            }
+
+            .brand h1 {
+                font-size: 22px;
+            }
+
+            .top-actions {
+                width: 100%;
+            }
+
+            .top-actions .btn {
+                flex: 1;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                align-items: flex-start;
+            }
+
+            .page-header .btn {
+                width: 100%;
+            }
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================
+     TOP BAR
+========================================= -->
+
+    <div class="topbar">
+
+        <div class="brand">
+
+            <h1>
+                🧾 Invoices
+            </h1>
+
+            <p>
+                Manage and track all rental invoices
+            </p>
+
+        </div>
+
+
+        <div class="top-actions">
+
+            <a href="{% url 'dashboard' %}" class="btn btn-dashboard">
+                🏠 Dashboard
+            </a>
+
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+     MAIN
+========================================= -->
+
+    <div class="container">
+
+
+        <!-- PAGE HEADER -->
+
+        <div class="page-header">
+
+            <div>
+
+                <h2>
+                    Invoice Management
+                </h2>
+
+                <p>
+                    View, monitor and manage rental invoices.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================================
+         SUMMARY
+    ========================================= -->
+
+        <div class="summary-grid">
+
+
+            <!-- TOTAL INVOICES -->
+
+            <div class="summary-card summary-blue">
+
+                <div class="summary-label">
+                    Total Invoices
+                </div>
+
+                <div class="summary-value">
+                    {{ invoices|length }}
+                </div>
+
+            </div>
+
+
+            <!-- PAID -->
+
+            <div class="summary-card summary-green">
+
+                <div class="summary-label">
+                    Paid Invoices
+                </div>
+
+                <div class="summary-value">
+
+                    {{ paid_count|default:"0" }}
+
+                </div>
+
+            </div>
+
+
+            <!-- PENDING -->
+
+            <div class="summary-card summary-orange">
+
+                <div class="summary-label">
+                    Pending Invoices
+                </div>
+
+                <div class="summary-value">
+
+                    {{ pending_count|default:"0" }}
+
+                </div>
+
+            </div>
+
+
+            <!-- TOTAL AMOUNT -->
+
+            <div class="summary-card">
+
+                <div class="summary-label">
+                    Total Invoiced
+                </div>
+
+                <div class="summary-value">
+
+                    ₹{{ total_invoiced|default:"0.00" }}
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =========================================
+         INVOICE TABLE
+    ========================================= -->
+
+        <div class="table-card">
+
+
+            <div class="table-header">
+
+                <h3>
+                    All Invoices
+                </h3>
+
+            </div>
+
+
+            {% if invoices %}
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Invoice
+                            </th>
+
+                            <th>
+                                Renter
+                            </th>
+
+                            <th>
+                                Property
+                            </th>
+
+                            <th>
+                                Unit
+                            </th>
+
+                            <th>
+                                Billing From
+                            </th>
+
+                            <th>
+                                Billing To
+                            </th>
+
+                            <th>
+                                Taxable
+                            </th>
+
+                            <th>
+                                CGST
+                            </th>
+
+                            <th>
+                                SGST
+                            </th>
+
+                            <th>
+                                Total
+                            </th>
+
+                            <th>
+                                Due Date
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for invoice in invoices %}
+
+
+                        <tr>
+
+
+                            <!-- INVOICE -->
+
+                            <td>
+
+                                <span class="invoice-number">
+                                    #{{ invoice.invoice_number }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- RENTER -->
+
+                            <td>
+
+                                <span class="renter-name">
+                                    {{ invoice.tenant_name }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- PROPERTY -->
+
+                            <td>
+
+                                <span class="property-name">
+                                    {{ invoice.property_name }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- UNIT -->
+
+                            <td>
+
+                                <span class="unit-name">
+                                    {{ invoice.unit_number }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- BILLING FROM -->
+
+                            <td>
+                                {{ invoice.billing_from }}
+                            </td>
+
+
+                            <!-- BILLING TO -->
+
+                            <td>
+                                {{ invoice.billing_to }}
+                            </td>
+
+
+                            <!-- TAXABLE -->
+
+                            <td>
+
+                                <span class="amount">
+                                    ₹{{ invoice.taxable_amount }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- CGST -->
+
+                            <td>
+
+                                <span class="tax">
+
+                                    {{ invoice.cgst_rate }}%
+
+                                    <br>
+
+                                    ₹{{ invoice.cgst_amount }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- SGST -->
+
+                            <td>
+
+                                <span class="tax">
+
+                                    {{ invoice.sgst_rate }}%
+
+                                    <br>
+
+                                    ₹{{ invoice.sgst_amount }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- TOTAL -->
+
+                            <td>
+
+                                <span class="amount">
+                                    ₹{{ invoice.total_amount }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- DUE DATE -->
+
+                            <td>
+                                {{ invoice.payment_due_date }}
+                            </td>
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+
+                                {% if invoice.status == "paid" %}
+
+                                <span class="status status-paid">
+                                    Paid
+                                </span>
+
+
+                                {% elif invoice.status == "pending" %}
+
+                                <span class="status status-pending">
+                                    Pending
+                                </span>
+
+
+                                {% elif invoice.status == "cancelled" %}
+
+                                <span class="status status-cancelled">
+                                    Cancelled
+                                </span>
+
+
+                                {% else %}
+
+                                <span class="status status-generated">
+                                    Generated
+                                </span>
+
+                                {% endif %}
+
+
+                            </td>
+
+
+                            <!-- ACTION -->
+
+                            <td>
+
+                                <a href="{% url 'invoice_detail' invoice.pk %}" class="view-btn">
+                                    View Invoice
+                                </a>
+
+                            </td>
+
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            {% else %}
+
+
+            <!-- EMPTY STATE -->
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    🧾
+                </div>
+
+                <h3>
+                    No invoices found
+                </h3>
+
+                <p>
+                    You haven't generated any invoices yet.
+                </p>
+
+                <a href="{% url 'agreement_list' %}" class="btn btn-generate">
+                    + Generate Your First Invoice
+                </a>
+
+            </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- =========================================
+         BOTTOM NAVIGATION
+    ========================================= -->
+
+        <div class="footer-actions">
+
+            <a href="{% url 'dashboard' %}" class="btn btn-dashboard">
+                🏠 Back to Dashboard
+            </a>
+
+            <a href="{% url 'agreement_list' %}" class="btn btn-secondary">
+                📄 Rental Agreements
+            </a>
+
+            <a href="{% url 'agreement_list' %}" class="btn btn-generate">
+                + Generate New Invoice
+            </a>
+
+        </div>
+
+
+    </div>
+
+
+</body>
+
+</html>

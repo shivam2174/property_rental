@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Rental Agreement</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        .buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px 22px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel {
+            background: #6b7280;
+            color: white;
+            text-decoration: none;
+            padding: 11px 22px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Edit Rental Agreement</h1>
+
+    <form method="POST" action="{% url 'agreement_edit' agreement.id %}">
+        {% csrf_token %}
+
+        <!-- TENANT & PROPERTY -->
+
+        <div class="section-title">
+            Tenant & Property
+        </div>
+
+        <div class="form-group">
+
+            <label for="tenant">
+                Tenant:
+            </label>
+
+            <select id="tenant" name="tenant" required>
+
+                <option value="">
+                    -- Select Tenant --
+                </option>
+
+                {% for tenant in tenants %}
+
+                    <option
+                        value="{{ tenant.id }}"
+                        {% if agreement.tenant_id == tenant.id %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ tenant.full_name }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="property">
+                Property:
+            </label>
+
+            <select id="property" name="property" required>
+
+                <option value="">
+                    -- Select Property --
+                </option>
+
+                {% for property in properties %}
+
+                    <option
+                        value="{{ property.id }}"
+                        {% if agreement.property_id == property.id %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ property.name }}
+
+                        {% if property.unit_no %}
+                            - Unit {{ property.unit_no }}
+                        {% endif %}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <!-- AGREEMENT PERIOD -->
+
+        <div class="section-title">
+            Agreement Period
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+
+                <label for="start_date">
+                    Agreement Start Date:
+                </label>
+
+                <input
+                    type="date"
+                    id="start_date"
+                    name="start_date"
+                    value="{{ agreement.start_date|date:'Y-m-d' }}"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="end_date">
+                    Agreement End Date:
+                </label>
+
+                <input
+                    type="date"
+                    id="end_date"
+                    name="end_date"
+                    value="{% if agreement.end_date %}{{ agreement.end_date|date:'Y-m-d' }}{% endif %}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- RENT -->
+
+        <div class="section-title">
+            Rent Details
+        </div>
+
+        <div class="form-group">
+
+            <label for="monthly_rent">
+                Monthly Rent:
+            </label>
+
+            <input
+                type="number"
+                id="monthly_rent"
+                name="monthly_rent"
+                step="0.01"
+                min="0"
+                value="{{ agreement.monthly_rent }}"
+                required
+            >
+
+        </div>
+
+
+        <!-- RENT INCREASE -->
+
+        <div class="section-title">
+            Rent Increase
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+
+                <label for="rent_increase_percent">
+                    Rent Increase (%):
+                </label>
+
+                <input
+                    type="number"
+                    id="rent_increase_percent"
+                    name="rent_increase_percent"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value="{{ agreement.rent_increase_percent }}"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="increase_frequency_months">
+                    Increase Frequency:
+                </label>
+
+                <select
+                    id="increase_frequency_months"
+                    name="increase_frequency_months"
+                >
+
+                    <option
+                        value="6"
+                        {% if agreement.increase_frequency_months == 6 %}
+                            selected
+                        {% endif %}
+                    >
+                        Every 6 Months
+                    </option>
+
+                    <option
+                        value="12"
+                        {% if agreement.increase_frequency_months == 12 %}
+                            selected
+                        {% endif %}
+                    >
+                        Every 1 Year
+                    </option>
+
+                    <option
+                        value="24"
+                        {% if agreement.increase_frequency_months == 24 %}
+                            selected
+                        {% endif %}
+                    >
+                        Every 2 Years
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="next_increase_date">
+                Next Increase Date:
+            </label>
+
+            <input
+                type="date"
+                id="next_increase_date"
+                name="next_increase_date"
+                value="{% if agreement.next_increase_date %}{{ agreement.next_increase_date|date:'Y-m-d' }}{% endif %}"
+            >
+
+        </div>
+
+
+        <!-- PARKING & SECURITY -->
+
+        <div class="section-title">
+            Parking & Security
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+
+                <label for="parking_charge">
+                    Monthly Parking Charge:
+                </label>
+
+                <input
+                    type="number"
+                    id="parking_charge"
+                    name="parking_charge"
+                    step="0.01"
+                    min="0"
+                    value="{{ agreement.parking_charge }}"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="security_deposit">
+                    Security Deposit:
+                </label>
+
+                <input
+                    type="number"
+                    id="security_deposit"
+                    name="security_deposit"
+                    step="0.01"
+                    min="0"
+                    value="{{ agreement.security_deposit }}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- GST -->
+
+        <div class="section-title">
+            GST Details
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+
+                <label for="cgst_rate">
+                    CGST Rate (%):
+                </label>
+
+                <input
+                    type="number"
+                    id="cgst_rate"
+                    name="cgst_rate"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value="{{ agreement.cgst_rate }}"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="sgst_rate">
+                    SGST Rate (%):
+                </label>
+
+                <input
+                    type="number"
+                    id="sgst_rate"
+                    name="sgst_rate"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value="{{ agreement.sgst_rate }}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- PAYMENT -->
+
+        <div class="section-title">
+            Payment Settings
+        </div>
+
+        <div class="form-group">
+
+            <label for="rent_due_day">
+                Rent Due Day:
+            </label>
+
+            <input
+                type="number"
+                id="rent_due_day"
+                name="rent_due_day"
+                min="1"
+                max="28"
+                value="{{ agreement.rent_due_day }}"
+                required
+            >
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="section-title">
+            Agreement Status
+        </div>
+
+        <div class="form-group">
+
+            <label for="status">
+                Status:
+            </label>
+
+            <select
+                id="status"
+                name="status"
+                required
+            >
+
+                <option
+                    value="active"
+                    {% if agreement.status == "active" %}
+                        selected
+                    {% endif %}
+                >
+                    Active
+                </option>
+
+                <option
+                    value="expired"
+                    {% if agreement.status == "expired" %}
+                        selected
+                    {% endif %}
+                >
+                    Expired
+                </option>
+
+                <option
+                    value="terminated"
+                    {% if agreement.status == "terminated" %}
+                        selected
+                    {% endif %}
+                >
+                    Terminated
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- NOTES -->
+
+        <div class="section-title">
+            Notes
+        </div>
+
+        <div class="form-group">
+
+            <label for="notes">
+                Notes:
+            </label>
+
+            <textarea
+                id="notes"
+                name="notes"
+                rows="5"
+            >{{ agreement.notes }}</textarea>
+
+        </div>
+
+
+        <!-- BUTTONS -->
+
+        <div class="buttons">
+
+            <button type="submit">
+                Update Rental Agreement
+            </button>
+
+            <a
+                href="{% url 'agreement_list' %}"
+                class="cancel"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+</html>

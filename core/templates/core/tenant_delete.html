@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Tenant</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            padding: 40px;
+        }
+
+        .card {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            background: #e5e7eb;
+            color: #222;
+            text-decoration: none;
+            padding: 11px 20px;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <h2>Delete Tenant</h2>
+
+    <p>
+        Are you sure you want to delete
+        <strong>{{ tenant.full_name }}</strong>?
+    </p>
+
+    <p>
+        This action cannot be undone.
+    </p>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <a
+            href="{% url 'tenant_detail' tenant.pk %}"
+            class="cancel-btn"
+        >
+            Cancel
+        </a>
+
+        <button
+            type="submit"
+            class="delete-btn"
+        >
+            Delete Tenant
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+</html>

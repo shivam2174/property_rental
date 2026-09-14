@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Rent Increase Confirmation</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.10);
+        }
+
+        .details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .details p {
+            margin: 10px 0;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 13px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .yes {
+            background: #198754;
+        }
+
+        .no {
+            background: #dc3545;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>Rent Increase Confirmation</h1>
+
+
+    <div class="details">
+
+        <p>
+            <strong>Tenant:</strong>
+            {{ agreement.tenant.full_name }}
+        </p>
+
+        <p>
+            <strong>Property:</strong>
+            {{ agreement.property.name }}
+        </p>
+
+        <p>
+            <strong>Billing Month:</strong>
+            {{ billing_from|date:"F Y" }}
+        </p>
+
+        <p>
+            <strong>Current Rent:</strong>
+            ₹{{ current_rent }}
+        </p>
+
+        <p>
+            <strong>Increase:</strong>
+            {{ increase_percent }}%
+        </p>
+
+        <p>
+            <strong>Increase Amount:</strong>
+            ₹{{ proposed_increase }}
+        </p>
+
+        <p>
+            <strong>New Rent:</strong>
+            ₹{{ proposed_rent }}
+        </p>
+
+    </div>
+
+
+    <p>
+        A rent increase is due for this billing period.
+        Do you want to apply the increase?
+    </p>
+
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+
+        <!-- IMPORTANT:
+             Keep the selected month -->
+
+        <input
+            type="hidden"
+            name="billing_month"
+            value="{{ billing_month }}"
+        >
+
+
+        <div class="buttons">
+
+            <button
+                type="submit"
+                name="rent_increase_action"
+                value="yes"
+                class="yes"
+            >
+                Yes, Apply Increase
+            </button>
+
+
+            <button
+                type="submit"
+                name="rent_increase_action"
+                value="no"
+                class="no"
+            >
+                No, Keep Current Rent
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+
+</html>
+

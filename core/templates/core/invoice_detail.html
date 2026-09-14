@@ -1,0 +1,1316 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Tax Invoice #{{ invoice.invoice_number }}
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 30px;
+            color: #222;
+        }
+
+        .invoice-container {
+            max-width: 900px;
+            margin: auto;
+            background: #ffffff;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ==============================
+           HEADER
+        ============================== */
+
+        .invoice-header {
+            text-align: center;
+            border-bottom: 2px solid #222;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .invoice-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 30px;
+        }
+
+        .invoice-header p {
+            margin: 5px 0;
+        }
+
+        .property-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px !important;
+        }
+
+        /* ==============================
+           TABLES
+        ============================== */
+
+        .header-details {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+
+        .header-details td {
+            padding: 8px;
+            vertical-align: top;
+        }
+
+        .section-title {
+            background: #eeeeee;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .details-table td {
+            padding: 9px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+        }
+
+        .details-table td:first-child {
+            font-weight: normal;
+        }
+
+        /* ==============================
+           INVOICE ITEMS
+        ============================== */
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 10px;
+        }
+
+        .items-table th {
+            text-align: center;
+            background: #eeeeee;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        /* ==============================
+           AMOUNT SUMMARY
+        ============================== */
+
+        .amount-section {
+            width: 45%;
+            margin-left: auto;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        .amount-section td {
+            border: 1px solid #333;
+            padding: 10px;
+        }
+
+        .total-row {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* ==============================
+           PAYMENT
+        ============================== */
+
+        .payment-section {
+            margin-top: 30px;
+        }
+
+        .payment-summary {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .payment-summary td {
+            border: 1px solid #333;
+            padding: 12px;
+        }
+
+        .payment-summary .label {
+            font-weight: bold;
+        }
+
+        .payment-summary .amount {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .balance-row td {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* ==============================
+           STATUS
+        ============================== */
+
+        .status-paid {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: #d97706;
+            font-weight: bold;
+        }
+
+        .status-cancelled {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .status-generated {
+            color: #0d6efd;
+            font-weight: bold;
+        }
+
+        /* ==============================
+           PAYMENT HISTORY
+        ============================== */
+
+        .payment-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .payment-history-table th,
+        .payment-history-table td {
+            border: 1px solid #333;
+            padding: 9px;
+        }
+
+        .payment-history-table th {
+            background: #eeeeee;
+            text-align: center;
+        }
+
+        /* ==============================
+           TERMS
+        ============================== */
+
+        .terms {
+            margin-top: 40px;
+            border-top: 1px solid #999;
+            padding-top: 15px;
+        }
+
+        .terms h3 {
+            margin-bottom: 8px;
+        }
+
+        .terms li {
+            margin-bottom: 6px;
+        }
+
+        /* ==============================
+           BUTTONS
+        ============================== */
+
+        .buttons {
+            text-align: center;
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .buttons button,
+        .buttons a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+
+        .print-button {
+            background: #222;
+            color: white;
+        }
+
+        .pdf-button {
+            background: #555;
+            color: white;
+        }
+
+        .payment-button {
+            background: #198754;
+            color: white;
+        }
+
+        .history-button {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .back-button {
+            background: #ddd;
+            color: #222;
+        }
+
+        .buttons a:hover,
+        .buttons button:hover {
+            opacity: 0.85;
+        }
+
+        /* ==============================
+           CANCELLED MESSAGE
+        ============================== */
+
+        .cancelled-message {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* ==============================
+           MOBILE
+        ============================== */
+
+        @media (max-width: 700px) {
+
+            body {
+                padding: 10px;
+            }
+
+            .invoice-container {
+                padding: 20px;
+            }
+
+            .header-details,
+            .details-table,
+            .items-table,
+            .payment-summary {
+                font-size: 13px;
+            }
+
+            .amount-section {
+                width: 100%;
+            }
+
+            .items-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .buttons button,
+            .buttons a {
+                width: 100%;
+                box-sizing: border-box;
+                margin: 5px 0;
+            }
+
+        }
+
+        /* ==============================
+           PRINT
+        ============================== */
+
+        @media print {
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .invoice-container {
+                box-shadow: none;
+                max-width: none;
+                padding: 20px;
+            }
+
+            .buttons {
+                display: none;
+            }
+
+            .cancelled-message {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="invoice-container">
+
+
+    <!-- ================================================= -->
+    <!-- INVOICE HEADER -->
+    <!-- ================================================= -->
+
+    <div class="invoice-header">
+
+        <h1>
+            TAX INVOICE
+        </h1>
+
+        {% if invoice.property_name %}
+
+            <p class="property-name">
+                {{ invoice.property_name }}
+            </p>
+
+        {% endif %}
+
+
+        {% if invoice.property_address %}
+
+            <p>
+                {{ invoice.property_address }}
+            </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- OWNER DETAILS -->
+    <!-- ================================================= -->
+
+    <div class="section-title">
+        Owner Details
+    </div>
+
+
+    <table class="details-table">
+
+        {% if invoice.owner_name %}
+
+        <tr>
+
+            <td width="40%">
+                <strong>Owner Name</strong>
+            </td>
+
+            <td>
+                {{ invoice.owner_name }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.owner_address %}
+
+        <tr>
+
+            <td>
+                <strong>Address</strong>
+            </td>
+
+            <td>
+
+                {{ invoice.owner_address }}
+
+                {% if invoice.owner_city %}
+                    , {{ invoice.owner_city }}
+                {% endif %}
+
+                {% if invoice.owner_state %}
+                    , {{ invoice.owner_state }}
+                {% endif %}
+
+                {% if invoice.owner_pincode %}
+                    - {{ invoice.owner_pincode }}
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.owner_mobile %}
+
+        <tr>
+
+            <td>
+                <strong>Mobile</strong>
+            </td>
+
+            <td>
+                {{ invoice.owner_mobile }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.owner_email %}
+
+        <tr>
+
+            <td>
+                <strong>Email</strong>
+            </td>
+
+            <td>
+                {{ invoice.owner_email }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.owner_pan %}
+
+        <tr>
+
+            <td>
+                <strong>PAN</strong>
+            </td>
+
+            <td>
+                {{ invoice.owner_pan }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.owner_gstin %}
+
+        <tr>
+
+            <td>
+                <strong>GSTIN</strong>
+            </td>
+
+            <td>
+                {{ invoice.owner_gstin }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+    </table>
+
+
+    <!-- ================================================= -->
+    <!-- INVOICE INFORMATION -->
+    <!-- ================================================= -->
+
+    <table class="header-details">
+
+        <tr>
+
+            <td>
+
+                <strong>Invoice No:</strong>
+
+                #{{ invoice.invoice_number }}
+
+            </td>
+
+
+            <td>
+
+                <strong>Invoice Date:</strong>
+
+                {{ invoice.invoice_date }}
+
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+
+                <strong>Billing From:</strong>
+
+                {{ invoice.billing_from }}
+
+            </td>
+
+
+            <td>
+
+                <strong>Billing To:</strong>
+
+                {{ invoice.billing_to }}
+
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+
+                <strong>Payment Due Date:</strong>
+
+                {{ invoice.payment_due_date }}
+
+            </td>
+
+
+            <td>
+
+                <strong>Status:</strong>
+
+
+                {% if invoice.status == "paid" %}
+
+                    <span class="status-paid">
+                        {{ invoice.get_status_display }}
+                    </span>
+
+                {% elif invoice.status == "cancelled" %}
+
+                    <span class="status-cancelled">
+                        {{ invoice.get_status_display }}
+                    </span>
+
+                {% elif invoice.status == "pending" %}
+
+                    <span class="status-pending">
+                        {{ invoice.get_status_display }}
+                    </span>
+
+                {% else %}
+
+                    <span class="status-generated">
+                        {{ invoice.get_status_display }}
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+
+    <!-- ================================================= -->
+    <!-- TENANT DETAILS -->
+    <!-- ================================================= -->
+
+    <div class="section-title">
+        Billed To
+    </div>
+
+
+    <table class="details-table">
+
+        <tr>
+
+            <td width="40%">
+                <strong>Tenant Name</strong>
+            </td>
+
+            <td>
+                {{ invoice.tenant_name }}
+            </td>
+
+        </tr>
+
+
+        {% if invoice.billing_address %}
+
+        <tr>
+
+            <td>
+                <strong>Billing Address</strong>
+            </td>
+
+            <td>
+                {{ invoice.billing_address }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.tenant_mobile %}
+
+        <tr>
+
+            <td>
+                <strong>Mobile</strong>
+            </td>
+
+            <td>
+                {{ invoice.tenant_mobile }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.tenant_email %}
+
+        <tr>
+
+            <td>
+                <strong>Email</strong>
+            </td>
+
+            <td>
+                {{ invoice.tenant_email }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.tenant_pan %}
+
+        <tr>
+
+            <td>
+                <strong>PAN</strong>
+            </td>
+
+            <td>
+                {{ invoice.tenant_pan }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.tenant_gst %}
+
+        <tr>
+
+            <td>
+                <strong>GSTIN</strong>
+            </td>
+
+            <td>
+                {{ invoice.tenant_gst }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+    </table>
+
+
+    <!-- ================================================= -->
+    <!-- PROPERTY DETAILS -->
+    <!-- ================================================= -->
+
+    <div class="section-title">
+        Property Details
+    </div>
+
+
+    <table class="details-table">
+
+        <tr>
+
+            <td width="40%">
+                <strong>Property</strong>
+            </td>
+
+            <td>
+                {{ invoice.property_name }}
+            </td>
+
+        </tr>
+
+
+        {% if invoice.property_address %}
+
+        <tr>
+
+            <td>
+                <strong>Property Address</strong>
+            </td>
+
+            <td>
+                {{ invoice.property_address }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+
+        {% if invoice.unit_number %}
+
+        <tr>
+
+            <td>
+                <strong>Unit Number</strong>
+            </td>
+
+            <td>
+                {{ invoice.unit_number }}
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+    </table>
+
+
+    <!-- ================================================= -->
+    <!-- INVOICE ITEMS -->
+    <!-- ================================================= -->
+
+    <div class="section-title">
+        Invoice Details
+    </div>
+
+
+    <table class="items-table">
+
+        <thead>
+
+            <tr>
+
+                <th width="8%">
+                    S.No.
+                </th>
+
+                <th>
+                    Description
+                </th>
+
+                <th width="15%">
+                    Unit
+                </th>
+
+                <th width="18%">
+                    Rate
+                </th>
+
+                <th width="18%">
+                    Amount
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            {% for item in invoice.items.all %}
+
+            <tr>
+
+                <td class="text-center">
+                    {{ forloop.counter }}
+                </td>
+
+
+                <td>
+                    {{ item.description }}
+                </td>
+
+
+                <td class="text-center">
+
+                    {% if item.unit_number %}
+                        {{ item.unit_number }}
+                    {% else %}
+                        -
+                    {% endif %}
+
+                </td>
+
+
+                <td class="text-right">
+                    ₹{{ item.rate }}
+                </td>
+
+
+                <td class="text-right">
+                    ₹{{ item.amount }}
+                </td>
+
+            </tr>
+
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="5" class="text-center">
+                    No invoice items found.
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+
+    <!-- ================================================= -->
+    <!-- AMOUNT SUMMARY -->
+    <!-- ================================================= -->
+
+    <table class="amount-section">
+
+        <tr>
+
+            <td>
+                Taxable Amount
+            </td>
+
+            <td class="text-right">
+                ₹{{ invoice.taxable_amount }}
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+                CGST ({{ invoice.cgst_rate }}%)
+            </td>
+
+            <td class="text-right">
+                ₹{{ invoice.cgst_amount }}
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+                SGST ({{ invoice.sgst_rate }}%)
+            </td>
+
+            <td class="text-right">
+                ₹{{ invoice.sgst_amount }}
+            </td>
+
+        </tr>
+
+
+        <tr class="total-row">
+
+            <td>
+                TOTAL
+            </td>
+
+            <td class="text-right">
+                ₹{{ invoice.total_amount }}
+            </td>
+
+        </tr>
+
+    </table>
+
+
+    <!-- ================================================= -->
+    <!-- PAYMENT INFORMATION -->
+    <!-- ================================================= -->
+
+    <div class="payment-section">
+
+        <div class="section-title">
+            Payment Information
+        </div>
+
+
+        <table class="payment-summary">
+
+            <tr>
+
+                <td class="label">
+                    Invoice Total
+                </td>
+
+                <td class="amount">
+                    ₹{{ invoice.total_amount }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="label">
+                    Total Paid
+                </td>
+
+                <td class="amount">
+                    ₹{{ total_paid }}
+                </td>
+
+            </tr>
+
+
+            <tr class="balance-row">
+
+                <td>
+                    Remaining Balance
+                </td>
+
+                <td class="amount">
+                    ₹{{ balance }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="label">
+                    Payment Status
+                </td>
+
+                <td>
+
+                    {% if invoice.status == "cancelled" %}
+
+                        <span class="status-cancelled">
+                            CANCELLED
+                        </span>
+
+                    {% elif balance > 0 %}
+
+                        <span class="status-pending">
+                            PAYMENT PENDING
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-paid">
+                            PAID
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+
+            {% if invoice.payment_date %}
+
+            <tr>
+
+                <td class="label">
+                    Last Payment Date
+                </td>
+
+                <td>
+                    {{ invoice.payment_date }}
+                </td>
+
+            </tr>
+
+            {% endif %}
+
+        </table>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- PAYMENT HISTORY -->
+    <!-- ================================================= -->
+
+    {% if invoice.payments.exists %}
+
+    <div class="payment-section">
+
+        <div class="section-title">
+            Payment History
+        </div>
+
+
+        <table class="payment-history-table">
+
+            <thead>
+
+                <tr>
+
+                    <th width="8%">
+                        #
+                    </th>
+
+                    <th>
+                        Payment Date
+                    </th>
+
+                    <th>
+                        Amount
+                    </th>
+
+                    <th>
+                        Method
+                    </th>
+
+                    <th>
+                        Reference
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for payment in invoice.payments.all %}
+
+                <tr>
+
+                    <td class="text-center">
+                        {{ forloop.counter }}
+                    </td>
+
+
+                    <td class="text-center">
+                        {{ payment.payment_date }}
+                    </td>
+
+
+                    <td class="text-right">
+                        ₹{{ payment.amount }}
+                    </td>
+
+
+                    <td class="text-center">
+                        {{ payment.get_payment_method_display }}
+                    </td>
+
+
+                    <td>
+
+                        {% if payment.transaction_reference %}
+
+                            {{ payment.transaction_reference }}
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="5" class="text-center">
+                        No payments recorded yet.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================================================= -->
+    <!-- TERMS & CONDITIONS -->
+    <!-- ================================================= -->
+
+    <div class="terms">
+
+        <h3>
+            Terms &amp; Conditions
+        </h3>
+
+
+        <ol>
+
+            <li>
+                Payment should be made on or before the due date.
+            </li>
+
+            <li>
+                Late payment charges, if applicable, will be
+                charged according to the rental agreement.
+            </li>
+
+            <li>
+                This invoice is generated electronically.
+            </li>
+
+            <li>
+                Please retain this invoice for your records.
+            </li>
+
+        </ol>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- BUTTONS -->
+    <!-- ================================================= -->
+
+    <div class="buttons">
+
+
+        <!-- PRINT -->
+
+        <button
+            type="button"
+            class="print-button"
+            onclick="window.print()"
+        >
+            Print Invoice
+        </button>
+
+
+        <!-- PDF -->
+
+        <a
+            class="pdf-button"
+            href="{% url 'invoice_pdf' invoice.pk %}"
+        >
+            Download PDF
+        </a>
+
+
+        <!-- RECORD PAYMENT -->
+
+        {% if invoice.status != "cancelled" and balance > 0 %}
+
+        <a
+            href="{% url 'record_payment' invoice_id=invoice.pk %}"
+            class="payment-button"
+        >
+            💳 Record Payment
+        </a>
+
+        {% endif %}
+
+
+        <!-- PAYMENT LIST -->
+
+        <a
+            class="history-button"
+            href="{% url 'payment_list' %}"
+        >
+            Payment History
+        </a>
+
+
+        <!-- BACK -->
+
+        <a
+            class="back-button"
+            href="{% url 'invoice_list' %}"
+        >
+            Back to Invoices
+        </a>
+
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- CANCELLED MESSAGE -->
+    <!-- ================================================= -->
+
+    {% if invoice.status == "cancelled" %}
+
+    <div class="cancelled-message">
+
+        This invoice is cancelled.
+        No further payment can be recorded.
+
+    </div>
+
+    {% endif %}
+
+
+</div>
+
+
+</body>
+
+</html>
+

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Payment History - Invoice #{{ invoice.invoice_number }}
+    </title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f4f6f9;
+            font-family: Arial, sans-serif;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .header {
+            background: #1f2937;
+            color: white;
+            padding: 22px 25px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .summary-box {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 18px;
+            background: #fafafa;
+        }
+
+        .summary-box span {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .summary-box strong {
+            font-size: 21px;
+        }
+
+        .paid {
+            color: #059669;
+        }
+
+        .balance {
+            color: #dc2626;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background: #f3f4f6;
+            text-align: left;
+            padding: 13px;
+            border-bottom: 2px solid #ddd;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .amount {
+            font-weight: bold;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty h3 {
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 11px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-green {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-green:hover {
+            background: #047857;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-paid {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-generated {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        @media (max-width: 700px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+            }
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="container">
+
+
+        <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+        <div class="header">
+
+            <h1>
+                Payment History
+            </h1>
+
+            <p>
+                Invoice #{{ invoice.invoice_number }}
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+
+            <!-- =================================================
+             INVOICE INFORMATION
+        ================================================== -->
+
+            <div class="summary">
+
+
+                <div class="summary-box">
+
+                    <span>
+                        Invoice Total
+                    </span>
+
+                    <strong>
+                        ₹{{ invoice.total_amount|floatformat:2 }}
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-box">
+
+                    <span>
+                        Total Paid
+                    </span>
+
+                    <strong class="paid">
+                        ₹{{ total_paid|floatformat:2 }}
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-box">
+
+                    <span>
+                        Remaining Balance
+                    </span>
+
+                    <strong class="balance">
+                        ₹{{ balance|floatformat:2 }}
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- =================================================
+             PAYMENT TABLE
+        ================================================== -->
+
+            {% if payments %}
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                #
+                            </th>
+
+                            <th>
+                                Payment Date
+                            </th>
+
+                            <th>
+                                Amount
+                            </th>
+
+                            <th>
+                                Payment Method
+                            </th>
+
+                            <th>
+                                Transaction / Reference
+                            </th>
+
+                            <th>
+                                Notes
+                            </th>
+
+                            <th>Receipt</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for payment in payments %}
+
+                        <tr>
+
+                            <td>
+                                {{ forloop.counter }}
+                            </td>
+
+                            <td>
+                                {{ payment.payment_date|date:"d-m-Y" }}
+                            </td>
+
+                            <td class="amount">
+                                ₹{{ payment.amount|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {{ payment.get_payment_method_display }}
+                            </td>
+
+                            <td>
+                                {% if payment.transaction_reference %}
+                                {{ payment.transaction_reference }}
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if payment.notes %}
+                                {{ payment.notes }}
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+                            <td>
+
+                                <a href="{% url 'payment_receipt' payment.id %}" class="btn btn-green"
+                                    style="padding: 7px 10px; font-size: 12px;">
+                                    View
+                                </a>
+
+                                <a href="{% url 'payment_receipt_pdf' payment.id %}" class="btn btn-secondary"
+                                    style="padding: 7px 10px; font-size: 12px;">
+                                    PDF
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            {% else %}
+
+
+            <!-- =================================================
+                 NO PAYMENTS
+            ================================================== -->
+
+            <div class="empty">
+
+                <h3>
+                    No Payments Found
+                </h3>
+
+                <p>
+                    No payment has been recorded for this invoice yet.
+                </p>
+
+            </div>
+
+
+            {% endif %}
+
+
+            <!-- =================================================
+             INVOICE STATUS
+        ================================================== -->
+
+            <div style="margin-top: 25px;">
+
+                <strong>
+                    Invoice Status:
+                </strong>
+
+                {% if invoice.status == "paid" %}
+
+                <span class="status status-paid">
+                    Paid
+                </span>
+
+                {% elif invoice.status == "pending" %}
+
+                <span class="status status-pending">
+                    Pending
+                </span>
+
+                {% elif invoice.status == "generated" %}
+
+                <span class="status status-generated">
+                    Generated
+                </span>
+
+                {% elif invoice.status == "cancelled" %}
+
+                <span class="status status-cancelled">
+                    Cancelled
+                </span>
+
+                {% else %}
+
+                <span class="status">
+                    {{ invoice.status }}
+                </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- =================================================
+             BUTTONS
+        ================================================== -->
+
+            <div class="buttons">
+
+
+                {% if balance > 0 and invoice.status != "cancelled" %}
+
+                <a href="{% url 'record_payment' invoice.invoice_number %}" class="btn btn-primary">
+                    Record Payment
+                </a>
+
+                {% endif %}
+
+
+                <a href="{% url 'invoice_detail' invoice.invoice_number %}" class="btn btn-green">
+                    Back to Invoice
+                </a>
+
+
+                <a href="{% url 'invoice_list' %}" class="btn btn-secondary">
+                    Invoice List
+                </a>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</body>
+
+</html>

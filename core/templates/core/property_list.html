@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Properties</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f4f6f8;
+            font-family: Arial, sans-serif;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: auto;
+        }
+
+        /* ================= HEADER ================= */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .header-left h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header-left p {
+            margin: 6px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .add-property {
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            padding: 11px 17px;
+            border-radius: 7px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .add-property:hover {
+            background: #1d4ed8;
+        }
+
+        /* ================= FILTER AREA ================= */
+
+        .filter-panel {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 22px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+        }
+
+        .filter-btn {
+            text-decoration: none;
+            padding: 9px 15px;
+            border-radius: 7px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            color: #374151;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .filter-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .filter-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        /* ================= OWNER FILTER ================= */
+
+        .owner-filter {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .owner-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .owner-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .owner-btn {
+            text-decoration: none;
+            padding: 8px 13px;
+            border-radius: 7px;
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            font-size: 13px;
+        }
+
+        .owner-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .owner-btn.active {
+            background: #111827;
+            color: white;
+            border-color: #111827;
+        }
+
+        /* ================= PROPERTY CARD ================= */
+
+        .property-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.07);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .property-main {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* ================= PROPERTY INFO ================= */
+
+        .property-info {
+            min-width: 0;
+        }
+
+        .property-title {
+            margin: 0 0 8px;
+            font-size: 21px;
+        }
+
+        .property-title a {
+            color: #111827;
+            text-decoration: none;
+        }
+
+        .property-title a:hover {
+            color: #2563eb;
+        }
+
+        .property-address {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .owner {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .owner-label {
+            color: #6b7280;
+        }
+
+        .owner-link {
+            color: #2563eb;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .owner-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ================= PROPERTY DETAILS ================= */
+
+        .property-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .detail-item strong {
+            display: block;
+            color: #111827;
+            font-size: 14px;
+            margin-top: 3px;
+        }
+
+        /* ================= RIGHT SIDE ================= */
+
+        .property-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 13px;
+            flex-shrink: 0;
+        }
+
+        /* ================= OCCUPANCY ================= */
+
+        .occupancy {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .occupancy-free {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .occupancy-occupied {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .occupancy-none {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+
+        /* ================= ACTIONS ================= */
+
+        .property-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            text-decoration: none;
+            padding: 8px 13px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .view-btn {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .view-btn:hover {
+            background: #bfdbfe;
+        }
+
+        .edit-btn {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .edit-btn:hover {
+            background: #fde68a;
+        }
+
+        /* ================= EMPTY ================= */
+
+        .empty {
+            background: white;
+            text-align: center;
+            padding: 50px;
+            border-radius: 10px;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
+
+        .empty h3 {
+            color: #374151;
+            margin-top: 0;
+        }
+
+        .empty .add-property {
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 800px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .add-property {
+                width: 100%;
+                text-align: center;
+            }
+
+            .property-main {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .property-right {
+                width: 100%;
+                align-items: flex-start;
+            }
+
+            .property-actions {
+                width: 100%;
+            }
+
+            .action-btn {
+                flex: 1;
+                text-align: center;
+            }
+
+
+            .delete-btn {
+                border: none;
+                background: #fee2e2;
+                color: #b91c1c;
+                cursor: pointer;
+            }
+
+            .delete-btn:hover {
+                background: #fecaca;
+            }
+
+
+
+            .home-btn {
+                background: #64748b;
+                color: white;
+                text-decoration: none;
+                padding: 11px 17px;
+                border-radius: 7px;
+                font-weight: bold;
+                white-space: nowrap;
+            }
+
+            .home-btn:hover {
+                background: #475569;
+            }
+
+
+
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+
+        <!-- ================= HEADER ================= -->
+
+        <div class="header">
+
+            <div class="header-left">
+
+                <h1>
+                    Properties
+                </h1>
+
+                <p>
+                    Manage all your properties
+                </p>
+
+            </div>
+
+
+
+            <div class="header-actions">
+
+                <a href="{% url 'dashboard' %}" class="home-btn">
+                    🏠 Home
+                </a>
+
+                <a href="{% url 'property_add' %}" class="add-property">
+                    + Add Property
+                </a>
+
+            </div>
+
+
+
+        </div>
+
+
+        <!-- ================= FILTER PANEL ================= -->
+
+        <div class="filter-panel">
+
+            <div class="filter-title">
+                Property Status
+            </div>
+
+
+            <div class="filter-buttons">
+
+                <a href="?filter=all{% if selected_owner %}&owner={{ selected_owner }}{% endif %}"
+                    class="filter-btn {% if current_filter == 'all' %}active{% endif %}">
+                    All Properties
+                </a>
+
+
+                <a href="?filter=occupied{% if selected_owner %}&owner={{ selected_owner }}{% endif %}"
+                    class="filter-btn {% if current_filter == 'occupied' %}active{% endif %}">
+                    🔴 Occupied
+                </a>
+
+
+                <a href="?filter=free{% if selected_owner %}&owner={{ selected_owner }}{% endif %}"
+                    class="filter-btn {% if current_filter == 'free' %}active{% endif %}">
+                    🟢 Free
+                </a>
+
+            </div>
+
+
+            <!-- ================= OWNER FILTER ================= -->
+
+            <div class="owner-filter">
+
+                <div class="owner-title">
+                    Filter by Owner
+                </div>
+
+
+                <div class="owner-buttons">
+
+                    <a href="?filter={{ current_filter }}"
+                        class="owner-btn {% if not selected_owner %}active{% endif %}">
+                        All Owners
+                    </a>
+
+
+                    {% for owner in owners %}
+
+                    <a href="?filter={{ current_filter }}&owner={{ owner.id }}"
+                        class="owner-btn {% if selected_owner|stringformat:'s' == owner.id|stringformat:'s' %}active{% endif %}">
+                        {{ owner.name }}
+                    </a>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= PROPERTIES ================= -->
+
+        {% for property in properties %}
+
+        <div class="property-card">
+
+
+            <div class="property-main">
+
+
+                <!-- ================= LEFT ================= -->
+
+                <div class="property-info">
+
+
+                    <h2 class="property-title">
+
+                        <a href="{% url 'property_detail' property.id %}">
+                            {{ property.name }}
+                        </a>
+
+                    </h2>
+
+
+                    <div class="property-address">
+
+                        {{ property.address }}
+
+                        {% if property.city %}
+                        , {{ property.city }}
+                        {% endif %}
+
+                        {% if property.state %}
+                        , {{ property.state }}
+                        {% endif %}
+
+                        {% if property.pincode %}
+                        - {{ property.pincode }}
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- OWNER -->
+
+                    {% if property.owner %}
+
+                    <div class="owner">
+
+                        <span class="owner-label">
+                            Owner:
+                        </span>
+
+                        <a href="?filter={{ current_filter }}&owner={{ property.owner.id }}" class="owner-link">
+                            {{ property.owner.name }}
+                        </a>
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="owner">
+
+                        <span class="owner-label">
+                            Owner:
+                        </span>
+
+                        <strong>
+                            Not Assigned
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <!-- PROPERTY DETAILS -->
+
+                    <div class="property-details">
+
+
+                        {% if property.unit_no %}
+
+                        <div class="detail-item">
+
+                            Unit No
+
+                            <strong>
+                                {{ property.unit_no }}
+                            </strong>
+
+                        </div>
+
+                        {% endif %}
+
+
+                        {% if property.tower %}
+
+                        <div class="detail-item">
+
+                            Tower
+
+                            <strong>
+                                {{ property.tower }}
+                            </strong>
+
+                        </div>
+
+                        {% endif %}
+
+
+                        {% if property.total_area %}
+
+                        <div class="detail-item">
+
+                            Area
+
+                            <strong>
+                                {{ property.total_area|floatformat:2 }} sq. ft.
+                            </strong>
+
+                        </div>
+
+                        {% endif %}
+
+
+                        {% if property.parking_slot %}
+
+                        <div class="detail-item">
+
+                            Parking
+
+                            <strong>
+                                {{ property.parking_slot }}
+                            </strong>
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- ================= RIGHT ================= -->
+
+                <div class="property-right">
+
+
+                    <!-- OCCUPANCY -->
+
+
+                    {% if property.occupancy_status == "occupied" %}
+
+                    <span class="occupancy occupancy-occupied">
+                        🔴 Occupied
+                    </span>
+
+                    {% elif property.occupancy_status == "partial" %}
+
+                    <span class="occupancy occupancy-occupied">
+                        🟠 Partially Occupied
+                    </span>
+
+                    {% elif property.occupancy_status == "none" %}
+
+                    <span class="occupancy occupancy-none">
+                        ⚪ No Unit
+                    </span>
+
+                    {% else %}
+
+                    <span class="occupancy occupancy-free">
+                        🟢 Free
+                    </span>
+
+                    {% endif %}
+
+
+
+
+                    <!-- ACTIONS -->
+
+
+                    <div class="property-actions">
+
+                        <a href="{% url 'property_detail' property.id %}" class="action-btn view-btn">
+                            View
+                        </a>
+
+                        <a href="{% url 'property_edit' property.id %}" class="action-btn edit-btn">
+                            Edit
+                        </a>
+
+                        <form method="POST" action="{% url 'property_delete' property.id %}"
+                            onsubmit="return confirm('Are you sure you want to delete this property?');"
+                            style="display: inline; margin: 0;">
+
+                            {% csrf_token %}
+
+                            <button type="submit" class="action-btn delete-btn">
+                                Delete
+                            </button>
+
+                        </form>
+
+                    </div>
+
+
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        {% empty %}
+
+
+        <!-- ================= EMPTY ================= -->
+
+        <div class="empty">
+
+            <h3>
+                No Properties Found
+            </h3>
+
+            <p>
+                There are no properties matching the selected filter.
+            </p>
+
+            <a href="{% url 'property_add' %}" class="add-property">
+                + Add Property
+            </a>
+
+        </div>
+
+
+        {% endfor %}
+
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Rental Agreement Details</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            margin: 0;
+        }
+
+        .buttons a {
+            text-decoration: none;
+            padding: 9px 15px;
+            border-radius: 5px;
+            margin-left: 5px;
+            color: white;
+        }
+
+        .back-btn {
+            background: #6c757d;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            color: #000 !important;
+        }
+
+        .terminate-btn {
+            background: #dc3545;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f1f3f5;
+            padding: 15px 20px;
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .field {
+            margin-bottom: 10px;
+        }
+
+        .field strong {
+            display: block;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            font-size: 15px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: #198754;
+            color: white;
+            font-weight: bold;
+        }
+
+        .terminated {
+            background: #dc3545;
+        }
+
+        .notes {
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                display: block;
+            }
+
+            .buttons {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+
+        <div class="top-bar">
+
+            <h2>Rental Agreement Details</h2>
+
+            <div class="buttons">
+
+                <a href="{% url 'agreement_edit' agreement.pk %}" class="edit-btn">
+                    Edit
+                </a>
+
+                <a href="{% url 'generate_invoice' agreement_id=agreement.pk %}" style="
+        background:#198754;
+        color:white;
+        text-decoration:none;
+        padding:9px 15px;
+        border-radius:5px;
+        margin-left:5px;
+    ">
+                    Generate Invoice
+                </a>
+
+                {% if agreement.status == "active" %}
+
+                <a href="{% url 'agreement_terminate' agreement.pk %}" class="terminate-btn">
+                    Terminate
+                </a>
+
+                {% endif %}
+
+                <a href="{% url 'agreement_list' %}" class="back-btn">
+                    Back
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- TENANT INFORMATION -->
+
+        <div class="card">
+
+            <div class="card-header">
+                Tenant Information
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="field">
+                        <strong>Tenant Name</strong>
+                        <div class="value">
+                            {{ agreement.tenant.full_name }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Mobile</strong>
+                        <div class="value">
+                            {{ agreement.tenant.mobile|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Email</strong>
+                        <div class="value">
+                            {{ agreement.tenant.email|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Father Name</strong>
+                        <div class="value">
+                            {{ agreement.tenant.father_name|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>ID Type</strong>
+                        <div class="value">
+                            {{ agreement.tenant.id_type|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Permanent Address</strong>
+                        <div class="value">
+                            {{ agreement.tenant.permanent_address|default:"-" }}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PROPERTY INFORMATION -->
+
+        <div class="card">
+
+            <div class="card-header">
+                Property Information
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="field">
+                        <strong>Property</strong>
+                        <div class="value">
+                            {{ agreement.property.name }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Unit No.</strong>
+                        <div class="value">
+                            {{ agreement.property.unit_no|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Tower</strong>
+                        <div class="value">
+                            {{ agreement.property.tower|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Owner</strong>
+                        <div class="value">
+                            {{ agreement.property.owner.name|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>City</strong>
+                        <div class="value">
+                            {{ agreement.property.city|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>State</strong>
+                        <div class="value">
+                            {{ agreement.property.state|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Address</strong>
+                        <div class="value">
+                            {{ agreement.property.address|default:"-" }}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AGREEMENT INFORMATION -->
+
+        <div class="card">
+
+            <div class="card-header">
+                Agreement Information
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="field">
+                        <strong>Start Date</strong>
+                        <div class="value">
+                            {{ agreement.start_date }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>End Date</strong>
+                        <div class="value">
+                            {{ agreement.end_date|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Status</strong>
+                        <div class="value">
+
+                            {% if agreement.status == "terminated" %}
+                            <span class="status terminated">
+                                {{ agreement.get_status_display }}
+                            </span>
+                            {% else %}
+                            <span class="status">
+                                {{ agreement.get_status_display }}
+                            </span>
+                            {% endif %}
+
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Monthly Rent</strong>
+                        <div class="value">
+                            ₹{{ agreement.monthly_rent }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Parking Charge</strong>
+                        <div class="value">
+                            ₹{{ agreement.parking_charge }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Security Deposit</strong>
+                        <div class="value">
+                            ₹{{ agreement.security_deposit }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Rent Increase</strong>
+                        <div class="value">
+                            {{ agreement.rent_increase_percent }}%
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Increase Frequency</strong>
+                        <div class="value">
+                            {{ agreement.get_increase_frequency_months_display }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Next Increase Date</strong>
+                        <div class="value">
+                            {{ agreement.next_increase_date|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Rent Due Day</strong>
+                        <div class="value">
+                            {{ agreement.rent_due_day }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Total Monthly Amount</strong>
+                        <div class="value">
+                            <strong>
+                                ₹{{ agreement.total_monthly_amount }}
+                            </strong>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- GST INFORMATION -->
+
+        <div class="card">
+
+            <div class="card-header">
+                GST Information
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="field">
+                        <strong>CGST Rate</strong>
+                        <div class="value">
+                            {{ agreement.cgst_rate }}%
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>SGST Rate</strong>
+                        <div class="value">
+                            {{ agreement.sgst_rate }}%
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>CGST Amount</strong>
+                        <div class="value">
+                            ₹{{ agreement.current_cgst_amount }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>SGST Amount</strong>
+                        <div class="value">
+                            ₹{{ agreement.current_sgst_amount }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Total With GST</strong>
+                        <div class="value">
+                            <strong>
+                                ₹{{ agreement.current_total_with_gst }}
+                            </strong>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TERMINATION INFORMATION -->
+
+        {% if agreement.status == "terminated" %}
+
+        <div class="card">
+
+            <div class="card-header">
+                Termination Information
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="field">
+                        <strong>Termination Date</strong>
+                        <div class="value">
+                            {{ agreement.termination_date|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Termination Reason</strong>
+                        <div class="value">
+                            {{ agreement.termination_reason|default:"-" }}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- NOTES -->
+
+        {% if agreement.notes %}
+
+        <div class="card">
+
+            <div class="card-header">
+                Notes
+            </div>
+
+            <div class="card-body notes">
+                {{ agreement.notes }}
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+    </div>
+
+</body>
+
+</html>

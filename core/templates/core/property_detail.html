@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ property.name }} - Property Details</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f4f6f8;
+            font-family: Arial, sans-serif;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        /* ================= HEADER ================= */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            margin-top: 6px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .back-btn:hover {
+            background: #d1d5db;
+        }
+
+        .edit-btn {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #d97706;
+        }
+
+        /* ================= CARD ================= */
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.07);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .card-body {
+            padding: 22px;
+        }
+
+        /* ================= STATUS ================= */
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-free {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .status-occupied {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* ================= INFORMATION GRID ================= */
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px 30px;
+        }
+
+        .info-item {
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 12px;
+        }
+
+        .label {
+            color: #6b7280;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            color: #111827;
+            font-size: 15px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* ================= MONEY ================= */
+
+        .money {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* ================= TENANT ================= */
+
+        .tenant-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 18px;
+        }
+
+        .tenant-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .tenant-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 25px;
+        }
+
+        /* ================= EMPTY ================= */
+
+        .empty {
+            text-align: center;
+            color: #6b7280;
+            padding: 25px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        /* ================= DELETE ================= */
+
+        .delete-section {
+            text-align: right;
+            margin-top: 25px;
+        }
+
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            text-decoration: none;
+            padding: 9px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 700px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tenant-details {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="header">
+
+        <div>
+
+            <h1>
+                {{ property.name }}
+            </h1>
+
+            <div class="subtitle">
+                Property Details
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <a
+                href="{% url 'property_list' %}"
+                class="btn back-btn"
+            >
+                ← Back
+            </a>
+
+
+            <a
+                href="{% url 'property_edit' property.id %}"
+                class="btn edit-btn"
+            >
+                Edit Property
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= BASIC INFORMATION ================= -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2>
+                Basic Information
+            </h2>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            <div class="status-row">
+
+                <strong>
+                    Property Information
+                </strong>
+
+
+                {% if active_agreement %}
+
+                    <span class="status status-occupied">
+                        🔴 Occupied
+                    </span>
+
+                {% else %}
+
+                    <span class="status status-free">
+                        🟢 Free
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="info-grid">
+
+
+                <!-- PROPERTY NAME -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Property Description
+                    </div>
+
+                    <div class="value">
+                        {{ property.name }}
+                    </div>
+
+                </div>
+
+
+                <!-- UNIT NO -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Unit No
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.unit_no %}
+                            {{ property.unit_no }}
+                        {% else %}
+                            -
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- TOWER -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Tower
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.tower %}
+                            {{ property.tower }}
+                        {% else %}
+                            -
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- OWNER -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Owner
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.owner %}
+
+                            {{ property.owner.name }}
+
+                        {% else %}
+
+                            Not Assigned
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="info-item full-width">
+
+                    <div class="label">
+                        Property Address
+                    </div>
+
+                    <div class="value">
+
+                        {{ property.address }}
+
+                        {% if property.city %}
+                            , {{ property.city }}
+                        {% endif %}
+
+                        {% if property.state %}
+                            , {{ property.state }}
+                        {% endif %}
+
+                        {% if property.pincode %}
+                            - {{ property.pincode }}
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- CITY -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        City
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.city %}
+                            {{ property.city }}
+                        {% else %}
+                            -
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- STATE -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        State
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.state %}
+                            {{ property.state }}
+                        {% else %}
+                            -
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- PINCODE -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Pincode
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.pincode %}
+                            {{ property.pincode }}
+                        {% else %}
+                            -
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- PURCHASE DATE -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Purchased On
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.purchased_on %}
+                            {{ property.purchased_on|date:"d-m-Y" }}
+                        {% else %}
+                            -
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= AREA & FINANCIAL ================= -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2>
+                Area & Financial Information
+            </h2>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="info-grid">
+
+
+                <!-- AREA -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Total Area
+                    </div>
+
+                    <div class="value">
+
+                        {{ property.total_area|floatformat:2 }}
+                        sq. ft.
+
+                    </div>
+
+                </div>
+
+
+                <!-- PRICE -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Price
+                    </div>
+
+                    <div class="value money">
+
+                        ₹{{ property.price|floatformat:2 }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- PER SQFT -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Per Sq. Ft. Rate
+                    </div>
+
+                    <div class="value money">
+
+                        ₹{{ property.per_sqft_rate|floatformat:2 }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- STAMP DUTY -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Stamp Duty
+                    </div>
+
+                    <div class="value money">
+
+                        ₹{{ property.stamp_duty|floatformat:2 }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- TOTAL PURCHASE -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Total Purchase Price
+                    </div>
+
+                    <div class="value money">
+
+                        ₹{{ property.total_purchase_price|floatformat:2 }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- GST NUMBER -->
+
+                <div class="info-item">
+
+                    <div class="label">
+                        GST Number
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.gst_number %}
+                            {{ property.gst_number }}
+                        {% else %}
+                            -
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= LAP INFORMATION ================= -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2>
+                LAP / Loan Information
+            </h2>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="info-grid">
+
+
+                <div class="info-item">
+
+                    <div class="label">
+                        LAP Amount
+                    </div>
+
+                    <div class="value money">
+
+                        ₹{{ property.lap_amount|floatformat:2 }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Monthly Installment
+                    </div>
+
+                    <div class="value money">
+
+                        ₹{{ property.monthly_installment|floatformat:2 }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="label">
+                        LAP Maturity
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.lap_maturity %}
+                            {{ property.lap_maturity|date:"d-m-Y" }}
+                        {% else %}
+                            -
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= PARKING ================= -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2>
+                Parking Information
+            </h2>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="info-grid">
+
+
+                <div class="info-item">
+
+                    <div class="label">
+                        Parking Slot
+                    </div>
+
+                    <div class="value">
+
+                        {% if property.parking_slot %}
+                            {{ property.parking_slot }}
+                        {% else %}
+                            No Parking Assigned
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= CURRENT TENANT ================= -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <h2>
+                Current Tenant
+            </h2>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            {% if active_agreement %}
+
+
+                <div class="tenant-box">
+
+
+                    <div class="tenant-name">
+
+                        {{ active_agreement.tenant.full_name }}
+
+                    </div>
+
+
+                    <div class="tenant-details">
+
+
+                        <div>
+
+                            <div class="label">
+                                Mobile
+                            </div>
+
+                            <div class="value">
+
+                                {% if active_agreement.tenant.mobile %}
+                                    {{ active_agreement.tenant.mobile }}
+                                {% else %}
+                                    -
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="label">
+                                Email
+                            </div>
+
+                            <div class="value">
+
+                                {% if active_agreement.tenant.email %}
+                                    {{ active_agreement.tenant.email }}
+                                {% else %}
+                                    -
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="label">
+                                Agreement Start
+                            </div>
+
+                            <div class="value">
+
+                                {{ active_agreement.start_date|date:"d-m-Y" }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="label">
+                                Agreement End
+                            </div>
+
+                            <div class="value">
+
+                                {% if active_agreement.end_date %}
+                                    {{ active_agreement.end_date|date:"d-m-Y" }}
+                                {% else %}
+                                    No End Date
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="label">
+                                Monthly Rent
+                            </div>
+
+                            <div class="value money">
+
+                                ₹{{ active_agreement.monthly_rent|floatformat:2 }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="label">
+                                Parking Charge
+                            </div>
+
+                            <div class="value money">
+
+                                ₹{{ active_agreement.parking_charge|floatformat:2 }}
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="empty">
+
+                    🟢 This property is currently free.
+
+                    <br><br>
+
+                    No active tenant agreement is assigned.
+
+                </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= DELETE ================= -->
+
+    <div class="delete-section">
+
+        <a
+            href="{% url 'property_delete' property.id %}"
+            class="delete-btn"
+            onclick="return confirm('Are you sure you want to delete this property?');"
+        >
+            Delete Property
+        </a>
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>

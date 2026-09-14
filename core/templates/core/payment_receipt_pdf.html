@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+
+    <style>
+
+        @page {
+            size: A4;
+            margin: 25px;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #222;
+        }
+
+        .header {
+            border-bottom: 2px solid #222;
+            padding-bottom: 15px;
+        }
+
+        .company {
+            width: 60%;
+            float: left;
+        }
+
+        .receipt-info {
+            width: 35%;
+            float: right;
+            text-align: right;
+        }
+
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .receipt-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .clear {
+            clear: both;
+        }
+
+        .section {
+            margin-top: 25px;
+        }
+
+        .section-title {
+            background: #eeeeee;
+            border: 1px solid #cccccc;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .label {
+            width: 35%;
+            font-weight: bold;
+        }
+
+        .payment-box {
+            margin-top: 25px;
+            border: 2px solid #222222;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .payment-label {
+            font-size: 12px;
+        }
+
+        .payment-amount {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .success {
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .summary {
+            margin-top: 25px;
+        }
+
+        .summary td {
+            border-bottom: 1px solid #cccccc;
+        }
+
+        .balance {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #cccccc;
+            text-align: center;
+            font-size: 9px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="company">
+
+            <div class="company-name">
+                {{ invoice.owner_company_name|default:"Property Management" }}
+            </div>
+
+            <div>
+                {{ invoice.owner_name }}
+            </div>
+
+            <div>
+                {{ invoice.owner_address }}
+            </div>
+
+            <div>
+                {{ invoice.owner_city }}
+            </div>
+
+        </div>
+
+        <div class="receipt-info">
+
+            <div class="receipt-title">
+                PAYMENT RECEIPT
+            </div>
+
+            <div>
+                Receipt No:
+                <strong>#{{ payment.id }}</strong>
+            </div>
+
+            <div>
+                Date:
+                <strong>
+                    {{ payment.payment_date|date:"d M Y" }}
+                </strong>
+            </div>
+
+        </div>
+
+        <div class="clear"></div>
+
+    </div>
+
+
+    <!-- PAYMENT RECEIVED -->
+
+    <div class="payment-box">
+
+        <div class="payment-label">
+            PAYMENT RECEIVED
+        </div>
+
+        <div class="payment-amount">
+            ₹{{ payment.amount|floatformat:2 }}
+        </div>
+
+        <div class="success">
+            PAYMENT RECEIVED SUCCESSFULLY
+        </div>
+
+    </div>
+
+
+    <!-- TENANT -->
+
+    <div class="section">
+
+        <div class="section-title">
+            RECEIVED FROM
+        </div>
+
+        <table>
+
+            <tr>
+                <td class="label">
+                    Tenant Name
+                </td>
+
+                <td>
+                    {{ invoice.tenant_name }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">
+                    Tenant Phone
+                </td>
+
+                <td>
+                    {{ invoice.tenant_phone|default:"-" }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">
+                    Tenant Email
+                </td>
+
+                <td>
+                    {{ invoice.tenant_email|default:"-" }}
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- INVOICE -->
+
+    <div class="section">
+
+        <div class="section-title">
+            INVOICE DETAILS
+        </div>
+
+        <table>
+
+            <tr>
+                <td class="label">
+                    Invoice Number
+                </td>
+
+                <td>
+                    #{{ invoice.invoice_number }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">
+                    Billing Period
+                </td>
+
+                <td>
+                    {{ invoice.billing_from|date:"d M Y" }}
+                    -
+                    {{ invoice.billing_to|date:"d M Y" }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">
+                    Property
+                </td>
+
+                <td>
+                    {{ invoice.property_name }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">
+                    Unit
+                </td>
+
+                <td>
+                    {{ invoice.unit_number }}
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- PAYMENT -->
+
+    <div class="section">
+
+        <div class="section-title">
+            PAYMENT DETAILS
+        </div>
+
+        <table>
+
+            <tr>
+                <td class="label">
+                    Payment Date
+                </td>
+
+                <td>
+                    {{ payment.payment_date|date:"d M Y" }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">
+                    Payment Method
+                </td>
+
+                <td>
+                    {{ payment.get_payment_method_display }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">
+                    Transaction Reference
+                </td>
+
+                <td>
+                    {{ payment.transaction_reference|default:"-" }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">
+                    Notes
+                </td>
+
+                <td>
+                    {{ payment.notes|default:"-" }}
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+
+    <div class="section summary">
+
+        <div class="section-title">
+            PAYMENT SUMMARY
+        </div>
+
+        <table>
+
+            <tr>
+                <td class="label">
+                    Invoice Total
+                </td>
+
+                <td>
+                    ₹{{ invoice.total_amount|floatformat:2 }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">
+                    Total Paid After This Payment
+                </td>
+
+                <td>
+                    ₹{{ total_paid|floatformat:2 }}
+                </td>
+            </tr>
+
+            <tr class="balance">
+
+                <td class="label">
+                    Remaining Balance
+                </td>
+
+                <td>
+                    ₹{{ balance|floatformat:2 }}
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        <div>
+            This is a computer-generated payment receipt.
+        </div>
+
+        <div>
+            No signature is required.
+        </div>
+
+        <div>
+            Thank you for your payment.
+        </div>
+
+    </div>
+
+</body>
+</html>

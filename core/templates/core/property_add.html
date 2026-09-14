@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Add Property</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            background: #6b7280;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            background: #4b5563;
+        }
+
+        .dashboard-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .dashboard-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* =========================
+           HEADING
+        ========================= */
+
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            color: #111827;
+        }
+
+        .subtitle {
+            margin-bottom: 25px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* =========================
+           FORM
+        ========================= */
+
+        label {
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 7px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 15px;
+            background: white;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #2563eb;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        /* =========================
+           SAVE BUTTON
+        ========================= */
+
+        .save-btn {
+            width: 100%;
+            margin-top: 28px;
+            padding: 13px 20px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .save-btn:hover {
+            background: #15803d;
+        }
+
+        /* =========================
+           BOTTOM NAVIGATION
+        ========================= */
+
+        .bottom-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .bottom-navigation a {
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .properties-link {
+            color: #4b5563;
+        }
+
+        .properties-link:hover {
+            color: #111827;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .back-btn,
+            .dashboard-btn {
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- =========================
+         TOP NAVIGATION
+    ========================= -->
+
+    <div class="top-bar">
+
+        <a
+            href="{% url 'property_list' %}"
+            class="back-btn"
+        >
+            ← Back to Properties
+        </a>
+
+        <a
+            href="{% url 'dashboard' %}"
+            class="dashboard-btn"
+        >
+            🏠 Dashboard
+        </a>
+
+    </div>
+
+
+    <!-- =========================
+         PAGE TITLE
+    ========================= -->
+
+    <h1>Add Property</h1>
+
+    <div class="subtitle">
+        Add a new property to your rental management system.
+    </div>
+
+
+    <!-- =========================
+         FORM
+    ========================= -->
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+
+        <!-- OWNER -->
+
+        <label for="owner">
+
+            Owner / Company
+
+            <span class="required">*</span>
+
+        </label>
+
+        <select
+            id="owner"
+            name="owner"
+            required
+        >
+
+            <option value="">
+                -- Select Owner / Company --
+            </option>
+
+            {% for owner in owners %}
+
+                <option value="{{ owner.id }}">
+
+                    {{ owner.name }}
+
+                    {% if owner.company_name %}
+                        - {{ owner.company_name }}
+                    {% endif %}
+
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <!-- PROPERTY NAME -->
+
+        <label for="name">
+
+            Property Name
+
+            <span class="required">*</span>
+
+        </label>
+
+        <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Enter property name"
+            required
+        >
+
+
+        <!-- ADDRESS -->
+
+        <label for="address">
+
+            Address
+
+            <span class="required">*</span>
+
+        </label>
+
+        <textarea
+            id="address"
+            name="address"
+            placeholder="Enter complete property address"
+            required
+        ></textarea>
+
+
+        <!-- CITY -->
+
+        <label for="city">
+            City
+        </label>
+
+        <input
+            type="text"
+            id="city"
+            name="city"
+            placeholder="Enter city"
+        >
+
+
+        <!-- STATE -->
+
+        <label for="state">
+            State
+        </label>
+
+        <input
+            type="text"
+            id="state"
+            name="state"
+            placeholder="Enter state"
+        >
+
+
+        <!-- PIN CODE -->
+
+        <label for="pincode">
+            PIN Code
+        </label>
+
+        <input
+            type="text"
+            id="pincode"
+            name="pincode"
+            maxlength="10"
+            placeholder="Enter PIN code"
+        >
+
+
+        <!-- STATUS -->
+
+        <label for="status">
+            Status
+        </label>
+
+        <select
+            id="status"
+            name="status"
+        >
+
+            <option value="active">
+                Active
+            </option>
+
+            <option value="inactive">
+                Inactive
+            </option>
+
+        </select>
+
+
+        <!-- SAVE -->
+
+        <button
+            type="submit"
+            class="save-btn"
+        >
+            ✓ Save Property
+        </button>
+
+    </form>
+
+
+    <!-- =========================
+         BOTTOM NAVIGATION
+    ========================= -->
+
+    <div class="bottom-navigation">
+
+        <a
+            href="{% url 'property_list' %}"
+            class="properties-link"
+        >
+            ← Properties
+        </a>
+
+        <a
+            href="{% url 'dashboard' %}"
+        >
+            Dashboard →
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

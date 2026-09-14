@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Rent Increase</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .box {
+            max-width: 650px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.12);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .details {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .details td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .details td:first-child {
+            font-weight: bold;
+            width: 50%;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .yes {
+            background: #198754;
+            color: white;
+        }
+
+        .no {
+            background: #dc3545;
+            color: white;
+        }
+
+        .back {
+            background: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+
+    <h2>Rent Increase Confirmation</h2>
+
+    <div class="warning">
+        <strong>Rent increase is applicable for this term.</strong>
+        <br><br>
+        Please confirm whether you want to apply the increased rent
+        for this invoice.
+    </div>
+
+    <table class="details">
+
+        <tr>
+            <td>Tenant</td>
+            <td>{{ agreement.tenant.full_name }}</td>
+        </tr>
+
+        <tr>
+            <td>Property</td>
+            <td>{{ agreement.property.name }}</td>
+        </tr>
+
+        <tr>
+            <td>Billing Month</td>
+            <td>{{ selected_month }}</td>
+        </tr>
+
+        <tr>
+            <td>Current Term</td>
+            <td>Term {{ current_term }}</td>
+        </tr>
+
+        <tr>
+            <td>Previous Rent</td>
+            <td>₹{{ previous_rent|floatformat:2 }}</td>
+        </tr>
+
+        <tr>
+            <td>Increase</td>
+            <td>{{ increase_percent|floatformat:2 }}%</td>
+        </tr>
+
+        <tr>
+            <td>Increase Amount</td>
+            <td>₹{{ increase_amount|floatformat:2 }}</td>
+        </tr>
+
+        <tr>
+            <td><strong>New Rent</strong></td>
+            <td>
+                <strong>₹{{ proposed_rent|floatformat:2 }}</strong>
+            </td>
+        </tr>
+
+    </table>
+
+    <h3>
+        Do you want to increase the rent for this month?
+    </h3>
+
+    <div class="buttons">
+
+        <form method="post">
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="billing_month"
+                value="{{ selected_month }}"
+            >
+
+            <input
+                type="hidden"
+                name="rent_increase_decision"
+                value="yes"
+            >
+
+            <button
+                type="submit"
+                class="yes"
+            >
+                Yes, Increase Rent
+            </button>
+
+        </form>
+
+
+        <form method="post">
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="billing_month"
+                value="{{ selected_month }}"
+            >
+
+            <input
+                type="hidden"
+                name="rent_increase_decision"
+                value="no"
+            >
+
+            <button
+                type="submit"
+                class="no"
+            >
+                No, Keep Previous Rent
+            </button>
+
+        </form>
+
+
+        <button
+            type="button"
+            class="back"
+            onclick="history.back()"
+        >
+            Cancel
+        </button>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Generate Invoice</title>
+
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 40px;
+    }
+
+    .container {
+        max-width: 650px;
+        margin: auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+    }
+
+    h1 {
+        margin-top: 0;
+        color: #222;
+    }
+
+    .info {
+        background: #f8f9fa;
+        padding: 18px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+    }
+
+    .info p {
+        margin: 8px 0;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    input[type="month"] {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+    }
+
+    .generate-button {
+        margin-top: 20px;
+        width: 100%;
+        padding: 13px;
+        background: #198754;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .generate-button:hover {
+        background: #157347;
+    }
+
+    .back-button {
+        display: inline-block;
+        margin-top: 18px;
+        text-decoration: none;
+        color: #0d6efd;
+    }
+
+    .message {
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+        background: #fff3cd;
+        color: #664d03;
+        border: 1px solid #ffecb5;
+    }
+
+    .error {
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+        background: #f8d7da;
+        color: #842029;
+        border: 1px solid #f5c2c7;
+    }
+</style>
+```
+
+</head>
+
+<body>
+
+<div class="container">
+
+```
+<h1>Generate Invoice</h1>
+
+<!-- Django messages -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="message">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% if error %}
+    <div class="error">
+        {{ error }}
+    </div>
+{% endif %}
+
+<div class="info">
+
+    <p>
+        <strong>Tenant:</strong>
+        {{ agreement.tenant.full_name }}
+    </p>
+
+    <p>
+        <strong>Property:</strong>
+        {{ agreement.property.name }}
+    </p>
+
+    <p>
+        <strong>Unit:</strong>
+        {{ agreement.property.unit_no }}
+    </p>
+
+    <p>
+        <strong>Current Monthly Rent:</strong>
+        ₹{{ agreement.monthly_rent|floatformat:2 }}
+    </p>
+
+    {% if agreement.start_date %}
+    <p>
+        <strong>Agreement Start:</strong>
+        {{ agreement.start_date }}
+    </p>
+    {% endif %}
+
+    {% if agreement.end_date %}
+    <p>
+        <strong>Agreement End:</strong>
+        {{ agreement.end_date }}
+    </p>
+    {% endif %}
+
+</div>
+
+<form method="POST" action="">
+    {% csrf_token %}
+
+    <label for="billing_month">
+        Select Billing Month & Year
+    </label>
+
+    <input
+        type="month"
+        id="billing_month"
+        name="billing_month"
+        value="{{ selected_month }}"
+        required
+    >
+
+    <button type="submit" class="generate-button">
+        Generate Invoice
+    </button>
+
+</form>
+
+<a
+    href="{% url 'agreement_view' agreement.pk %}"
+    class="back-button"
+>
+    ← Back to Agreement
+</a>
+
+
+</div>
+
+</body>
+</html>

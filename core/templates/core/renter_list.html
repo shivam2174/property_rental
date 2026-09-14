@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Renters</title>
+</head>
+<body>
+
+    <h1>Renters</h1>
+
+    <a href="{% url 'renter_add' %}">
+        Add New Renter
+    </a>
+
+    <br><br>
+
+    <table border="1" cellpadding="10" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Property</th>
+                <th>Unit</th>
+                <th>Monthly Rent</th>
+                <th>Parking</th>
+                <th>Parking Charge</th>
+                <th>Move In Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for renter in renters %}
+
+            <tr>
+                <td>{{ renter.full_name }}</td>
+
+                <td>{{ renter.mobile }}</td>
+
+                <td>{{ renter.unit.property.name }}</td>
+
+                <td>{{ renter.unit.unit_number }}</td>
+
+                <td>₹{{ renter.unit.monthly_rent }}</td>
+
+                <td>
+                    {% if renter.unit.parking_available %}
+                        Yes
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if renter.unit.parking_available %}
+                        ₹{{ renter.unit.parking_charge }}
+                    {% else %}
+                        ₹0
+                    {% endif %}
+                </td>
+
+                <td>{{ renter.move_in_date }}</td>
+
+                <td>{{ renter.get_status_display }}</td>
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="9">
+                    No renters found.
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+    <br>
+
+    <a href="{% url 'property_list' %}">
+        Properties
+    </a>
+
+    |
+
+    <a href="{% url 'unit_list' %}">
+        Units
+    </a>
+
+</body>
+</html>

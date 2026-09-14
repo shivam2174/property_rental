@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>
+        Payment Receipt #{{ payment.id }}
+    </title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .receipt {
+            max-width: 850px;
+            margin: auto;
+            background: #ffffff;
+            padding: 40px;
+            border: 1px solid #ddd;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #222;
+            padding-bottom: 20px;
+        }
+
+        .company h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .company p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .receipt-title {
+            text-align: right;
+        }
+
+        .receipt-title h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .receipt-title p {
+            margin: 6px 0;
+        }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            background: #f5f5f5;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        td:first-child {
+            width: 35%;
+            font-weight: bold;
+        }
+
+        .amount-box {
+            margin-top: 25px;
+            border: 2px solid #222;
+            padding: 20px;
+        }
+
+        .amount-box .amount {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .summary {
+            margin-top: 25px;
+        }
+
+        .summary td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary .balance {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .paid {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #777;
+            font-size: 13px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .buttons {
+            max-width: 850px;
+            margin: 20px auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .buttons a,
+        .buttons button {
+            padding: 10px 18px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            background: #222;
+            color: white;
+            font-size: 14px;
+        }
+
+        @media print {
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .receipt {
+                border: none;
+            }
+
+            .buttons {
+                display: none;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="receipt">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="company">
+
+            <h1>
+                {{ invoice.owner_company_name|default:"Property Management" }}
+            </h1>
+
+            <p>
+                {{ invoice.owner_name }}
+            </p>
+
+            <p>
+                {{ invoice.owner_address }}
+            </p>
+
+            <p>
+                {{ invoice.owner_city }}
+            </p>
+
+        </div>
+
+        <div class="receipt-title">
+
+            <h2>PAYMENT RECEIPT</h2>
+
+            <p>
+                Receipt No:
+                <strong>#{{ payment.id }}</strong>
+            </p>
+
+            <p>
+                Date:
+                <strong>{{ payment.payment_date|date:"d M Y" }}</strong>
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- PAYMENT CONFIRMATION -->
+
+    <div class="amount-box">
+
+        <div>
+            Payment Received
+        </div>
+
+        <div class="amount">
+            ₹{{ payment.amount|floatformat:2 }}
+        </div>
+
+        <div class="paid">
+            PAYMENT RECEIVED SUCCESSFULLY
+        </div>
+
+    </div>
+
+
+    <!-- TENANT DETAILS -->
+
+    <div class="section">
+
+        <div class="section-title">
+            Received From
+        </div>
+
+        <table>
+
+            <tr>
+                <td>Tenant Name</td>
+                <td>
+                    {{ invoice.tenant_name }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Tenant Phone</td>
+                <td>
+                    {{ invoice.tenant_phone|default:"-" }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Tenant Email</td>
+                <td>
+                    {{ invoice.tenant_email|default:"-" }}
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- INVOICE DETAILS -->
+
+    <div class="section">
+
+        <div class="section-title">
+            Invoice Details
+        </div>
+
+        <table>
+
+            <tr>
+                <td>Invoice Number</td>
+                <td>
+                    #{{ invoice.invoice_number }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Billing Period</td>
+                <td>
+                    {{ invoice.billing_from|date:"d M Y" }}
+                    -
+                    {{ invoice.billing_to|date:"d M Y" }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Property</td>
+                <td>
+                    {{ invoice.property_name }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Unit</td>
+                <td>
+                    {{ invoice.unit_number }}
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- PAYMENT DETAILS -->
+
+    <div class="section">
+
+        <div class="section-title">
+            Payment Details
+        </div>
+
+        <table>
+
+            <tr>
+                <td>Payment Date</td>
+                <td>
+                    {{ payment.payment_date|date:"d M Y" }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Payment Method</td>
+                <td>
+                    {{ payment.get_payment_method_display }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Transaction Reference</td>
+                <td>
+                    {{ payment.transaction_reference|default:"-" }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Notes</td>
+                <td>
+                    {{ payment.notes|default:"-" }}
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- PAYMENT SUMMARY -->
+
+    <div class="section summary">
+
+        <div class="section-title">
+            Payment Summary
+        </div>
+
+        <table>
+
+            <tr>
+                <td>Invoice Total</td>
+                <td>
+                    ₹{{ invoice.total_amount|floatformat:2 }}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Total Paid After This Payment</td>
+                <td>
+                    ₹{{ total_paid|floatformat:2 }}
+                </td>
+            </tr>
+
+            <tr class="balance">
+
+                <td>Remaining Balance</td>
+
+                <td>
+                    ₹{{ balance|floatformat:2 }}
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        <p>
+            This is a computer-generated payment receipt.
+        </p>
+
+        <p>
+            Thank you for your payment.
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- BUTTONS -->
+
+<div class="buttons">
+
+    <button onclick="window.print()">
+        Print Receipt
+    </button>
+
+    <a href="{% url 'payment_receipt_pdf' payment.id %}">
+        Download PDF
+    </a>
+
+    <a href="{% url 'payment_history' invoice.invoice_number %}">
+        Payment History
+    </a>
+
+    <a href="{% url 'invoice_detail' invoice.invoice_number %}">
+        Back to Invoice
+    </a>
+
+</div>
+
+
+</body>
+
+</html>

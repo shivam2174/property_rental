@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>
+        {% if owner %}
+            Edit Owner
+        {% else %}
+            Add Owner
+        {% endif %}
+    </title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #222;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .section-title {
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: #f1f5f9;
+            border-left: 4px solid #2563eb;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 25px;
+        }
+
+        .full {
+            grid-column: span 2;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 11px 22px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .message {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 700px) {
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: span 1;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>
+        {% if owner %}
+            Edit Owner
+        {% else %}
+            Owner Master
+        {% endif %}
+    </h1>
+
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+
+        <!-- ============================================== -->
+        <!-- OWNER DETAILS -->
+        <!-- ============================================== -->
+
+        <div class="section-title">
+            Owner Details
+        </div>
+
+
+        <div class="form-grid">
+
+
+            <div>
+
+                <label>Owner Code</label>
+
+                <input
+                    type="text"
+                    name="owner_code"
+                    value="{{ owner.owner_code|default:'' }}"
+                    placeholder="Example: OWN001"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Owner Name</label>
+
+                <input
+                    type="text"
+                    name="name"
+                    value="{{ owner.name|default:'' }}"
+                    required
+                >
+
+            </div>
+
+
+            <div class="full">
+
+                <label>Address</label>
+
+                <textarea
+                    name="address"
+                >{{ owner.address|default:'' }}</textarea>
+
+            </div>
+
+
+            <div>
+
+                <label>City</label>
+
+                <input
+                    type="text"
+                    name="city"
+                    value="{{ owner.city|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>State</label>
+
+                <input
+                    type="text"
+                    name="state"
+                    value="{{ owner.state|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Pin Code</label>
+
+                <input
+                    type="text"
+                    name="pincode"
+                    value="{{ owner.pincode|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Mobile</label>
+
+                <input
+                    type="text"
+                    name="mobile"
+                    value="{{ owner.mobile|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Email</label>
+
+                <input
+                    type="email"
+                    name="email"
+                    value="{{ owner.email|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>PAN No</label>
+
+                <input
+                    type="text"
+                    name="pan"
+                    value="{{ owner.pan|default:'' }}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- ============================================== -->
+        <!-- GST DETAILS -->
+        <!-- ============================================== -->
+
+        <div class="section-title">
+            GST Details
+        </div>
+
+
+        <div class="form-grid">
+
+
+            <div>
+
+                <label>GST No. (Haryana)</label>
+
+                <input
+                    type="text"
+                    name="gst_haryana"
+                    value="{{ owner.gst_haryana|default:'' }}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>GST No. (Delhi)</label>
+
+                <input
+                    type="text"
+                    name="gst_delhi"
+                    value="{{ owner.gst_delhi|default:'' }}"
+                >
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ============================================== -->
+        <!-- BUTTONS -->
+        <!-- ============================================== -->
+
+        <div class="buttons">
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                {% if owner %}
+                    Update Owner
+                {% else %}
+                    Add Owner
+                {% endif %}
+            </button>
+
+
+            <a
+                href="{% url 'owner_list' %}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+
+    </form>
+
+</div>
+
+</body>
+</html>
