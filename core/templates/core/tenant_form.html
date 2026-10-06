@@ -1,386 +1,548 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
-    <title>Add Tenant</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>
+        {% if form.instance.pk %}
+            Edit Tenant
+        {% else %}
+            Add Tenant
+        {% endif %}
+    </title>
 
-<style>
-    * {
-        box-sizing: border-box;
-    }
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        background: #f4f6f8;
-    }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            color: #222;
+        }
 
-    .container {
-        max-width: 1000px;
-        margin: 40px auto;
-        padding: 0 20px;
-    }
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
 
-    .card {
-        background: white;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-    }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-    .header {
-        margin-bottom: 30px;
-        border-bottom: 1px solid #e5e7eb;
-        padding-bottom: 15px;
-    }
+        .page-header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
 
-    .header h1 {
-        margin: 0;
-        font-size: 28px;
-        color: #111827;
-    }
+        .back-btn {
+            text-decoration: none;
+            background: #6c757d;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 6px;
+        }
 
-    .header p {
-        margin: 8px 0 0;
-        color: #6b7280;
-    }
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
 
-    .section-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #111827;
-        margin: 25px 0 15px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #e5e7eb;
-    }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #ddd;
+        }
 
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
+        .section-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
 
-    .form-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .full-width {
-        grid-column: 1 / -1;
-    }
-
-    label {
-        font-weight: 600;
-        margin-bottom: 7px;
-        color: #374151;
-    }
-
-    .required {
-        color: #dc2626;
-    }
-
-    .optional {
-        color: #6b7280;
-        font-size: 13px;
-        font-weight: normal;
-    }
-
-    input,
-    select,
-    textarea {
-        width: 100%;
-        padding: 11px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 7px;
-        font-size: 14px;
-        background: white;
-        outline: none;
-        font-family: Arial, sans-serif;
-    }
-
-    select {
-        cursor: pointer;
-        appearance: auto;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-    }
-
-    textarea {
-        resize: vertical;
-        min-height: 90px;
-    }
-
-    .id-section {
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 18px;
-        margin-bottom: 15px;
-    }
-
-    .id-title {
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 15px;
-    }
-
-    .error-message {
-        background: #fee2e2;
-        color: #991b1b;
-        padding: 12px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
-
-    .field-error {
-        color: #dc2626;
-        font-size: 13px;
-        margin-top: 5px;
-    }
-
-    .buttons {
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
-        display: flex;
-        gap: 10px;
-    }
-
-    .btn {
-        border: none;
-        padding: 11px 22px;
-        border-radius: 7px;
-        font-size: 15px;
-        cursor: pointer;
-        text-decoration: none;
-    }
-
-    .btn-save {
-        background: #2563eb;
-        color: white;
-    }
-
-    .btn-save:hover {
-        background: #1d4ed8;
-    }
-
-    .btn-cancel {
-        background: #6b7280;
-        color: white;
-    }
-
-    .btn-cancel:hover {
-        background: #4b5563;
-    }
-
-    @media (max-width: 700px) {
         .form-grid {
-            grid-template-columns: 1fr;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
         }
 
-        .full-width {
-            grid-column: auto;
+        .form-group {
+            display: flex;
+            flex-direction: column;
         }
-    }
-</style>
-```
 
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .contact-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 15px;
+            background: #fafafa;
+        }
+
+        .contact-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .contact-card-title {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .remove-contact-btn {
+            border: none;
+            background: #dc3545;
+            color: white;
+            padding: 7px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .remove-contact-btn:hover {
+            background: #bb2d3b;
+        }
+
+        .add-contact-btn {
+            border: none;
+            background: #198754;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .add-contact-btn:hover {
+            background: #157347;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .save-btn {
+            border: none;
+            background: #007bff;
+            color: white;
+            padding: 11px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .cancel-btn {
+            text-decoration: none;
+            background: #6c757d;
+            color: white;
+            padding: 11px 22px;
+            border-radius: 6px;
+        }
+
+        .error-list {
+            color: #dc3545;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                margin: 15px auto;
+                padding: 0 12px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .page-header h1 {
+                font-size: 22px;
+            }
+
+            .section-header {
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .save-btn,
+            .cancel-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
 <div class="container">
 
-```
-<div class="card">
+    <div class="page-header">
 
-    <div class="header">
-        <h1>Add Tenant</h1>
-        <p>Enter tenant master information</p>
+        <h1>
+            {% if form.instance.pk %}
+                Edit Tenant
+            {% else %}
+                Add Tenant
+            {% endif %}
+        </h1>
+
+        <a href="{% url 'tenant_list' %}" class="back-btn">
+            Back
+        </a>
+
     </div>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="error-message">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
 
     <form method="post">
 
         {% csrf_token %}
 
-        {% if form.non_field_errors %}
-            <div class="error-message">
-                {% for error in form.non_field_errors %}
-                    {{ error }}
-                {% endfor %}
+
+        <!-- =====================================================
+             TENANT INFORMATION
+        ====================================================== -->
+
+        <div class="form-section">
+
+            <div class="section-header">
+                <h2>Tenant Information</h2>
             </div>
-        {% endif %}
 
-        <!-- TENANT INFORMATION -->
+            <div class="form-grid">
 
-        <div class="section-title">
-            Tenant Information
+                <div class="form-group">
+                    <label for="{{ form.full_name.id_for_label }}">
+                        Full Name *
+                    </label>
+
+                    {{ form.full_name }}
+
+                    {% if form.full_name.errors %}
+                        <div class="error-list">
+                            {{ form.full_name.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+
+                <div class="form-group">
+                    <label for="{{ form.father_name.id_for_label }}">
+                        Father Name
+                    </label>
+
+                    {{ form.father_name }}
+
+                    {% if form.father_name.errors %}
+                        <div class="error-list">
+                            {{ form.father_name.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+
+                <div class="form-group">
+                    <label for="{{ form.mobile.id_for_label }}">
+                        Mobile Number
+                    </label>
+
+                    {{ form.mobile }}
+
+                    {% if form.mobile.errors %}
+                        <div class="error-list">
+                            {{ form.mobile.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">
+                        Email
+                    </label>
+
+                    {{ form.email }}
+
+                    {% if form.email.errors %}
+                        <div class="error-list">
+                            {{ form.email.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+
+                <div class="form-group">
+                    <label for="{{ form.gst_number.id_for_label }}">
+                        Tenant GST No
+                    </label>
+
+                    {{ form.gst_number }}
+
+                    {% if form.gst_number.errors %}
+                        <div class="error-list">
+                            {{ form.gst_number.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+
+                <div class="form-group full-width">
+
+                    <label for="{{ form.permanent_address.id_for_label }}">
+                        Permanent Address
+                    </label>
+
+                    {{ form.permanent_address }}
+
+                    {% if form.permanent_address.errors %}
+                        <div class="error-list">
+                            {{ form.permanent_address.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="form-grid">
 
-            <div class="form-group">
-                <label for="{{ form.full_name.id_for_label }}">
-                    Full Name <span class="required">*</span>
-                </label>
+        <!-- =====================================================
+             CONTACT PERSONS
+        ====================================================== -->
 
-                {{ form.full_name }}
+        <div class="form-section">
 
-                {% for error in form.full_name.errors %}
-                    <div class="field-error">{{ error }}</div>
-                {% endfor %}
+            <div class="section-header">
+
+                <h2>Contact Person</h2>
+
+                <button
+                    type="button"
+                    class="add-contact-btn"
+                    onclick="addContactPerson()"
+                >
+                    + Add Contact Person
+                </button>
+
             </div>
 
 
-            <div class="form-group">
-                <label for="{{ form.father_name.id_for_label }}">
-                    Father Name
-                </label>
+            <div id="contact-persons">
 
-                {{ form.father_name }}
+                <!-- First contact person -->
 
-                {% for error in form.father_name.errors %}
-                    <div class="field-error">{{ error }}</div>
-                {% endfor %}
-            </div>
+                <div class="contact-card">
 
+                    <div class="contact-card-header">
 
-            <div class="form-group">
-                <label for="{{ form.mobile.id_for_label }}">
-                    Mobile Number
-                </label>
+                        <div class="contact-card-title">
+                            Contact Person 1
+                        </div>
 
-                {{ form.mobile }}
+                        <button
+                            type="button"
+                            class="remove-contact-btn"
+                            onclick="removeContactPerson(this)"
+                        >
+                            Remove
+                        </button>
 
-                {% for error in form.mobile.errors %}
-                    <div class="field-error">{{ error }}</div>
-                {% endfor %}
-            </div>
+                    </div>
 
 
-            <div class="form-group">
-                <label for="{{ form.email.id_for_label }}">
-                    Email
-                </label>
+                    <div class="form-grid">
 
-                {{ form.email }}
+                        <div class="form-group">
 
-                {% for error in form.email.errors %}
-                    <div class="field-error">{{ error }}</div>
-                {% endfor %}
-            </div>
+                            <label>
+                                Designation
+                            </label>
+
+                            <input
+                                type="text"
+                                name="contact_designation[]"
+                                placeholder="e.g. Manager"
+                            >
+
+                        </div>
 
 
-            <div class="form-group full-width">
-                <label for="{{ form.permanent_address.id_for_label }}">
-                    Permanent Address
-                </label>
+                        <div class="form-group">
 
-                {{ form.permanent_address }}
+                            <label>
+                                Name
+                            </label>
 
-                {% for error in form.permanent_address.errors %}
-                    <div class="field-error">{{ error }}</div>
-                {% endfor %}
+                            <input
+                                type="text"
+                                name="contact_name[]"
+                                placeholder="Contact person name"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                name="contact_email[]"
+                                placeholder="Contact email"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Phone
+                            </label>
+
+                            <input
+                                type="text"
+                                name="contact_phone[]"
+                                placeholder="Contact phone number"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                ID
+                            </label>
+
+                            <select name="contact_id_type[]">
+
+                                <option value="">
+                                    Select ID Type
+                                </option>
+
+                                <option value="aadhaar">
+                                    Aadhaar
+                                </option>
+
+                                <option value="pan">
+                                    PAN
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                ID Number
+                            </label>
+
+                            <input
+                                type="text"
+                                name="contact_id_number[]"
+                                placeholder="Enter ID number"
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
 
 
-        <!-- IDENTITY DOCUMENTS -->
+        <!-- =====================================================
+             OTHER INFORMATION
+        ====================================================== -->
 
-        <div class="section-title">
-            Identity Documents
-        </div>
+        <div class="form-section">
 
-
-        <!-- ID 1 -->
-
-        <div class="id-section">
-
-            <div class="id-title">
-                ID 1 <span class="required">*</span>
+            <div class="section-header">
+                <h2>Other Information</h2>
             </div>
 
             <div class="form-grid">
 
                 <div class="form-group">
 
-                    <label for="id_id_type_1">
-                        ID 1 Type <span class="required">*</span>
+                    <label for="{{ form.status.id_for_label }}">
+                        Status
                     </label>
 
-                    <select
-                        name="id_type_1"
-                        id="id_id_type_1"
-                        class="form-control"
-                        required
-                    >
-                        <option value="">-- Select ID Type --</option>
+                    {{ form.status }}
 
-                        <option value="aadhaar"
-                            {% if form.id_type_1.value == "aadhaar" %}selected{% endif %}>
-                            Aadhaar
-                        </option>
-
-                        <option value="pan"
-                            {% if form.id_type_1.value == "pan" %}selected{% endif %}>
-                            PAN
-                        </option>
-
-                        <option value="passport"
-                            {% if form.id_type_1.value == "passport" %}selected{% endif %}>
-                            Passport
-                        </option>
-
-                        <option value="driving_license"
-                            {% if form.id_type_1.value == "driving_license" %}selected{% endif %}>
-                            Driving License
-                        </option>
-
-                        <option value="voter_id"
-                            {% if form.id_type_1.value == "voter_id" %}selected{% endif %}>
-                            Voter ID
-                        </option>
-
-                        <option value="other"
-                            {% if form.id_type_1.value == "other" %}selected{% endif %}>
-                            Other
-                        </option>
-                    </select>
-
-                    {% for error in form.id_type_1.errors %}
-                        <div class="field-error">{{ error }}</div>
-                    {% endfor %}
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="{{ form.id_number_1.id_for_label }}">
-                        ID 1 Number <span class="required">*</span>
-                    </label>
-
-                    {{ form.id_number_1 }}
-
-                    {% for error in form.id_number_1.errors %}
-                        <div class="field-error">{{ error }}</div>
-                    {% endfor %}
+                    {% if form.status.errors %}
+                        <div class="error-list">
+                            {{ form.status.errors }}
+                        </div>
+                    {% endif %}
 
                 </div>
 
@@ -389,226 +551,29 @@
         </div>
 
 
-        <!-- ID 2 -->
-
-        <div class="id-section">
-
-            <div class="id-title">
-                ID 2 <span class="required">*</span>
-            </div>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label for="id_id_type_2">
-                        ID 2 Type <span class="required">*</span>
-                    </label>
-
-                    <select
-                        name="id_type_2"
-                        id="id_id_type_2"
-                        class="form-control"
-                        required
-                    >
-                        <option value="">-- Select ID Type --</option>
-
-                        <option value="aadhaar"
-                            {% if form.id_type_2.value == "aadhaar" %}selected{% endif %}>
-                            Aadhaar
-                        </option>
-
-                        <option value="pan"
-                            {% if form.id_type_2.value == "pan" %}selected{% endif %}>
-                            PAN
-                        </option>
-
-                        <option value="passport"
-                            {% if form.id_type_2.value == "passport" %}selected{% endif %}>
-                            Passport
-                        </option>
-
-                        <option value="driving_license"
-                            {% if form.id_type_2.value == "driving_license" %}selected{% endif %}>
-                            Driving License
-                        </option>
-
-                        <option value="voter_id"
-                            {% if form.id_type_2.value == "voter_id" %}selected{% endif %}>
-                            Voter ID
-                        </option>
-
-                        <option value="other"
-                            {% if form.id_type_2.value == "other" %}selected{% endif %}>
-                            Other
-                        </option>
-                    </select>
-
-                    {% for error in form.id_type_2.errors %}
-                        <div class="field-error">{{ error }}</div>
-                    {% endfor %}
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="{{ form.id_number_2.id_for_label }}">
-                        ID 2 Number <span class="required">*</span>
-                    </label>
-
-                    {{ form.id_number_2 }}
-
-                    {% for error in form.id_number_2.errors %}
-                        <div class="field-error">{{ error }}</div>
-                    {% endfor %}
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- ID 3 -->
-
-        <div class="id-section">
-
-            <div class="id-title">
-                ID 3 <span class="optional">(Optional)</span>
-            </div>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label for="id_id_type_3">
-                        ID 3 Type
-                        <span class="optional">(Optional)</span>
-                    </label>
-
-                    <select
-                        name="id_type_3"
-                        id="id_id_type_3"
-                        class="form-control"
-                    >
-                        <option value="">-- Select ID Type --</option>
-
-                        <option value="aadhaar"
-                            {% if form.id_type_3.value == "aadhaar" %}selected{% endif %}>
-                            Aadhaar
-                        </option>
-
-                        <option value="pan"
-                            {% if form.id_type_3.value == "pan" %}selected{% endif %}>
-                            PAN
-                        </option>
-
-                        <option value="passport"
-                            {% if form.id_type_3.value == "passport" %}selected{% endif %}>
-                            Passport
-                        </option>
-
-                        <option value="driving_license"
-                            {% if form.id_type_3.value == "driving_license" %}selected{% endif %}>
-                            Driving License
-                        </option>
-
-                        <option value="voter_id"
-                            {% if form.id_type_3.value == "voter_id" %}selected{% endif %}>
-                            Voter ID
-                        </option>
-
-                        <option value="other"
-                            {% if form.id_type_3.value == "other" %}selected{% endif %}>
-                            Other
-                        </option>
-                    </select>
-
-                    {% for error in form.id_type_3.errors %}
-                        <div class="field-error">{{ error }}</div>
-                    {% endfor %}
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="{{ form.id_number_3.id_for_label }}">
-                        ID 3 Number
-                        <span class="optional">(Optional)</span>
-                    </label>
-
-                    {{ form.id_number_3 }}
-
-                    {% for error in form.id_number_3.errors %}
-                        <div class="field-error">{{ error }}</div>
-                    {% endfor %}
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- OTHER INFORMATION -->
-
-        <div class="section-title">
-            Other Information
-        </div>
-
-        <div class="form-grid">
-
-            <div class="form-group">
-
-                <label for="{{ form.security_deposit.id_for_label }}">
-                    Security Deposit
-                </label>
-
-                {{ form.security_deposit }}
-
-                {% for error in form.security_deposit.errors %}
-                    <div class="field-error">{{ error }}</div>
-                {% endfor %}
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label for="{{ form.status.id_for_label }}">
-                    Status
-                </label>
-
-                {{ form.status }}
-
-                {% for error in form.status.errors %}
-                    <div class="field-error">{{ error }}</div>
-                {% endfor %}
-
-            </div>
-
-        </div>
-
-
-        <!-- BUTTONS -->
-
-        <div class="buttons">
-
-            <button
-                type="submit"
-                class="btn btn-save"
-            >
-                Save Tenant
-            </button>
+        <!-- =====================================================
+             ACTIONS
+        ====================================================== -->
+
+        <div class="form-actions">
 
             <a
                 href="{% url 'tenant_list' %}"
-                class="btn btn-cancel"
+                class="cancel-btn"
             >
                 Cancel
             </a>
+
+            <button
+                type="submit"
+                class="save-btn"
+            >
+                {% if form.instance.pk %}
+                    Update Tenant
+                {% else %}
+                    Save Tenant
+                {% endif %}
+            </button>
 
         </div>
 
@@ -617,7 +582,209 @@
 </div>
 
 
-</div>
+<script>
+
+let contactCount = 1;
+
+
+function addContactPerson() {
+
+    contactCount++;
+
+    const container = document.getElementById(
+        "contact-persons"
+    );
+
+    const contactCard = document.createElement("div");
+
+    contactCard.className = "contact-card";
+
+    contactCard.innerHTML = `
+
+        <div class="contact-card-header">
+
+            <div class="contact-card-title">
+                Contact Person ${contactCount}
+            </div>
+
+            <button
+                type="button"
+                class="remove-contact-btn"
+                onclick="removeContactPerson(this)"
+            >
+                Remove
+            </button>
+
+        </div>
+
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label>
+                    Designation
+                </label>
+
+                <input
+                    type="text"
+                    name="contact_designation[]"
+                    placeholder="e.g. Manager"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Name
+                </label>
+
+                <input
+                    type="text"
+                    name="contact_name[]"
+                    placeholder="Contact person name"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    name="contact_email[]"
+                    placeholder="Contact email"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Phone
+                </label>
+
+                <input
+                    type="text"
+                    name="contact_phone[]"
+                    placeholder="Contact phone number"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    ID
+                </label>
+
+                <select name="contact_id_type[]">
+
+                    <option value="">
+                        Select ID Type
+                    </option>
+
+                    <option value="aadhaar">
+                        Aadhaar
+                    </option>
+
+                    <option value="pan">
+                        PAN
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    ID Number
+                </label>
+
+                <input
+                    type="text"
+                    name="contact_id_number[]"
+                    placeholder="Enter ID number"
+                >
+
+            </div>
+
+        </div>
+    `;
+
+    container.appendChild(contactCard);
+
+    updateContactNumbers();
+}
+
+
+function removeContactPerson(button) {
+
+    const cards = document.querySelectorAll(
+        ".contact-card"
+    );
+
+    /*
+     * Keep at least one contact-person row.
+     */
+    if (cards.length === 1) {
+
+        const inputs = cards[0].querySelectorAll(
+            "input"
+        );
+
+        const selects = cards[0].querySelectorAll(
+            "select"
+        );
+
+        inputs.forEach(function(input) {
+            input.value = "";
+        });
+
+        selects.forEach(function(select) {
+            select.value = "";
+        });
+
+        return;
+    }
+
+    button.closest(".contact-card").remove();
+
+    updateContactNumbers();
+}
+
+
+function updateContactNumbers() {
+
+    const cards = document.querySelectorAll(
+        ".contact-card"
+    );
+
+    cards.forEach(function(card, index) {
+
+        const title = card.querySelector(
+            ".contact-card-title"
+        );
+
+        title.textContent =
+            "Contact Person " + (index + 1);
+
+    });
+
+    contactCount = cards.length;
+}
+
+</script>
 
 </body>
 </html>

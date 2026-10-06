@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly GST Report</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 24px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: auto;
+        }
+
+        .header,
+        .filters,
+        .report-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h2,
+        h3 {
+            margin-top: 0;
+        }
+
+        .filters form {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 14px;
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        select,
+        input,
+        button,
+        .link-btn {
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button,
+        .link-btn {
+            background: #198754;
+            color: white;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .print-btn {
+            background: #0d6efd;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        th {
+            background: #e9ecef;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #d7d7d7;
+        }
+
+        .number {
+            text-align: right;
+        }
+
+        tfoot {
+            font-weight: bold;
+            background: #f1f3f5;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 25px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header,
+            .filters,
+            .report-card {
+                padding: 12px;
+            }
+
+            .filters form {
+                align-items: stretch;
+            }
+
+            .filter-field,
+            .filter-field select,
+            .filter-field input {
+                width: 100%;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .header,
+            .report-card {
+                box-shadow: none;
+                padding: 8px 0;
+                margin-bottom: 8px;
+            }
+
+            .container {
+                max-width: none;
+            }
+
+            table {
+                font-size: 9px;
+                white-space: normal;
+            }
+
+            th,
+            td {
+                padding: 5px;
+            }
+
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h2>Monthly GST Reporting to CA</h2>
+
+                <div>
+                    {{ selected_month }}/{{ selected_year }}
+
+                    {% if selected_owner %}
+                    · Owner filtered
+                    {% else %}
+                    · All Owners
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="no-print">
+                <a href="{% url 'agreement_list' %}" class="link-btn">
+                    Back to Lease Agreements
+                </a>
+
+                <button type="button" class="print-btn" onclick="window.print()">
+                    Print / Save PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+
+        <div class="filters no-print">
+            <form method="get" action="{% url 'monthly_gst_report' %}" class="gst-filter-form">
+
+                <div class="filter-field">
+                    <label for="month">Month</label>
+                    <select name="month" id="month">
+                        {% for month_number, month_name in months %}
+                        <option value="{{ month_number }}" {% if selected_month == month_number %}selected{% endif %}>
+                            {{ month_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label for="year">Year</label>
+                    <select name="year" id="year">
+                        {% for year_option in years %}
+                        <option value="{{ year_option }}" {% if selected_year == year_option %}selected{% endif %}>
+                            {{ year_option }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label for="serial_start">Starting Serial No.</label>
+                    <input type="number" name="serial_start" id="serial_start" min="1" value="{{ serial_start }}">
+                </div>
+
+                <div class="filter-field">
+                    <label for="owner">Owner</label>
+                    <select name="owner" id="owner">
+                        <option value="all" {% if not selected_owner or selected_owner == "all" %}selected{% endif %}>
+                            All Owners
+                        </option>
+
+                        {% for owner in owners %}
+                        <option value="{{ owner.pk }}" {% if selected_owner == owner.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ owner.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-field filter-action">
+                    <button type="submit" name="generate" value="1">
+                        Generate Report
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+
+        <!-- GST Report -->
+        <div class="report-card">
+            <h3>
+                {{ selected_month }}/{{ selected_year }}
+                — GST Invoice Summary
+            </h3>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Serial No.</th>
+                            <th>Rent Period</th>
+                            <th>Tenant Name</th>
+                            <th>Tenant GST#</th>
+                            <th class="number">Taxable Amount</th>
+                            <th class="number">CGST</th>
+                            <th class="number">SGST</th>
+                            <th class="number">Invoice Amount</th>
+                            <th>Notes</th>
+                            <th>Jurisdiction</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for row in report_rows %}
+                        <tr>
+                            <td>{{ row.serial_no }}</td>
+
+                            <td>
+                                {{ row.invoice.billing_from|date:"d-M-y" }}
+                                to
+                                {{ row.invoice.billing_to|date:"d-M-y" }}
+                            </td>
+
+                            <td>
+                                {% firstof row.invoice.tenant_name row.invoice.tenant.full_name "-" %}
+                            </td>
+
+                            <td>
+                                {% firstof row.invoice.tenant_gst row.invoice.tenant.gst_number "-" %}
+                            </td>
+
+                            <td class="number">
+                                ₹{{ row.invoice.taxable_amount|floatformat:2 }}
+                            </td>
+
+                            <td class="number">
+                                ₹{{ row.invoice.cgst_amount|floatformat:2 }}
+                            </td>
+
+                            <td class="number">
+                                ₹{{ row.invoice.sgst_amount|floatformat:2 }}
+                            </td>
+
+                            <td class="number">
+                                ₹{{ row.invoice.total_amount|floatformat:2 }}
+                            </td>
+
+                            <td>-</td>
+
+                            <td>
+                                {% firstof row.invoice.owner_state row.invoice.lease_agreement.property.state "-" %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="empty">
+                                No report rows found for the selected month and owner.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">TOTAL</td>
+
+                            <td class="number">
+                                ₹{{ totals.taxable_total|default_if_none:0|floatformat:2 }}
+                            </td>
+
+                            <td class="number">
+                                ₹{{ totals.cgst_total|default_if_none:0|floatformat:2 }}
+                            </td>
+
+                            <td class="number">
+                                ₹{{ totals.sgst_total|default_if_none:0|floatformat:2 }}
+                            </td>
+
+                            <td class="number">
+                                ₹{{ totals.invoice_total|default_if_none:0|floatformat:2 }}
+                            </td>
+
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

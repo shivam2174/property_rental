@@ -1,10 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Rental Agreement</title>
+
+    <title>Add Lease Agreement</title>
 
     <style>
         * {
@@ -12,44 +13,135 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f6fa;
             margin: 0;
             padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            color: #1f2937;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            background: #ffffff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
         }
 
         h1 {
-            margin: 0 0 25px 0;
+            margin: 0 0 8px;
+            font-size: 28px;
             color: #111827;
         }
 
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 28px;
-            margin-bottom: 18px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ddd;
-            color: #111827;
+        .subtitle {
+            margin-bottom: 30px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        form {
+            display: block;
+            width: 100%;
+            margin: 0;
+        }
+
+        form>.section {
+            display: block;
+            width: 100%;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #dbe2ea;
+        }
+
+        .form-section h3 {
+            margin-bottom: 20px;
         }
 
         .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .section {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            margin-top: 28px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            clear: both;
+        }
+
+        .section-header {
+            background: #f8fafc;
+            padding: 15px 18px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 17px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .section-body {
+            padding: 20px;
+        }
+
+        .subsection {
+            width: 100%;
+            padding: 0 0 24px;
+            margin: 0 0 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .subsection:last-child {
+            padding-bottom: 0;
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+
+        .subsection-title {
+            margin: 0 0 18px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .row {
+            display: flex;
+            width: 100%;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .form-group {
+            flex: 1 1 0;
+            min-width: 0;
             margin-bottom: 18px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
         }
 
         label {
             display: block;
-            font-weight: bold;
             margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 600;
             color: #374151;
         }
 
@@ -57,11 +149,11 @@
         select,
         textarea {
             width: 100%;
-            padding: 11px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 11px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
             font-size: 14px;
-            background: white;
+            background: #ffffff;
         }
 
         input:focus,
@@ -69,6 +161,7 @@
         textarea:focus {
             outline: none;
             border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
         }
 
         textarea {
@@ -76,65 +169,98 @@
         }
 
         small {
-            color: #6b7280;
             display: block;
             margin-top: 6px;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .info-box {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
             font-size: 13px;
+            display: none;
         }
 
-        .row {
-            display: flex;
-            gap: 20px;
-        }
-
-        .row .form-group {
-            flex: 1;
-        }
-
-        .term-box {
+        .lease-summary {
+            margin-top: 18px;
+            padding: 16px;
             background: #f8fafc;
-            border: 1px solid #dbe2ea;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
-            padding: 18px;
-            margin-bottom: 15px;
         }
 
-        .term-title {
-            font-size: 16px;
+        .lease-summary-title {
             font-weight: bold;
-            color: #1f2937;
+            margin-bottom: 12px;
+            color: #111827;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .summary-item {
+            padding: 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+
+        .summary-label {
+            display: block;
+            font-size: 12px;
+            color: #6b7280;
             margin-bottom: 5px;
         }
 
-        .term-info {
-            color: #6b7280;
-            font-size: 13px;
-            margin-bottom: 14px;
+        .summary-value {
+            font-size: 15px;
+            font-weight: bold;
+            color: #111827;
         }
 
         .message {
             padding: 12px 15px;
             margin-bottom: 20px;
-            border-radius: 5px;
+            border-radius: 6px;
             background: #fee2e2;
-            color: #991b1b;
             border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .error-list {
+            margin: 0 0 20px;
+            padding: 12px 15px;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 6px;
+            color: #9a3412;
         }
 
         .buttons {
-            margin-top: 30px;
             display: flex;
+            width: 100%;
             gap: 10px;
+            margin-top: 30px;
+            align-items: center;
         }
 
         button {
+            border: none;
+            padding: 12px 22px;
+            border-radius: 6px;
             background: #2563eb;
             color: white;
-            border: none;
-            padding: 11px 22px;
-            border-radius: 5px;
-            cursor: pointer;
             font-size: 14px;
+            cursor: pointer;
+            min-width: 180px;
         }
 
         button:hover {
@@ -143,45 +269,23 @@
 
         .back-button {
             display: inline-block;
-            padding: 11px 22px;
+            padding: 12px 22px;
+            border-radius: 6px;
             background: #6b7280;
             color: white;
             text-decoration: none;
-            border-radius: 5px;
+            font-size: 14px;
         }
 
         .back-button:hover {
             background: #4b5563;
         }
 
-        .tenant-info {
-            margin-top: 8px;
-            padding: 9px 12px;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 5px;
-            color: #1e40af;
-            font-size: 13px;
-            display: none;
-        }
-
-        .property-info {
-            margin-top: 8px;
-            padding: 9px 12px;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 5px;
-            color: #166534;
-            font-size: 13px;
-            display: none;
+        .required {
+            color: #dc2626;
         }
 
         @media (max-width: 700px) {
-            .row {
-                flex-direction: column;
-                gap: 0;
-            }
-
             body {
                 padding: 15px;
             }
@@ -189,764 +293,744 @@
             .container {
                 padding: 20px;
             }
+
+            .row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            button,
+            .back-button {
+                width: 100%;
+                text-align: center;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <h1>Add Rental Agreement</h1>
+        <h1>Add Lease Agreement</h1>
 
-    {% if messages %}
+        <div class="subtitle">
+            Create a lease agreement for a tenant and property.
+        </div>
+
+        {% if messages %}
         {% for message in messages %}
-            <div class="message">
-                {{ message }}
-            </div>
+        <div class="message">
+            {{ message }}
+        </div>
         {% endfor %}
-    {% endif %}
+        {% endif %}
 
-    <form method="POST" action="{% url 'agreement_add' %}">
-        {% csrf_token %}
+        {% if form.errors %}
+        <div class="error-list">
+            <strong>Please correct the following errors:</strong>
 
-        <!-- ================================================= -->
-        <!-- TENANT & PROPERTY -->
-        <!-- ================================================= -->
+            {{ form.non_field_errors }}
 
-        <div class="section-title">
-            Tenant & Property
-        </div>
-
-        <!-- TENANT -->
-
-        <div class="form-group">
-
-            <label for="tenant">
-                Tenant:
-            </label>
-
-            <select id="tenant" name="tenant" required>
-
-                <option value="">
-                    -- Select Tenant --
-                </option>
-
-                {% for tenant in tenants %}
-
-                    <option
-                        value="{{ tenant.pk }}"
-                        {% if request.POST.tenant == tenant.pk|stringformat:"s" %}
-                            selected
-                        {% endif %}
-                    >
-                        {{ tenant.full_name }}
-                    </option>
-
-                {% empty %}
-
-                    <option value="" disabled>
-                        No tenants found
-                    </option>
-
-                {% endfor %}
-
-            </select>
-
-            <div id="tenantInfo" class="tenant-info">
-                Selected Tenant:
-                <strong id="tenantName"></strong>
+            {% for field in form %}
+            {% for error in field.errors %}
+            <div>
+                <strong>{{ field.label }}:</strong>
+                {{ error }}
             </div>
-
+            {% endfor %}
+            {% endfor %}
         </div>
+        {% endif %}
 
+        <form method="POST" action="{% url 'agreement_add' %}">
+            {% csrf_token %}
 
-        <!-- PROPERTY -->
+            <!-- ================================================= -->
+            <!-- TENANT & PROPERTY -->
+            <!-- ================================================= -->
 
-        <div class="form-group">
+            <div class="section">
 
-            <label for="property">
-                Property:
-            </label>
+                <div class="section-header">
+                    Tenant & Property
+                </div>
 
-            <select id="property" name="property" required>
+                <div class="section-body">
 
-                <option value="">
-                    -- Select Property --
-                </option>
+                    <div class="row">
 
-                {% for property in properties %}
+                        <div class="form-group">
 
-                    <option
-                        value="{{ property.pk }}"
-                        {% if request.POST.property == property.pk|stringformat:"s" %}
-                            selected
-                        {% endif %}
-                    >
-                        {{ property.name }}
-                        {% if property.unit_no %}
-                            - Unit {{ property.unit_no }}
-                        {% endif %}
-                    </option>
+                            <label for="tenant">
+                                Tenant <span class="required">*</span>
+                            </label>
 
-                {% empty %}
+                            <select id="tenant" name="tenant" required>
 
-                    <option value="" disabled>
-                        No properties found
-                    </option>
+                                <option value="">
+                                    -- Select Tenant --
+                                </option>
 
-                {% endfor %}
+                                {% for tenant in tenants %}
 
-            </select>
+                                <option value="{{ tenant.pk }}">
+                                    {{ tenant.full_name }}
+                                </option>
 
-            <div id="propertyInfo" class="property-info">
-                Selected Property:
-                <strong id="propertyName"></strong>
-            </div>
+                                {% empty %}
 
-        </div>
+                                <option value="" disabled>
+                                    No tenants found
+                                </option>
 
+                                {% endfor %}
 
-        <!-- ================================================= -->
-        <!-- AGREEMENT PERIOD -->
-        <!-- ================================================= -->
+                            </select>
 
-        <div class="section-title">
-            Agreement Period
-        </div>
+                            <div id="tenantInfo" class="info-box">
+                                Selected Tenant:
+                                <strong id="tenantName"></strong>
+                            </div>
 
-        <div class="row">
+                        </div>
 
-            <div class="form-group">
 
-                <label for="start_date">
-                    Agreement Start Date:
-                </label>
+                        <div class="form-group">
 
-                <input
-                    type="date"
-                    id="start_date"
-                    name="start_date"
-                    value="{{ request.POST.start_date }}"
-                    required
-                >
+                            <label for="property">
+                                Property <span class="required">*</span>
+                            </label>
 
-            </div>
+                            <select id="property" name="property" required>
 
+                                <option value="">
+                                    -- Select Property --
+                                </option>
 
-            <div class="form-group">
+                                {% for property in properties %}
 
-                <label for="end_date">
-                    Agreement End Date:
-                </label>
+                                <option value="{{ property.pk }}">
+                                    {{ property.name }}
+                                    {% if property.unit_no %}
+                                    - Unit {{ property.unit_no }}
+                                    {% endif %}
+                                </option>
 
-                <input
-                    type="date"
-                    id="end_date"
-                    name="end_date"
-                    value="{{ request.POST.end_date }}"
-                >
+                                {% empty %}
 
-                <small>
-                    Leave blank if there is no fixed end date.
-                </small>
+                                <option value="" disabled>
+                                    No properties found
+                                </option>
 
-            </div>
+                                {% endfor %}
 
-        </div>
+                            </select>
 
+                            <div id="propertyInfo" class="info-box">
+                                Selected Property:
+                                <strong id="propertyName"></strong>
+                            </div>
 
-        <!-- ================================================= -->
-        <!-- BASE RENT -->
-        <!-- ================================================= -->
+                        </div>
 
-        <div class="section-title">
-            Rent Details
-        </div>
+                    </div> <!-- Tenant & Property row -->
 
-        <div class="form-group">
+                </div> <!-- Tenant & Property section-body -->
 
-            <label for="monthly_rent">
-                Base Monthly Rent:
-            </label>
+            </div> <!-- Tenant & Property section -->
 
-            <input
-                type="number"
-                id="monthly_rent"
-                name="monthly_rent"
-                step="0.01"
-                min="0"
-                value="{{ request.POST.monthly_rent }}"
-                placeholder="Enter base monthly rent"
-                required
-            >
+            <!-- ================================================= -->
+            <!-- LEASE DETAILS -->
+            <!-- ================================================= -->
 
-            <small>
-                Base rent before term-wise increases.
-            </small>
+            <div class="section">
 
-        </div>
+                <div class="section-header">
+                    Lease Details
+                </div>
 
+                <div class="section-body">
 
-        <!-- ================================================= -->
-        <!-- TERM-WISE RENT INCREASE -->
-        <!-- ================================================= -->
+                    <div class="subsection">
+                        <div class="subsection-title">Lease Period</div>
 
-        <div class="section-title">
-            Term-wise Rent Increase
-        </div>
+                        <div class="row">
 
-        <small style="margin-bottom: 18px;">
-            Set the rent increase percentage for each rental term.
-        </small>
+                            <div class="form-group">
 
+                                <label for="start_date">
+                                    Lease Start Date <span class="required">*</span>
+                                </label>
 
-        <!-- TERM 1 -->
+                                <input type="date" id="start_date" name="start_date"
+                                    value="{{ request.POST.start_date }}" required>
 
-        <div class="term-box">
+                            </div>
 
-            <div class="term-title">
-                Term 1
-            </div>
 
-            <div class="term-info">
-                First rental term
-            </div>
+                            <div class="form-group">
 
-            <div class="form-group">
+                                <label for="end_date">
+                                    Lease End Date
+                                </label>
 
-                <label for="term1_increase_percent">
-                    Term 1 Rent Increase (%):
-                </label>
+                                <input type="date" id="end_date" name="end_date" value="{{ request.POST.end_date }}">
 
-                <input
-                    type="number"
-                    id="term1_increase_percent"
-                    name="term1_increase_percent"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value="{% if request.POST.term1_increase_percent %}{{ request.POST.term1_increase_percent }}{% else %}5{% endif %}"
-                >
+                                <small>
+                                    Leave blank if there is no fixed end date.
+                                </small>
 
-            </div>
+                            </div>
 
-        </div>
+                        </div>
 
 
-        <!-- TERM 2 -->
+                        <div class="row">
 
-        <div class="term-box">
+                            <div class="form-group">
 
-            <div class="term-title">
-                Term 2
-            </div>
+                                <label for="lock_in_months">
+                                    Lock-in Period (Months)
+                                </label>
 
-            <div class="term-info">
-                Rent increase applied after Term 1
-            </div>
+                                <input type="number" id="lock_in_months" name="lock_in_months" min="0"
+                                    value="{% if request.POST.lock_in_months %}{{ request.POST.lock_in_months }}{% else %}36{% endif %}">
 
-            <div class="form-group">
+                                <small>
+                                    Example: 36 months.
+                                </small>
 
-                <label for="term2_increase_percent">
-                    Term 2 Rent Increase (%):
-                </label>
+                            </div>
 
-                <input
-                    type="number"
-                    id="term2_increase_percent"
-                    name="term2_increase_percent"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value="{% if request.POST.term2_increase_percent %}{{ request.POST.term2_increase_percent }}{% else %}10{% endif %}"
-                >
 
-            </div>
+                            <div class="form-group">
 
-        </div>
+                                <label for="rent_free_months">
+                                    Rent-Free Period (Months)
+                                </label>
 
+                                <input type="number" id="rent_free_months" name="rent_free_months" min="0"
+                                    value="{% if request.POST.rent_free_months %}{{ request.POST.rent_free_months }}{% else %}2{% endif %}">
 
-        <!-- TERM 3 -->
+                                <small>
+                                    Example: first 2 months rent-free.
+                                </small>
 
-        <div class="term-box">
+                            </div>
 
-            <div class="term-title">
-                Term 3
-            </div>
+                        </div>
 
-            <div class="term-info">
-                Rent increase applied after Term 2
-            </div>
+                    </div>
 
-            <div class="form-group">
+                    <div class="subsection">
+                        <div class="subsection-title">Rent Details</div>
 
-                <label for="term3_increase_percent">
-                    Term 3 Rent Increase (%):
-                </label>
+                        <div class="row">
 
-                <input
-                    type="number"
-                    id="term3_increase_percent"
-                    name="term3_increase_percent"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value="{% if request.POST.term3_increase_percent %}{{ request.POST.term3_increase_percent }}{% else %}15{% endif %}"
-                >
+                            <div class="form-group">
 
-            </div>
+                                <label for="monthly_rent">
+                                    Monthly Rent <span class="required">*</span>
+                                </label>
 
-        </div>
+                                <input type="number" id="monthly_rent" name="monthly_rent" step="0.01" min="0"
+                                    value="{{ request.POST.monthly_rent }}" placeholder="Enter monthly rent" required>
 
+                                <small>
+                                    Enter the monthly rent applicable to this lease agreement.
+                                </small>
 
-        <!-- TERM 4 -->
+                            </div>
 
-        <div class="term-box">
 
-            <div class="term-title">
-                Term 4
-            </div>
+                            <div class="form-group">
 
-            <div class="term-info">
-                Rent increase applied after Term 3
-            </div>
+                                <label for="security_deposit">
+                                    Security Deposit
+                                </label>
 
-            <div class="form-group">
+                                <input type="number" id="security_deposit" name="security_deposit" step="0.01" min="0"
+                                    value="{% if request.POST.security_deposit %}{{ request.POST.security_deposit }}{% else %}0{% endif %}"
+                                    placeholder="Enter security deposit">
 
-                <label for="term4_increase_percent">
-                    Term 4 Rent Increase (%):
-                </label>
+                            </div>
 
-                <input
-                    type="number"
-                    id="term4_increase_percent"
-                    name="term4_increase_percent"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value="{% if request.POST.term4_increase_percent %}{{ request.POST.term4_increase_percent }}{% else %}20{% endif %}"
-                >
+                        </div>
 
-            </div>
+                    </div>
 
-        </div>
+                    <div class="subsection">
+                        <div class="subsection-title">Lease Extension 1</div>
 
+                        <div class="row">
 
-        <!-- TERM 5 -->
+                            <div class="form-group">
 
-        <div class="term-box">
+                                <label for="extension_1_start_date">
+                                    Extension 1 Start Date
+                                </label>
 
-            <div class="term-title">
-                Term 5
-            </div>
+                                <input type="date" id="extension_1_start_date" name="extension_1_start_date"
+                                    value="{{ request.POST.extension_1_start_date }}">
 
-            <div class="term-info">
-                Rent increase applied after Term 4
-            </div>
+                            </div>
 
-            <div class="form-group">
+                            <div class="form-group">
 
-                <label for="term5_increase_percent">
-                    Term 5 Rent Increase (%):
-                </label>
+                                <label for="extension_1_end_date">
+                                    Extension 1 End Date
+                                </label>
 
-                <input
-                    type="number"
-                    id="term5_increase_percent"
-                    name="term5_increase_percent"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value="{% if request.POST.term5_increase_percent %}{{ request.POST.term5_increase_percent }}{% else %}25{% endif %}"
-                >
+                                <input type="date" id="extension_1_end_date" name="extension_1_end_date"
+                                    value="{{ request.POST.extension_1_end_date }}">
 
-            </div>
+                            </div>
 
-        </div>
+                        </div>
 
 
-        <!-- ================================================= -->
-        <!-- NEXT INCREASE DATE -->
-        <!-- ================================================= -->
+                        <div class="row">
 
-        <div class="form-group">
+                            <div class="form-group">
 
-            <label for="next_increase_date">
-                Next Increase Date:
-            </label>
+                                <label for="extension_1_monthly_rent">
+                                    Extension 1 Monthly Rent
+                                </label>
 
-            <input
-                type="date"
-                id="next_increase_date"
-                name="next_increase_date"
-                value="{{ request.POST.next_increase_date }}"
-            >
+                                <input type="number" id="extension_1_monthly_rent" name="extension_1_monthly_rent"
+                                    step="0.01" min="0" value="{{ request.POST.extension_1_monthly_rent }}"
+                                    placeholder="₹10,52,112">
 
-            <small>
-                Optional. Enter the date when the next rent term starts.
-            </small>
+                            </div>
 
-        </div>
 
+                            <div class="form-group">
 
-        <!-- ================================================= -->
-        <!-- PARKING & SECURITY -->
-        <!-- ================================================= -->
+                                <label for="extension_1_security_deposit">
+                                    Extension 1 Security Deposit
+                                </label>
 
-        <div class="section-title">
-            Parking & Security
-        </div>
+                                <input type="number" id="extension_1_security_deposit"
+                                    name="extension_1_security_deposit" step="0.01" min="0"
+                                    value="{{ request.POST.extension_1_security_deposit }}" placeholder="₹42,08,448">
 
-        <div class="row">
+                            </div>
 
-            <div class="form-group">
+                        </div>
 
-                <label for="parking_charge">
-                    Monthly Parking Charge:
-                </label>
+                    </div>
 
-                <input
-                    type="number"
-                    id="parking_charge"
-                    name="parking_charge"
-                    step="0.01"
-                    min="0"
-                    value="{% if request.POST.parking_charge %}{{ request.POST.parking_charge }}{% else %}0{% endif %}"
-                >
+                    <div class="subsection">
+                        <div class="subsection-title">Lease Extension 2</div>
 
-            </div>
+                        <div class="row">
 
+                            <div class="form-group">
 
-            <div class="form-group">
+                                <label for="extension_2_start_date">
+                                    Extension 2 Start Date
+                                </label>
 
-                <label for="security_deposit">
-                    Security Deposit:
-                </label>
+                                <input type="date" id="extension_2_start_date" name="extension_2_start_date"
+                                    value="{{ request.POST.extension_2_start_date }}">
 
-                <input
-                    type="number"
-                    id="security_deposit"
-                    name="security_deposit"
-                    step="0.01"
-                    min="0"
-                    value="{% if request.POST.security_deposit %}{{ request.POST.security_deposit }}{% else %}0{% endif %}"
-                >
+                            </div>
 
-            </div>
+                            <div class="form-group">
 
-        </div>
+                                <label for="extension_2_end_date">
+                                    Extension 2 End Date
+                                </label>
 
+                                <input type="date" id="extension_2_end_date" name="extension_2_end_date"
+                                    value="{{ request.POST.extension_2_end_date }}">
 
-        <!-- ================================================= -->
-        <!-- GST -->
-        <!-- ================================================= -->
+                            </div>
 
-        <div class="section-title">
-            GST Details
-        </div>
+                        </div>
 
-        <div class="row">
 
-            <div class="form-group">
+                        <div class="row">
 
-                <label for="cgst_rate">
-                    CGST Rate (%):
-                </label>
+                            <div class="form-group">
 
-                <input
-                    type="number"
-                    id="cgst_rate"
-                    name="cgst_rate"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value="{% if request.POST.cgst_rate %}{{ request.POST.cgst_rate }}{% else %}0{% endif %}"
-                >
+                                <label for="extension_2_monthly_rent">
+                                    Extension 2 Monthly Rent
+                                </label>
 
-            </div>
+                                <input type="number" id="extension_2_monthly_rent" name="extension_2_monthly_rent"
+                                    step="0.01" min="0" value="{{ request.POST.extension_2_monthly_rent }}"
+                                    placeholder="₹12,09,928.80">
 
+                            </div>
 
-            <div class="form-group">
 
-                <label for="sgst_rate">
-                    SGST Rate (%):
-                </label>
+                            <div class="form-group">
 
-                <input
-                    type="number"
-                    id="sgst_rate"
-                    name="sgst_rate"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value="{% if request.POST.sgst_rate %}{{ request.POST.sgst_rate }}{% else %}0{% endif %}"
-                >
+                                <label for="extension_2_security_deposit">
+                                    Extension 2 Security Deposit
+                                </label>
 
-            </div>
+                                <input type="number" id="extension_2_security_deposit"
+                                    name="extension_2_security_deposit" step="0.01" min="0"
+                                    value="{{ request.POST.extension_2_security_deposit }}" placeholder="₹48,39,715.20">
 
-        </div>
+                            </div>
 
+                        </div>
 
-        <!-- ================================================= -->
-        <!-- PAYMENT SETTINGS -->
-        <!-- ================================================= -->
+                    </div>
 
-        <div class="section-title">
-            Payment Settings
-        </div>
 
-        <div class="form-group">
 
-            <label for="rent_due_day">
-                Rent Due Day:
-            </label>
+                    <!-- RENTAL AREA -->
+                    <div class="subsection">
+                        <div class="subsection-title">Rental Area</div>
 
-            <input
-                type="number"
-                id="rent_due_day"
-                name="rent_due_day"
-                min="1"
-                max="28"
-                value="{% if request.POST.rent_due_day %}{{ request.POST.rent_due_day }}{% else %}5{% endif %}"
-                required
-            >
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="rental_area">Rental Area (sq. ft.)</label>
 
-            <small>
-                Choose a day from 1 to 28.
-            </small>
+                                <input type="number" id="rental_area" name="rental_area" min="0" step="0.01"
+                                    value="{{ request.POST.rental_area|default:'' }}" placeholder="Enter rental area">
 
-        </div>
+                            </div>
+                        </div>
+                    </div>
 
 
-        <!-- ================================================= -->
-        <!-- STATUS -->
-        <!-- ================================================= -->
+                    <!-- PARKING DETAILS -->
+                    <div class="form-section">
+                        <h3>Parking Details</h3>
 
-        <div class="section-title">
-            Agreement Status
-        </div>
+                        <!-- Keep your existing parking fields here -->
+                    </div>
 
-        <div class="form-group">
+                    <div class="subsection">
+                        <div class="subsection-title">Parking Details</div>
 
-            <label for="status">
-                Status:
-            </label>
+                        <div class="row">
 
-            <select id="status" name="status" required>
+                            <div class="form-group">
+                                <label for="free_parking_spaces">
+                                    Free Parking Slots
+                                </label>
 
-                <option
-                    value="active"
-                    {% if request.POST.status == "active" or not request.POST.status %}
-                        selected
-                    {% endif %}
-                >
-                    Active
-                </option>
+                                <input type="number" id="free_parking_spaces" name="free_parking_spaces" min="0"
+                                    value="{% if request.POST.free_parking_spaces %}{{ request.POST.free_parking_spaces }}{% else %}11{% endif %}">
 
-                <option
-                    value="expired"
-                    {% if request.POST.status == "expired" %}
-                        selected
-                    {% endif %}
-                >
-                    Expired
-                </option>
+                                <small>
+                                    Number of free parking slots.
+                                </small>
+                            </div>
 
-                <option
-                    value="terminated"
-                    {% if request.POST.status == "terminated" %}
-                        selected
-                    {% endif %}
-                >
-                    Terminated
-                </option>
 
-            </select>
+                            <div class="form-group">
+                                <label for="paid_parking_spaces">
+                                    Paid Parking Slots
+                                </label>
 
-        </div>
+                                <input type="number" id="paid_parking_spaces" name="paid_parking_spaces" min="0"
+                                    value="{% if request.POST.paid_parking_spaces %}{{ request.POST.paid_parking_spaces }}{% else %}0{% endif %}">
 
+                                <small>
+                                    Number of paid parking slots.
+                                </small>
+                            </div>
 
-        <!-- ================================================= -->
-        <!-- TERMINATION -->
-        <!-- ================================================= -->
 
-        <div class="section-title">
-            Termination Details
-        </div>
+                            <div class="form-group">
+                                <label for="parking_charge">
+                                    Monthly Parking Charge
+                                </label>
 
-        <div class="row">
+                                <input type="number" id="parking_charge" name="parking_charge" step="0.01" min="0"
+                                    value="{% if request.POST.parking_charge %}{{ request.POST.parking_charge }}{% else %}0{% endif %}">
 
-            <div class="form-group">
+                                <small>
+                                    Monthly charge for paid parking.
+                                </small>
+                            </div>
 
-                <label for="termination_date">
-                    Termination Date:
-                </label>
+                        </div>
+                    </div>
 
-                <input
-                    type="date"
-                    id="termination_date"
-                    name="termination_date"
-                    value="{{ request.POST.termination_date }}"
-                >
 
-            </div>
+                    <div class="section">
 
-            <div class="form-group">
-                <!-- Empty column for alignment -->
-            </div>
+                        <div class="section-header">
+                            GST Details
+                        </div>
 
-        </div>
+                        <div class="section-body">
 
-        <div class="form-group">
+                            <div class="row">
 
-            <label for="termination_reason">
-                Termination Reason:
-            </label>
+                                <div class="form-group">
 
-            <textarea
-                id="termination_reason"
-                name="termination_reason"
-                rows="3"
-                placeholder="Optional termination reason"
-            >{{ request.POST.termination_reason }}</textarea>
+                                    <label for="cgst_rate">
+                                        CGST Rate (%)
+                                    </label>
 
-        </div>
+                                    <input type="number" id="cgst_rate" name="cgst_rate" step="0.01" min="0" max="100"
+                                        value="{% if request.POST.cgst_rate %}{{ request.POST.cgst_rate }}{% else %}0{% endif %}">
 
+                                </div>
 
-        <!-- ================================================= -->
-        <!-- NOTES -->
-        <!-- ================================================= -->
 
-        <div class="section-title">
-            Notes
-        </div>
+                                <div class="form-group">
 
-        <div class="form-group">
+                                    <label for="sgst_rate">
+                                        SGST Rate (%)
+                                    </label>
 
-            <label for="notes">
-                Notes:
-            </label>
+                                    <input type="number" id="sgst_rate" name="sgst_rate" step="0.01" min="0" max="100"
+                                        value="{% if request.POST.sgst_rate %}{{ request.POST.sgst_rate }}{% else %}0{% endif %}">
 
-            <textarea
-                id="notes"
-                name="notes"
-                rows="5"
-                placeholder="Optional notes about the agreement"
-            >{{ request.POST.notes }}</textarea>
+                                </div>
 
-        </div>
+                            </div>
 
+                        </div>
 
-        <!-- ================================================= -->
-        <!-- BUTTONS -->
-        <!-- ================================================= -->
+                    </div>
 
-        <div class="buttons">
 
-            <button type="submit">
-                Save Rental Agreement
-            </button>
+                    <!-- ================================================= -->
+                    <!-- PAYMENT -->
+                    <!-- ================================================= -->
 
-            <a
-                href="{% url 'agreement_list' %}"
-                class="back-button"
-            >
-                Back to Agreements
-            </a>
+                    <div class="section">
 
-        </div>
+                        <div class="section-header">
+                            Payment Settings
+                        </div>
 
-    </form>
+                        <div class="section-body">
 
-</div>
+                            <div class="row">
 
+                                <div class="form-group">
 
-<script>
+                                    <label for="rent_due_day">
+                                        Rent Due Day
+                                    </label>
 
-    // =====================================================
-    // TENANT SELECTION
-    // =====================================================
+                                    <input type="number" id="rent_due_day" name="rent_due_day" min="1" max="31"
+                                        value="{% if request.POST.rent_due_day %}{{ request.POST.rent_due_day }}{% else %}5{% endif %}"
+                                        required>
 
-    const tenantSelect = document.getElementById("tenant");
-    const tenantInfo = document.getElementById("tenantInfo");
-    const tenantName = document.getElementById("tenantName");
+                                    <small>
+                                        Choose a day from 1 to 31.
+                                    </small>
 
-    tenantSelect.addEventListener("change", function () {
+                                </div>
 
-        if (this.value) {
+
+                                <div class="form-group">
+
+                                    <label for="status">
+                                        Lease Status
+                                    </label>
+
+                                    <select id="status" name="status" required>
+
+                                        <option value="active" selected>
+                                            Active
+                                        </option>
+
+                                        <option value="expired">
+                                            Expired
+                                        </option>
+
+                                        <option value="terminated">
+                                            Terminated
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- TERMINATION -->
+                    <!-- ================================================= -->
+
+                    <div class="section">
+
+                        <div class="section-header">
+                            Termination Details
+                        </div>
+
+                        <div class="section-body">
+
+                            <div class="row">
+
+                                <div class="form-group">
+
+                                    <label for="termination_date">
+                                        Termination Date
+                                    </label>
+
+                                    <input type="date" id="termination_date" name="termination_date"
+                                        value="{{ request.POST.termination_date }}">
+
+                                </div>
+
+                                <div class="form-group"></div>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="termination_reason">
+                                    Termination Reason
+                                </label>
+
+                                <textarea id="termination_reason" name="termination_reason" rows="3"
+                                    placeholder="Enter termination reason">{{ request.POST.termination_reason }}</textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- NOTES -->
+                    <!-- ================================================= -->
+
+                    <div class="section">
+
+                        <div class="section-header">
+                            Notes
+                        </div>
+
+                        <div class="section-body">
+
+                            <div class="form-group">
+
+                                <textarea id="notes" name="notes" rows="5"
+                                    placeholder="Optional notes about the lease agreement">{{ request.POST.notes }}</textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- BUTTONS -->
+                    <!-- ================================================= -->
+
+                    <div class="buttons">
+
+                        <button type="submit">
+                            Save Lease Agreement
+                        </button>
+
+                        <a href="{% url 'agreement_list' %}" class="back-button">
+                            Back to Agreements
+                        </a>
+
+                    </div>
+
+        </form>
+
+    </div>
+
+
+    <script>
+
+        // Tenant selection
+        const tenantSelect = document.getElementById("tenant");
+        const tenantInfo = document.getElementById("tenantInfo");
+        const tenantName = document.getElementById("tenantName");
+
+        tenantSelect.addEventListener("change", function () {
+
+            if (this.value) {
+
+                tenantName.textContent =
+                    this.options[this.selectedIndex].text.trim();
+
+                tenantInfo.style.display = "block";
+
+            } else {
+
+                tenantName.textContent = "";
+                tenantInfo.style.display = "none";
+
+            }
+
+        });
+
+
+        // Property selection
+        const propertySelect = document.getElementById("property");
+        const propertyInfo = document.getElementById("propertyInfo");
+        const propertyName = document.getElementById("propertyName");
+
+        propertySelect.addEventListener("change", function () {
+
+            if (this.value) {
+
+                propertyName.textContent =
+                    this.options[this.selectedIndex].text.trim();
+
+                propertyInfo.style.display = "block";
+
+            } else {
+
+                propertyName.textContent = "";
+                propertyInfo.style.display = "none";
+
+            }
+
+        });
+
+
+        // Show selected tenant after page load
+        if (tenantSelect.value) {
 
             tenantName.textContent =
-                this.options[this.selectedIndex].text.trim();
+                tenantSelect.options[tenantSelect.selectedIndex].text.trim();
 
             tenantInfo.style.display = "block";
 
-        } else {
-
-            tenantName.textContent = "";
-            tenantInfo.style.display = "none";
-
         }
 
-    });
 
-
-    // =====================================================
-    // PROPERTY SELECTION
-    // =====================================================
-
-    const propertySelect = document.getElementById("property");
-    const propertyInfo = document.getElementById("propertyInfo");
-    const propertyName = document.getElementById("propertyName");
-
-    propertySelect.addEventListener("change", function () {
-
-        if (this.value) {
+        // Show selected property after page load
+        if (propertySelect.value) {
 
             propertyName.textContent =
-                this.options[this.selectedIndex].text.trim();
+                propertySelect.options[propertySelect.selectedIndex].text.trim();
 
             propertyInfo.style.display = "block";
 
-        } else {
-
-            propertyName.textContent = "";
-            propertyInfo.style.display = "none";
-
         }
 
-    });
-
-
-    // =====================================================
-    // SHOW SELECTED TENANT AFTER PAGE LOAD
-    // =====================================================
-
-    if (tenantSelect.value) {
-
-        tenantName.textContent =
-            tenantSelect.options[tenantSelect.selectedIndex].text.trim();
-
-        tenantInfo.style.display = "block";
-
-    }
-
-
-    // =====================================================
-    // SHOW SELECTED PROPERTY AFTER PAGE LOAD
-    // =====================================================
-
-    if (propertySelect.value) {
-
-        propertyName.textContent =
-            propertySelect.options[propertySelect.selectedIndex].text.trim();
-
-        propertyInfo.style.display = "block";
-
-    }
-
-</script>
+    </script>
 
 </body>
-</html>
 
+</html>

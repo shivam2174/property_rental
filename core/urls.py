@@ -65,6 +65,11 @@ path(
         views.tenant_list,
         name="tenant_list",
     ),
+    path(
+    "tenants/report/",
+    views.tenant_report,
+    name="tenant_report",
+    ),
 
     path(
         "tenants/add/",
@@ -111,6 +116,11 @@ path(
         "agreements/",
         views.agreement_list,
         name="agreement_list",
+    ),
+    path(
+    "reports/monthly-gst/",
+    views.monthly_gst_report,
+    name="monthly_gst_report",
     ),
 
     path(
@@ -258,4 +268,40 @@ path(
         views.reset_test_data,
         name="reset_test_data",
     ),
+    path(
+    "property-tax/",
+    views.property_tax_report,
+    name="property_tax_report",
+),
+    path( "property-tax/add/<int:property_id>/", views.property_tax_add, name="property_tax_add", ),
+
+path(
+    "property-tax/<int:pk>/edit/",
+    views.property_tax_edit,
+    name="property_tax_edit",
+),
+
+path(
+    "property-tax/<int:pk>/delete/",
+    views.property_tax_delete,
+    name="property_tax_delete",
+),
+
+path(
+    "property-tax/<int:pk>/receipt/",
+    views.property_tax_receipt,
+    name="property_tax_receipt",
+),
+path(
+    "lease-notifications/",
+    views.lease_notifications,
+    name="lease_notifications",
+),
+
+path(
+    "lease-notifications/<int:pk>/read/",
+    views.mark_lease_notification_read,
+    name="mark_lease_notification_read",
+),
+
 ]

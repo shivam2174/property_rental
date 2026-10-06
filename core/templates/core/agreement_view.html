@@ -199,16 +199,27 @@
                     </div>
 
                     <div class="field">
-                        <strong>Father Name</strong>
+                        <strong>ID Type</strong>
                         <div class="value">
-                            {{ agreement.tenant.father_name|default:"-" }}
+                            {{ agreement.tenant.id_type|default:"-" }}
                         </div>
                     </div>
 
                     <div class="field">
-                        <strong>ID Type</strong>
+                        <strong>Tenant GST No.</strong>
                         <div class="value">
-                            {{ agreement.tenant.id_type|default:"-" }}
+                            {{ agreement.tenant.gst_number|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Contact Person Name</strong>
+                        <div class="value">
+                            {% for contact in contact_persons %}
+                            {{ contact.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                            -
+                            {% endfor %}
                         </div>
                     </div>
 
@@ -344,38 +355,34 @@
                         </div>
                     </div>
 
+
                     <div class="field">
-                        <strong>Parking Charge</strong>
+                        <strong>Free Parking Slots</strong>
                         <div class="value">
-                            ₹{{ agreement.parking_charge }}
+                            {{ agreement.free_parking_spaces|default:"0" }}
                         </div>
                     </div>
+
+                    <div class="field">
+                        <strong>Paid Parking Slots</strong>
+                        <div class="value">
+                            {{ agreement.paid_parking_spaces|default:"0" }}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <strong>Parking Charges</strong>
+                        <div class="value">
+                            ₹{{ agreement.parking_charge|default:"0.00" }}
+                        </div>
+                    </div>
+
+
 
                     <div class="field">
                         <strong>Security Deposit</strong>
                         <div class="value">
                             ₹{{ agreement.security_deposit }}
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <strong>Rent Increase</strong>
-                        <div class="value">
-                            {{ agreement.rent_increase_percent }}%
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <strong>Increase Frequency</strong>
-                        <div class="value">
-                            {{ agreement.get_increase_frequency_months_display }}
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <strong>Next Increase Date</strong>
-                        <div class="value">
-                            {{ agreement.next_increase_date|default:"-" }}
                         </div>
                     </div>
 
@@ -401,6 +408,92 @@
 
         </div>
 
+
+        <!-- Lease Extension Information -->
+        <div class="detail-section" style="margin-top: 20px; width: 100%; clear: both;">
+
+            <h3 style="background: #eef1f4; padding: 12px 16px; margin: 0;">
+                Lease Extension Information
+            </h3>
+
+            <div style="background: white; padding: 18px;">
+
+                <!-- Extension 1 -->
+                <h4 style="margin: 0 0 15px;">Lease Extension 1</h4>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+
+                    <div>
+                        <strong>Extension Available</strong><br>
+                        {% if agreement.extension_1_start_date or agreement.extension_1_end_date %}
+                        Yes
+                        {% else %}
+                        No
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <strong>Extension Start Date</strong><br>
+                        {{ agreement.extension_1_start_date|date:"d M, Y"|default:"-" }}
+                    </div>
+
+                    <div>
+                        <strong>Extension End Date</strong><br>
+                        {{ agreement.extension_1_end_date|date:"d M, Y"|default:"-" }}
+                    </div>
+
+                    <div>
+                        <strong>Extension Monthly Rent</strong><br>
+                        ₹{{ agreement.extension_1_monthly_rent|default_if_none:0|floatformat:2 }}
+                    </div>
+
+                    <div>
+                        <strong>Extension Security Deposit</strong><br>
+                        ₹{{ agreement.extension_1_security_deposit|default_if_none:0|floatformat:2 }}
+                    </div>
+
+                </div>
+
+                <hr style="margin: 22px 0; border: 0; border-top: 1px solid #ddd;">
+
+                <!-- Extension 2 -->
+                <h4 style="margin: 0 0 15px;">Lease Extension 2</h4>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+
+                    <div>
+                        <strong>Extension Available</strong><br>
+                        {% if agreement.extension_2_start_date or agreement.extension_2_end_date %}
+                        Yes
+                        {% else %}
+                        No
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <strong>Extension Start Date</strong><br>
+                        {{ agreement.extension_2_start_date|date:"d M, Y"|default:"-" }}
+                    </div>
+
+                    <div>
+                        <strong>Extension End Date</strong><br>
+                        {{ agreement.extension_2_end_date|date:"d M, Y"|default:"-" }}
+                    </div>
+
+                    <div>
+                        <strong>Extension Monthly Rent</strong><br>
+                        ₹{{ agreement.extension_2_monthly_rent|default_if_none:0|floatformat:2 }}
+                    </div>
+
+                    <div>
+                        <strong>Extension Security Deposit</strong><br>
+                        ₹{{ agreement.extension_2_security_deposit|default_if_none:0|floatformat:2 }}
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
 
         <!-- GST INFORMATION -->
 

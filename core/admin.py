@@ -4,10 +4,14 @@ from .models import (
     Owner,
     Property,
     Tenant,
-    RentalAgreement,
+    TenantContactPerson,
+    LeaseAgreement,
+    RentHistory,
     Invoice,
     InvoiceItem,
     Payment,
+    PropertyDocument,
+    PropertyTax,
 )
 
 
@@ -17,6 +21,7 @@ from .models import (
 
 @admin.register(Owner)
 class OwnerAdmin(admin.ModelAdmin):
+
     list_display = (
         "owner_code",
         "name",
@@ -39,6 +44,8 @@ class OwnerAdmin(admin.ModelAdmin):
         "state",
         "city",
     )
+
+
 # =========================================================
 # PROPERTY
 # =========================================================
@@ -62,7 +69,6 @@ class PropertyAdmin(admin.ModelAdmin):
         "state",
         "pincode",
         "owner__name",
-        
     )
 
     list_filter = (
@@ -73,10 +79,63 @@ class PropertyAdmin(admin.ModelAdmin):
 
 
 # =========================================================
-# TENANT
+# PROPERTY DOCUMENT
 # =========================================================
 
+@admin.register(PropertyDocument)
+class PropertyDocumentAdmin(admin.ModelAdmin):
 
+    list_display = (
+        "id",
+        "property",
+        "document_name",
+        "uploaded_at",
+    )
+
+    search_fields = (
+        "property__name",
+        "document_name",
+    )
+
+    list_filter = (
+        "uploaded_at",
+    )
+
+    readonly_fields = (
+        "uploaded_at",
+    )
+
+
+# =========================================================
+# PROPERTY TAX
+# =========================================================
+
+@admin.register(PropertyTax)
+class PropertyTaxAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "property",
+        "tax_year",
+        "tax_amount",
+        "status",
+        "paid_on",
+    )
+
+    search_fields = (
+        "property__name",
+        "tax_year",
+    )
+
+    list_filter = (
+        "status",
+        "tax_year",
+    )
+
+
+# =========================================================
+# TENANT
+# =========================================================
 
 @admin.register(Tenant)
 class TenantAdmin(admin.ModelAdmin):
@@ -99,6 +158,7 @@ class TenantAdmin(admin.ModelAdmin):
         "id_number_1",
         "id_number_2",
         "id_number_3",
+        "gst_number",
     )
 
     list_filter = (
@@ -106,14 +166,44 @@ class TenantAdmin(admin.ModelAdmin):
     )
 
 
+# =========================================================
+# TENANT CONTACT PERSON
+# =========================================================
+
+@admin.register(TenantContactPerson)
+class TenantContactPersonAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "tenant",
+        "designation",
+        "name",
+        "email",
+        "phone",
+        "id_type",
+        "id_number",
+    )
+
+    search_fields = (
+        "tenant__full_name",
+        "name",
+        "email",
+        "phone",
+        "id_number",
+    )
+
+    list_filter = (
+        "id_type",
+        "designation",
+    )
 
 
 # =========================================================
-# RENTAL AGREEMENT
+# LEASE AGREEMENT
 # =========================================================
 
-@admin.register(RentalAgreement)
-class RentalAgreementAdmin(admin.ModelAdmin):
+@admin.register(LeaseAgreement)
+class LeaseAgreementAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
@@ -122,7 +212,11 @@ class RentalAgreementAdmin(admin.ModelAdmin):
         "start_date",
         "end_date",
         "monthly_rent",
+        "lock_in_months",
+        "rent_free_months",
         "parking_charge",
+        "free_parking_spaces",
+        "security_deposit",
         "cgst_rate",
         "sgst_rate",
         "rent_due_day",
@@ -132,8 +226,9 @@ class RentalAgreementAdmin(admin.ModelAdmin):
     search_fields = (
         "tenant__full_name",
         "tenant__mobile",
+        "tenant__email",
         "property__name",
-        "unit__unit_number",
+        "property__address",
     )
 
     list_filter = (
@@ -141,6 +236,44 @@ class RentalAgreementAdmin(admin.ModelAdmin):
         "property",
         "start_date",
         "end_date",
+    )
+
+    readonly_fields = (
+        "total_monthly_amount",
+        "current_cgst_amount",
+        "current_sgst_amount",
+        "current_total_with_gst",
+        "lock_in_end_date",
+        "rent_free_end_date",
+    )
+
+
+# =========================================================
+# RENT HISTORY
+# =========================================================
+
+@admin.register(RentHistory)
+class RentHistoryAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "lease_agreement",
+        "effective_from",
+        "effective_to",
+        "monthly_rent",
+        "increase_percent",
+        "increase_accepted",
+    )
+
+    search_fields = (
+        "lease_agreement__tenant__full_name",
+        "lease_agreement__property__name",
+    )
+
+    list_filter = (
+        "increase_accepted",
+        "effective_from",
+        "effective_to",
     )
 
 
@@ -158,6 +291,8 @@ class InvoiceAdmin(admin.ModelAdmin):
         "property_name",
         "unit_number",
         "taxable_amount",
+        "cgst_amount",
+        "sgst_amount",
         "total_amount",
         "status",
     )

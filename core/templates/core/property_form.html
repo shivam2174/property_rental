@@ -1,6 +1,10 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
         {% if property %}
@@ -25,7 +29,7 @@
             background: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
         }
 
         h1 {
@@ -110,6 +114,18 @@
             color: white;
         }
 
+        .btn-add {
+            background: #16a34a;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .btn-remove {
+            background: #dc2626;
+            color: white;
+            margin-top: 10px;
+        }
+
         .message {
             padding: 12px;
             margin-bottom: 20px;
@@ -118,7 +134,42 @@
             color: #991b1b;
         }
 
+        /* ==========================================
+           PROPERTY DOCUMENTS
+        ========================================== */
+
+        .document-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+
+        .document-help {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .documents-container {
+            width: 100%;
+        }
+
         @media (max-width: 700px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 20px;
+            }
 
             .form-grid {
                 grid-template-columns: 1fr;
@@ -128,6 +179,17 @@
                 grid-column: span 1;
             }
 
+            .document-row {
+                grid-template-columns: 1fr;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+            }
         }
 
     </style>
@@ -146,32 +208,44 @@
         {% endif %}
     </h1>
 
+
     {% if messages %}
+
         {% for message in messages %}
+
             <div class="message">
                 {{ message }}
             </div>
+
         {% endfor %}
+
     {% endif %}
 
 
-    <form method="POST">
+    <form
+        method="post"
+        enctype="multipart/form-data"
+    >
 
         {% csrf_token %}
 
 
-        <!-- ================================================= -->
-        <!-- BASIC PROPERTY DETAILS -->
-        <!-- ================================================= -->
+        <!-- ==========================================
+             PROPERTY DETAILS
+        =========================================== -->
 
         <div class="section-title">
             Property Details
         </div>
 
+
         <div class="form-grid">
 
             <div>
-                <label>Property Owner</label>
+
+                <label>
+                    Property Owner
+                </label>
 
                 <select name="owner">
 
@@ -198,7 +272,10 @@
 
 
             <div>
-                <label>Property Description</label>
+
+                <label>
+                    Property Description
+                </label>
 
                 <input
                     type="text"
@@ -212,7 +289,9 @@
 
             <div class="full">
 
-                <label>Property Address</label>
+                <label>
+                    Property Address
+                </label>
 
                 <textarea name="address">{{ property.address|default:'' }}</textarea>
 
@@ -221,7 +300,9 @@
 
             <div>
 
-                <label>Unit No</label>
+                <label>
+                    Unit No
+                </label>
 
                 <input
                     type="text"
@@ -235,7 +316,9 @@
 
             <div>
 
-                <label>Tower</label>
+                <label>
+                    Tower
+                </label>
 
                 <input
                     type="text"
@@ -248,7 +331,9 @@
 
             <div>
 
-                <label>City</label>
+                <label>
+                    City
+                </label>
 
                 <input
                     type="text"
@@ -261,7 +346,9 @@
 
             <div>
 
-                <label>State</label>
+                <label>
+                    State
+                </label>
 
                 <input
                     type="text"
@@ -274,7 +361,9 @@
 
             <div>
 
-                <label>Pin Code</label>
+                <label>
+                    Pin Code
+                </label>
 
                 <input
                     type="text"
@@ -287,7 +376,9 @@
 
             <div>
 
-                <label>Purchased On</label>
+                <label>
+                    Purchased On
+                </label>
 
                 <input
                     type="date"
@@ -300,19 +391,22 @@
         </div>
 
 
-        <!-- ================================================= -->
-        <!-- PURCHASE DETAILS -->
-        <!-- ================================================= -->
+        <!-- ==========================================
+             PURCHASE DETAILS
+        =========================================== -->
 
         <div class="section-title">
             Purchase Details
         </div>
 
+
         <div class="form-grid">
 
             <div>
 
-                <label>Total Area (sq. ft.)</label>
+                <label>
+                    Total Area (sq. ft.)
+                </label>
 
                 <input
                     type="number"
@@ -326,7 +420,9 @@
 
             <div>
 
-                <label>Price</label>
+                <label>
+                    Price
+                </label>
 
                 <input
                     type="number"
@@ -340,7 +436,9 @@
 
             <div>
 
-                <label>Per Sqft Rate</label>
+                <label>
+                    Per Sqft Rate
+                </label>
 
                 <input
                     type="number"
@@ -354,7 +452,9 @@
 
             <div>
 
-                <label>Stamp Duty</label>
+                <label>
+                    Stamp Duty
+                </label>
 
                 <input
                     type="number"
@@ -368,7 +468,9 @@
 
             <div>
 
-                <label>Total Purchase Price</label>
+                <label>
+                    Total Purchase Price
+                </label>
 
                 <input
                     type="number"
@@ -382,7 +484,9 @@
 
             <div>
 
-                <label>GST Number</label>
+                <label>
+                    GST Number
+                </label>
 
                 <input
                     type="text"
@@ -395,19 +499,22 @@
         </div>
 
 
-        <!-- ================================================= -->
-        <!-- LAP DETAILS -->
-        <!-- ================================================= -->
+        <!-- ==========================================
+             LAP DETAILS
+        =========================================== -->
 
         <div class="section-title">
             Loan Against Property (LAP)
         </div>
 
+
         <div class="form-grid">
 
             <div>
 
-                <label>LAP Amount</label>
+                <label>
+                    LAP Amount
+                </label>
 
                 <input
                     type="number"
@@ -421,7 +528,9 @@
 
             <div>
 
-                <label>Monthly Installment</label>
+                <label>
+                    Monthly Installment
+                </label>
 
                 <input
                     type="number"
@@ -435,7 +544,9 @@
 
             <div>
 
-                <label>LAP Maturity</label>
+                <label>
+                    LAP Maturity
+                </label>
 
                 <input
                     type="date"
@@ -448,19 +559,22 @@
         </div>
 
 
-        <!-- ================================================= -->
-        <!-- PARKING & STATUS -->
-        <!-- ================================================= -->
+        <!-- ==========================================
+             PARKING & STATUS
+        =========================================== -->
 
         <div class="section-title">
             Parking & Status
         </div>
 
+
         <div class="form-grid">
 
             <div>
 
-                <label>Parking Slot</label>
+                <label>
+                    Parking Slot
+                </label>
 
                 <input
                     type="text"
@@ -474,7 +588,9 @@
 
             <div>
 
-                <label>Status</label>
+                <label>
+                    Status
+                </label>
 
                 <select name="status">
 
@@ -487,18 +603,20 @@
                         Active
                     </option>
 
+
                     <option
                         value="sold_out"
-                        {% if property.status == "sold_out" %}
+                        {% if property and property.status == "sold_out" %}
                             selected
                         {% endif %}
                     >
                         Sold-out
                     </option>
 
+
                     <option
                         value="inactive"
-                        {% if property.status == "inactive" %}
+                        {% if property and property.status == "inactive" %}
                             selected
                         {% endif %}
                     >
@@ -512,9 +630,106 @@
         </div>
 
 
-        <!-- ================================================= -->
-        <!-- BUTTONS -->
-        <!-- ================================================= -->
+        <!-- ==========================================
+             PROPERTY TAX
+        =========================================== -->
+
+        <div class="section-title">
+            Property Tax
+        </div>
+
+
+        <div class="form-grid">
+
+            <div>
+
+                <label>
+                    Tax Amount
+                </label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="tax_amount"
+                    value="0"
+                    placeholder="Enter property tax amount"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- ==========================================
+             PROPERTY DOCUMENTS
+        =========================================== -->
+
+        <div class="section-title">
+            Property Documents
+        </div>
+
+
+        <div
+            id="documents-container"
+            class="documents-container"
+        >
+
+            <div class="document-row">
+
+                <div>
+
+                    <label>
+                        Document Name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="document_name"
+                        placeholder="e.g. Sale Deed"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        Upload Document
+                    </label>
+
+                    <input
+                        type="file"
+                        name="document"
+                        accept=".pdf,application/pdf"
+                    >
+
+                    <small class="document-help">
+                        PDF only. Maximum file size: 300 MB.
+                    </small>
+
+                </div>
+
+
+                <div></div>
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="btn btn-add"
+            onclick="addDocumentRow()"
+        >
+            + Add Another Document
+        </button>
+
+
+        <!-- ==========================================
+             BUTTONS
+        =========================================== -->
 
         <div class="buttons">
 
@@ -522,11 +737,13 @@
                 type="submit"
                 class="btn btn-primary"
             >
+
                 {% if property %}
                     Update Property
                 {% else %}
                     Add Property
                 {% endif %}
+
             </button>
 
 
@@ -543,5 +760,74 @@
 
 </div>
 
+
+<script>
+
+function addDocumentRow() {
+
+    const container = document.getElementById(
+        "documents-container"
+    );
+
+    const row = document.createElement(
+        "div"
+    );
+
+    row.className = "document-row";
+
+    row.innerHTML = `
+        <div>
+
+            <label>
+                Document Name
+            </label>
+
+            <input
+                type="text"
+                name="document_name"
+                placeholder="e.g. Property Tax Receipt"
+            >
+
+        </div>
+
+        <div>
+
+            <label>
+                Upload Document
+            </label>
+
+            <input
+                type="file"
+                name="document"
+                accept=".pdf,application/pdf"
+            >
+
+            <small class="document-help">
+                PDF only. Maximum file size: 10 MB.
+            </small>
+
+        </div>
+
+        <div>
+
+            <button
+                type="button"
+                class="btn btn-remove"
+                onclick="this.closest('.document-row').remove()"
+            >
+                Remove
+            </button>
+
+        </div>
+    `;
+
+    container.appendChild(row);
+}
+
+</script>
+
+
 </body>
+
 </html>
+

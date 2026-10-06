@@ -248,6 +248,80 @@ class Property(models.Model):
         return self.name
 
 
+class PropertyDocument(models.Model):
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="documents",
+    )
+
+    document_name = models.CharField(
+        max_length=200,
+        verbose_name="Document Name",
+    )
+
+    document = models.FileField(
+        upload_to="property_documents/",
+        verbose_name="Scanned PDF",
+    )
+
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return f"{self.property.name} - {self.document_name}"
+
+
+
+class PropertyTax(models.Model):
+    STATUS_CHOICES = [
+        ("unpaid", "Unpaid"),
+        ("paid", "Paid"),
+    ]
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="property_taxes"
+    )
+    tax_year = models.CharField(
+        max_length=20,
+        help_text="Example: 2026-27"
+    )
+    tax_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="unpaid"
+    )
+    paid_on = models.DateField(
+        blank=True,
+        null=True
+    )
+    notes = models.TextField(
+        blank=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ["-tax_year", "-id"]
+        unique_together = ("property", "tax_year")
+
+    def __str__(self):
+        return f"{self.property} - {self.tax_year}"
+
+
 # =========================================================
 # TENANT — MASTER DATA
 # =========================================================
@@ -290,7 +364,14 @@ class Tenant(models.Model):
         blank=True,
     )
 
-    # Kept for compatibility with your existing database.
+    # NEW — Tenant GST Number
+    gst_number = models.CharField(
+        max_length=20,
+        blank=True,
+    )
+
+    # Kept temporarily for compatibility
+    # with existing database records.
     id_type = models.CharField(
         max_length=30,
         choices=ID_TYPE,
@@ -327,6 +408,8 @@ class Tenant(models.Model):
         blank=True,
     )
 
+    # Kept temporarily for compatibility
+    # with existing database records.
     security_deposit = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -353,12 +436,67 @@ class Tenant(models.Model):
     def __str__(self):
         return self.full_name
 
+class TenantContactPerson(models.Model):
+
+    ID_TYPE = [
+        ("aadhaar", "Aadhaar"),
+        ("pan", "PAN"),
+        ("passport", "Passport"),
+        ("driving_license", "Driving License"),
+        ("voter_id", "Voter ID"),
+        ("other", "Other"),
+    ]
+
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.CASCADE,
+        related_name="contact_persons",
+    )
+
+    designation = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    name = models.CharField(
+        max_length=200,
+    )
+
+    email = models.EmailField(
+        blank=True,
+    )
+
+    phone = models.CharField(
+        max_length=15,
+        blank=True,
+    )
+
+    id_type = models.CharField(
+        max_length=30,
+        choices=ID_TYPE,
+        blank=True,
+    )
+
+    id_number = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} - {self.tenant.full_name}"
 
 # =========================================================
-# RENTAL AGREEMENT
+# LEASE AGREEMENT
 # =========================================================
 
-class RentalAgreement(models.Model):
+class LeaseAgreement(models.Model):
 
     AGREEMENT_STATUS = [
         ("active", "Active"),
@@ -366,25 +504,25 @@ class RentalAgreement(models.Model):
         ("terminated", "Terminated"),
     ]
 
-    # -----------------------------------------------------
-    # MASTER DATA CONNECTIONS
-    # -----------------------------------------------------
+    # =====================================================
+    # MASTER DATA
+    # =====================================================
 
     tenant = models.ForeignKey(
         Tenant,
         on_delete=models.PROTECT,
-        related_name="rental_agreements",
+        related_name="lease_agreements",
     )
 
     property = models.ForeignKey(
         Property,
         on_delete=models.PROTECT,
-        related_name="rental_agreements",
+        related_name="lease_agreements",
     )
 
-    # -----------------------------------------------------
-    # AGREEMENT PERIOD
-    # -----------------------------------------------------
+    # =====================================================
+    # LEASE DATES
+    # =====================================================
 
     start_date = models.DateField()
 
@@ -393,96 +531,128 @@ class RentalAgreement(models.Model):
         blank=True,
     )
 
-    # -----------------------------------------------------
-    # BASE MONTHLY RENT
-    # -----------------------------------------------------
+    # =====================================================
+    # MONTHLY RENT
+    # =====================================================
 
     monthly_rent = models.DecimalField(
-        max_digits=12,
+        max_digits=14,
         decimal_places=2,
         default=0,
-        help_text="Base monthly rent before term increases.",
+        help_text="Monthly rent for this lease agreement.",
     )
 
     # =====================================================
-    # 5 TERM RENT ESCALATION
+    # LOCK-IN
     # =====================================================
 
-    term1_increase_percent = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("5.00"),
-        help_text="Rent increase percentage for Term 1.",
+    lock_in_months = models.PositiveIntegerField(
+        default=36,
+        help_text="Lock-in period in months.",
     )
 
-    term2_increase_percent = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("10.00"),
-        help_text="Rent increase percentage for Term 2.",
+    # =====================================================
+    # RENT-FREE PERIOD
+    # =====================================================
+
+    rent_free_months = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of rent-free months.",
     )
 
-    term3_increase_percent = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("15.00"),
-        help_text="Rent increase percentage for Term 3.",
-    )
-
-    term4_increase_percent = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("20.00"),
-        help_text="Rent increase percentage for Term 4.",
-    )
-
-    term5_increase_percent = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("25.00"),
-        help_text="Rent increase percentage for Term 5.",
-    )
-
-    # -----------------------------------------------------
-    # NEXT TERM INFORMATION
-    # -----------------------------------------------------
-
-    next_increase_date = models.DateField(
-        null=True,
-        blank=True,
-        help_text="Date when the next rent term starts.",
-    )
-
-    # Kept for database compatibility.
-    # Automatic invoice generation does not use this field.
-    rent_increase_pending = models.BooleanField(
-        default=False,
-        help_text="Legacy field. Automatic term escalation does not require approval.",
-    )
-
-    # -----------------------------------------------------
+    # =====================================================
     # PARKING
-    # -----------------------------------------------------
+    # =====================================================
 
     parking_charge = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         default=0,
+        help_text="Monthly parking charge.",
     )
 
-    # -----------------------------------------------------
+    free_parking_spaces = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of free parking spaces.",
+    )
+    paid_parking_spaces = models.PositiveIntegerField(
+    default=0,
+    help_text="Number of paid parking spaces.",
+    )
+
+    # =====================================================
     # SECURITY DEPOSIT
-    # -----------------------------------------------------
+    # =====================================================
 
     security_deposit = models.DecimalField(
-        max_digits=12,
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+        help_text="Security deposit for this lease agreement.",
+    )
+        # =====================================================
+    # LEASE EXTENSION 1
+    # =====================================================
+
+    extension_1_start_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    extension_1_end_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    extension_1_monthly_rent = models.DecimalField(
+        max_digits=14,
         decimal_places=2,
         default=0,
     )
 
-    # -----------------------------------------------------
+    extension_1_security_deposit = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+
+    # =====================================================
+    # LEASE EXTENSION 2
+    # =====================================================
+
+    extension_2_start_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    extension_2_end_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    extension_2_monthly_rent = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+
+    extension_2_security_deposit = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+
+    rental_area = models.DecimalField(
+    max_digits=12,
+    decimal_places=2,
+    default=0,
+    verbose_name="Rental Area (sq. ft.)",
+   )
+
+
+    # =====================================================
     # GST
-    # -----------------------------------------------------
+    # =====================================================
 
     cgst_rate = models.DecimalField(
         max_digits=5,
@@ -496,17 +666,17 @@ class RentalAgreement(models.Model):
         default=0,
     )
 
-    # -----------------------------------------------------
+    # =====================================================
     # PAYMENT
-    # -----------------------------------------------------
+    # =====================================================
 
     rent_due_day = models.PositiveSmallIntegerField(
         default=5,
     )
 
-    # -----------------------------------------------------
-    # AGREEMENT STATUS
-    # -----------------------------------------------------
+    # =====================================================
+    # STATUS
+    # =====================================================
 
     status = models.CharField(
         max_length=20,
@@ -514,9 +684,9 @@ class RentalAgreement(models.Model):
         default="active",
     )
 
-    # -----------------------------------------------------
+    # =====================================================
     # TERMINATION
-    # -----------------------------------------------------
+    # =====================================================
 
     termination_date = models.DateField(
         null=True,
@@ -527,17 +697,17 @@ class RentalAgreement(models.Model):
         blank=True,
     )
 
-    # -----------------------------------------------------
+    # =====================================================
     # NOTES
-    # -----------------------------------------------------
+    # =====================================================
 
     notes = models.TextField(
         blank=True,
     )
 
-    # -----------------------------------------------------
+    # =====================================================
     # SYSTEM DATES
-    # -----------------------------------------------------
+    # =====================================================
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -547,328 +717,32 @@ class RentalAgreement(models.Model):
         auto_now=True,
     )
 
+    # =====================================================
+    # META
+    # =====================================================
+
     class Meta:
         ordering = ["-start_date"]
 
     # =====================================================
-    # TERM DATES
-    # =====================================================
-
-    @builtins.property
-    def term1_start_date(self):
-        return self.start_date
-
-    @builtins.property
-    def term2_start_date(self):
-        return self._add_years(
-            self.start_date,
-            1,
-        )
-
-    @builtins.property
-    def term3_start_date(self):
-        return self._add_years(
-            self.start_date,
-            2,
-        )
-
-    @builtins.property
-    def term4_start_date(self):
-        return self._add_years(
-            self.start_date,
-            3,
-        )
-
-    @builtins.property
-    def term5_start_date(self):
-        return self._add_years(
-            self.start_date,
-            4,
-        )
-
-    # =====================================================
-    # ADD YEARS SAFELY
-    # =====================================================
-
-    @staticmethod
-    def _add_years(date_value, years):
-        """
-        Add years safely.
-        Handles February 29.
-        """
-
-        from datetime import date
-
-        try:
-            return date(
-                date_value.year + years,
-                date_value.month,
-                date_value.day,
-            )
-
-        except ValueError:
-            return date(
-                date_value.year + years,
-                2,
-                28,
-            )
-
-    # =====================================================
-    # TERM 1 RENT
-    # =====================================================
-
-    @builtins.property
-    def term1_rent(self):
-
-        increase = (
-            self.monthly_rent
-            * self.term1_increase_percent
-        ) / Decimal("100")
-
-        return (
-            self.monthly_rent + increase
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
-        )
-
-    # =====================================================
-    # TERM 2 RENT
-    # =====================================================
-
-    @builtins.property
-    def term2_rent(self):
-
-        increase = (
-            self.term1_rent
-            * self.term2_increase_percent
-        ) / Decimal("100")
-
-        return (
-            self.term1_rent + increase
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
-        )
-
-    # =====================================================
-    # TERM 3 RENT
-    # =====================================================
-
-    @builtins.property
-    def term3_rent(self):
-
-        increase = (
-            self.term2_rent
-            * self.term3_increase_percent
-        ) / Decimal("100")
-
-        return (
-            self.term2_rent + increase
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
-        )
-
-    # =====================================================
-    # TERM 4 RENT
-    # =====================================================
-
-    @builtins.property
-    def term4_rent(self):
-
-        increase = (
-            self.term3_rent
-            * self.term4_increase_percent
-        ) / Decimal("100")
-
-        return (
-            self.term3_rent + increase
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
-        )
-
-    # =====================================================
-    # TERM 5 RENT
-    # =====================================================
-
-    @builtins.property
-    def term5_rent(self):
-
-        increase = (
-            self.term4_rent
-            * self.term5_increase_percent
-        ) / Decimal("100")
-
-        return (
-            self.term4_rent + increase
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
-        )
-
-    # =====================================================
-    # GET CURRENT TERM
-    # =====================================================
-
-    def get_current_term(self, on_date=None):
-
-        from datetime import date
-
-        if on_date is None:
-            on_date = date.today()
-
-        if on_date < self.term2_start_date:
-            return 1
-
-        if on_date < self.term3_start_date:
-            return 2
-
-        if on_date < self.term4_start_date:
-            return 3
-
-        if on_date < self.term5_start_date:
-            return 4
-
-        return 5
-
-    # =====================================================
-    # GET RENT FOR TERM
-    # =====================================================
-
-    def get_term_rent(self, term_number):
-
-        if term_number == 1:
-            return self.term1_rent
-
-        if term_number == 2:
-            return self.term2_rent
-
-        if term_number == 3:
-            return self.term3_rent
-
-        if term_number == 4:
-            return self.term4_rent
-
-        if term_number == 5:
-            return self.term5_rent
-
-        return self.monthly_rent
-
-    # =====================================================
-    # CURRENT AUTOMATIC RENT
-    # =====================================================
-
-    def get_current_rent(self, on_date=None):
-
-        term = self.get_current_term(
-            on_date
-        )
-
-        return self.get_term_rent(
-            term
-        )
-
-    # =====================================================
-    # CURRENT TERM PERCENT
-    # =====================================================
-
-    def get_current_increase_percent(
-        self,
-        on_date=None,
-    ):
-
-        term = self.get_current_term(
-            on_date
-        )
-
-        if term == 1:
-            return self.term1_increase_percent
-
-        if term == 2:
-            return self.term2_increase_percent
-
-        if term == 3:
-            return self.term3_increase_percent
-
-        if term == 4:
-            return self.term4_increase_percent
-
-        return self.term5_increase_percent
-
-    # =====================================================
-    # CURRENT TOTAL
+    # MONTHLY RENT + PARKING
     # =====================================================
 
     @builtins.property
     def total_monthly_amount(self):
-
-        current_rent = self.get_current_rent()
-
         return (
-            current_rent
-            + self.parking_charge
+            self.monthly_rent + self.parking_charge
         ).quantize(
             Decimal("0.01"),
             rounding=ROUND_HALF_UP,
         )
 
     # =====================================================
-    # PROPOSED NEXT RENT
-    # =====================================================
-
-    @builtins.property
-    def proposed_rent(self):
-
-        current_term = self.get_current_term()
-
-        next_term = current_term + 1
-
-        if next_term > 5:
-            return self.get_current_rent()
-
-        return self.get_term_rent(
-            next_term
-        )
-
-    # =====================================================
-    # PROPOSED INCREASE AMOUNT
-    # =====================================================
-
-    @builtins.property
-    def proposed_increase_amount(self):
-
-        return (
-            self.proposed_rent
-            - self.get_current_rent()
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
-        )
-
-    # =====================================================
-    # PROPOSED TOTAL INCLUDING PARKING
-    # =====================================================
-
-    @builtins.property
-    def proposed_total_monthly_amount(self):
-
-        return (
-            self.proposed_rent
-            + self.parking_charge
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
-        )
-
-    # =====================================================
-    # CURRENT GST
+    # CGST
     # =====================================================
 
     @builtins.property
     def current_cgst_amount(self):
-
         return (
             self.total_monthly_amount
             * self.cgst_rate
@@ -877,10 +751,13 @@ class RentalAgreement(models.Model):
             Decimal("0.01"),
             rounding=ROUND_HALF_UP,
         )
+
+    # =====================================================
+    # SGST
+    # =====================================================
 
     @builtins.property
     def current_sgst_amount(self):
-
         return (
             self.total_monthly_amount
             * self.sgst_rate
@@ -891,40 +768,11 @@ class RentalAgreement(models.Model):
         )
 
     # =====================================================
-    # PROPOSED GST
-    # =====================================================
-
-    @builtins.property
-    def proposed_cgst_amount(self):
-
-        return (
-            self.proposed_total_monthly_amount
-            * self.cgst_rate
-            / Decimal("100")
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
-        )
-
-    @builtins.property
-    def proposed_sgst_amount(self):
-
-        return (
-            self.proposed_total_monthly_amount
-            * self.sgst_rate
-            / Decimal("100")
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
-        )
-
-    # =====================================================
-    # CURRENT TOTAL INCLUDING GST
+    # TOTAL INCLUDING GST
     # =====================================================
 
     @builtins.property
     def current_total_with_gst(self):
-
         return (
             self.total_monthly_amount
             + self.current_cgst_amount
@@ -935,19 +783,95 @@ class RentalAgreement(models.Model):
         )
 
     # =====================================================
-    # PROPOSED TOTAL INCLUDING GST
+    # LOCK-IN END DATE
     # =====================================================
 
     @builtins.property
-    def proposed_total_with_gst(self):
+    def lock_in_end_date(self):
+
+        if not self.start_date:
+            return None
+
+        if self.lock_in_months <= 0:
+            return None
+
+        from dateutil.relativedelta import relativedelta
 
         return (
-            self.proposed_total_monthly_amount
-            + self.proposed_cgst_amount
-            + self.proposed_sgst_amount
-        ).quantize(
-            Decimal("0.01"),
-            rounding=ROUND_HALF_UP,
+            self.start_date
+            + relativedelta(months=self.lock_in_months)
+            - relativedelta(days=1)
+        )
+
+    # =====================================================
+    # RENT-FREE END DATE
+    # =====================================================
+
+    @builtins.property
+    def rent_free_end_date(self):
+
+        if not self.start_date:
+            return None
+
+        if self.rent_free_months <= 0:
+            return None
+
+        from dateutil.relativedelta import relativedelta
+
+        return (
+            self.start_date
+            + relativedelta(months=self.rent_free_months)
+            - relativedelta(days=1)
+        )
+
+    # =====================================================
+    # RENT-FREE STATUS
+    # =====================================================
+
+    def is_rent_free(self, check_date=None):
+
+        if self.rent_free_months <= 0:
+            return False
+
+        if check_date is None:
+            from datetime import date
+            check_date = date.today()
+
+        if not self.start_date:
+            return False
+
+        if self.rent_free_end_date is None:
+            return False
+
+        return (
+            self.start_date
+            <= check_date
+            <= self.rent_free_end_date
+        )
+
+    # =====================================================
+    # LOCK-IN STATUS
+    # =====================================================
+
+    def is_lock_in(self, check_date=None):
+
+        if self.lock_in_months <= 0:
+            return False
+
+        if check_date is None:
+            from datetime import date
+            check_date = date.today()
+
+        if not self.start_date:
+            return False
+
+        if self.lock_in_end_date is None:
+            return False
+
+        return (
+            self.start_date
+            <= check_date
+            <= self.lock_in_end_date
         )
 
     # =====================================================
@@ -955,21 +879,20 @@ class RentalAgreement(models.Model):
     # =====================================================
 
     def __str__(self):
-
         return (
             f"{self.tenant.full_name} - "
             f"{self.start_date}"
         )
 
-
+   
 # =========================================================
 # RENT HISTORY
 # =========================================================
 
 class RentHistory(models.Model):
 
-    rental_agreement = models.ForeignKey(
-        RentalAgreement,
+    lease_agreement = models.ForeignKey(
+        LeaseAgreement,
         on_delete=models.CASCADE,
         related_name="rent_history",
     )
@@ -982,7 +905,7 @@ class RentHistory(models.Model):
     )
 
     monthly_rent = models.DecimalField(
-        max_digits=12,
+        max_digits=14,
         decimal_places=2,
     )
 
@@ -1004,12 +927,122 @@ class RentHistory(models.Model):
         ordering = ["effective_from"]
 
     def __str__(self):
-
         return (
-            f"{self.rental_agreement.tenant.full_name} - "
+            f"{self.lease_agreement.tenant.full_name} - "
             f"₹{self.monthly_rent} - "
             f"{self.effective_from}"
         )
+
+
+# =========================================================
+# LEASE RENEWAL REMINDERS
+# =========================================================
+
+class RenewalReminder(models.Model):
+
+    REMINDER_TYPES = [
+        ("six_months", "Six Months Before Expiry"),
+        ("monthly", "Monthly Renewal Reminder"),
+        ("expiry", "Lease Expiry"),
+    ]
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("sent", "Sent"),
+        ("cancelled", "Cancelled"),
+        ("failed", "Failed"),
+    ]
+
+    lease_agreement = models.ForeignKey(
+        LeaseAgreement,
+        on_delete=models.CASCADE,
+        related_name="renewal_reminders",
+    )
+
+    # The lease term this reminder applies to.
+    lease_end_date = models.DateField()
+
+    reminder_date = models.DateField()
+
+    reminder_type = models.CharField(
+        max_length=20,
+        choices=REMINDER_TYPES,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
+
+    email_sent = models.BooleanField(default=False)
+
+    in_app_created = models.BooleanField(default=False)
+
+    sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    error_message = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["reminder_date", "lease_end_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "lease_agreement",
+                    "lease_end_date",
+                    "reminder_date",
+                    "reminder_type",
+                ],
+                name="unique_lease_renewal_reminder",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.lease_agreement} - "
+            f"{self.reminder_type} - "
+            f"{self.reminder_date}"
+        )
+
+
+# =========================================================
+# IN-APP NOTIFICATIONS
+# =========================================================
+
+class LeaseNotification(models.Model):
+
+    lease_agreement = models.ForeignKey(
+        LeaseAgreement,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+
+    reminder = models.OneToOneField(
+        RenewalReminder,
+        on_delete=models.CASCADE,
+        related_name="notification",
+        null=True,
+        blank=True,
+    )
+
+    title = models.CharField(max_length=200)
+
+    message = models.TextField()
+
+    is_read = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
 
 
 # =========================================================
@@ -1039,8 +1072,8 @@ class Invoice(models.Model):
         related_name="invoices",
     )
 
-    rental_agreement = models.ForeignKey(
-        RentalAgreement,
+    lease_agreement = models.ForeignKey(
+        LeaseAgreement,
         on_delete=models.PROTECT,
         related_name="invoices",
     )
@@ -1226,7 +1259,6 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Invoice #{self.invoice_number}"
-
 
 # =========================================================
 # INVOICE ITEM

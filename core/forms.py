@@ -1,225 +1,81 @@
 from django import forms
-from .models import Tenant, RentalAgreement, Property
+from .models import Tenant, LeaseAgreement, Property, PropertyTax, PropertyDocument
 
-
-# =========================================================
-# TENANT FORM
-# =========================================================
 
 class TenantForm(forms.ModelForm):
 
     class Meta:
         model = Tenant
-
         fields = [
             "full_name",
             "father_name",
             "mobile",
             "email",
             "permanent_address",
-
-            "id_type_1",
-            "id_number_1",
-            "id_type_2",
-            "id_number_2",
-            "id_type_3",
-            "id_number_3",
-
-            "security_deposit",
+            "gst_number",
             "status",
         ]
-
-        labels = {
-            "full_name": "Full Name",
-            "father_name": "Father Name",
-            "mobile": "Mobile Number",
-            "email": "Email",
-            "permanent_address": "Permanent Address",
-
-            "id_type_1": "ID 1 Type",
-            "id_number_1": "ID 1 Number",
-
-            "id_type_2": "ID 2 Type",
-            "id_number_2": "ID 2 Number",
-
-            "id_type_3": "ID 3 Type",
-            "id_number_3": "ID 3 Number",
-
-            "security_deposit": "Security Deposit",
-            "status": "Status",
-        }
 
         widgets = {
             "full_name": forms.TextInput(
                 attrs={
-                    "class": "form-control",
                     "placeholder": "Enter tenant full name",
                 }
             ),
 
             "father_name": forms.TextInput(
                 attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter father's name",
+                    "placeholder": "Enter father name",
                 }
             ),
 
             "mobile": forms.TextInput(
                 attrs={
-                    "class": "form-control",
                     "placeholder": "Enter mobile number",
                 }
             ),
 
             "email": forms.EmailInput(
                 attrs={
-                    "class": "form-control",
                     "placeholder": "Enter email address",
                 }
             ),
 
             "permanent_address": forms.Textarea(
                 attrs={
-                    "class": "form-control",
                     "placeholder": "Enter permanent address",
                     "rows": 3,
                 }
             ),
 
-            "id_type_1": forms.Select(
+            "gst_number": forms.TextInput(
                 attrs={
-                    "class": "form-control",
+                    "placeholder": "Enter GST number",
                 }
             ),
 
-            "id_number_1": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter ID 1 number",
-                }
-            ),
-
-            "id_type_2": forms.Select(
-                attrs={
-                    "class": "form-control",
-                }
-            ),
-
-            "id_number_2": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter ID 2 number",
-                }
-            ),
-
-            "id_type_3": forms.Select(
-                attrs={
-                    "class": "form-control",
-                }
-            ),
-
-            "id_number_3": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter ID 3 number",
-                }
-            ),
-
-            "security_deposit": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter security deposit",
-                    "step": "0.01",
-                }
-            ),
-
-            "status": forms.Select(
-                attrs={
-                    "class": "form-control",
-                }
-            ),
+            "status": forms.Select(),
         }
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        id_type_1 = cleaned_data.get("id_type_1")
-        id_number_1 = cleaned_data.get("id_number_1")
-
-        id_type_2 = cleaned_data.get("id_type_2")
-        id_number_2 = cleaned_data.get("id_number_2")
-
-        id_type_3 = cleaned_data.get("id_type_3")
-        id_number_3 = cleaned_data.get("id_number_3")
-
-        if not id_type_1:
-            self.add_error(
-                "id_type_1",
-                "ID 1 Type is required.",
-            )
-
-        if not id_number_1:
-            self.add_error(
-                "id_number_1",
-                "ID 1 Number is required.",
-            )
-
-        if not id_type_2:
-            self.add_error(
-                "id_type_2",
-                "ID 2 Type is required.",
-            )
-
-        if not id_number_2:
-            self.add_error(
-                "id_number_2",
-                "ID 2 Number is required.",
-            )
-
-        if id_type_3 and not id_number_3:
-            self.add_error(
-                "id_number_3",
-                "ID 3 Number is required when ID 3 Type is selected.",
-            )
-
-        if id_number_3 and not id_type_3:
-            self.add_error(
-                "id_type_3",
-                "ID 3 Type is required when ID 3 Number is entered.",
-            )
-
-        id_types = [
-            ("id_type_1", id_type_1),
-            ("id_type_2", id_type_2),
-            ("id_type_3", id_type_3),
-        ]
-
-        seen = set()
-
-        for field_name, id_type in id_types:
-
-            if not id_type:
-                continue
-
-            if id_type in seen:
-                self.add_error(
-                    field_name,
-                    "This ID type has already been selected. Please choose a different ID type.",
-                )
-            else:
-                seen.add(id_type)
-
-        return cleaned_data
-
-
+        
 # =========================================================
 # RENTAL AGREEMENT FORM
 # =========================================================
-
 class AgreementForm(forms.ModelForm):
 
+    rental_area = forms.DecimalField(
+        label="Rental Area (sq. ft.)",
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(attrs={
+            "class": "form-control",
+            "step": "0.01",
+            "placeholder": "Enter rental area",
+            "min": "0",
+        }),
+    )
+
     class Meta:
-        model = RentalAgreement
+        model = LeaseAgreement
 
         fields = [
             "tenant",
@@ -227,173 +83,294 @@ class AgreementForm(forms.ModelForm):
             "start_date",
             "end_date",
             "monthly_rent",
-            "term1_increase_percent",
-            "term2_increase_percent",
-            "term3_increase_percent",
-            "term4_increase_percent",
-            "term5_increase_percent",
-            "next_increase_date",
+            "lock_in_months",
+            "rent_free_months",
             "parking_charge",
+            "free_parking_spaces",
+            "paid_parking_spaces",
             "security_deposit",
+            "extension_1_start_date",
+            "extension_1_end_date",
+            "extension_1_monthly_rent",
+            "extension_1_security_deposit",
+            "extension_2_start_date",
+            "extension_2_end_date",
+            "extension_2_monthly_rent",
+            "extension_2_security_deposit",
             "cgst_rate",
             "sgst_rate",
+            "rental_area",
             "rent_due_day",
             "status",
+            "termination_date",
+            "termination_reason",
             "notes",
         ]
 
         labels = {
             "tenant": "Tenant",
             "property": "Property",
-            "start_date": "Agreement Start Date",
-            "end_date": "Agreement End Date",
-            "monthly_rent": "Base Monthly Rent",
-            "term1_increase_percent": "Term 1 Increase (%)",
-            "term2_increase_percent": "Term 2 Increase (%)",
-            "term3_increase_percent": "Term 3 Increase (%)",
-            "term4_increase_percent": "Term 4 Increase (%)",
-            "term5_increase_percent": "Term 5 Increase (%)",
-            "next_increase_date": "Next Increase Date",
-            "parking_charge": "Parking Charge",
+            "start_date": "Lease Start Date",
+            "end_date": "Lease End Date",
+            "monthly_rent": "Monthly Rent",
+            "lock_in_months": "Lock-in Period (Months)",
+            "rent_free_months": "Rent-Free Period (Months)",
+            "parking_charge": "Monthly Parking Charge",
+            "free_parking_spaces": "Free Parking Spaces",
+            "paid_parking_spaces": "Paid Parking Spaces",
             "security_deposit": "Security Deposit",
+            "extension_1_start_date": "Extension 1 Start Date",
+            "extension_1_end_date": "Extension 1 End Date",
+            "extension_1_monthly_rent": "Extension 1 Monthly Rent",
+            "extension_1_security_deposit": "Extension 1 Security Deposit",
+            "extension_2_start_date": "Extension 2 Start Date",
+            "extension_2_end_date": "Extension 2 End Date",
+            "extension_2_monthly_rent": "Extension 2 Monthly Rent",
+            "extension_2_security_deposit": "Extension 2 Security Deposit",
             "cgst_rate": "CGST Rate (%)",
             "sgst_rate": "SGST Rate (%)",
+            "rental_area": "Rental Area (sq. ft.)",
             "rent_due_day": "Rent Due Day",
-            "status": "Agreement Status",
+            "status": "Lease Status",
+            "termination_date": "Termination Date",
+            "termination_reason": "Termination Reason",
             "notes": "Notes",
         }
 
         widgets = {
-            "tenant": forms.Select(
-                attrs={"class": "form-control"}
-            ),
+            "tenant": forms.Select(attrs={"class": "form-control"}),
+            "property": forms.Select(attrs={"class": "form-control"}),
 
-            "property": forms.Select(
-                attrs={"class": "form-control"}
-            ),
+            "start_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
+            "end_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
 
-            "start_date": forms.DateInput(
+            "monthly_rent": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter monthly rent",
+                "step": "0.01",
+                "min": "0",
+            }),
+            "lock_in_months": forms.NumberInput(attrs={
+                "class": "form-control",
+                "min": "0",
+                "placeholder": "Example: 36",
+            }),
+            "rent_free_months": forms.NumberInput(attrs={
+                "class": "form-control",
+                "min": "0",
+                "placeholder": "Example: 2",
+            }),
+            "parking_charge": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter monthly parking charge",
+                "step": "0.01",
+                "min": "0",
+            }),
+            "free_parking_spaces": forms.NumberInput(attrs={
+                "class": "form-control",
+                "min": "0",
+                "placeholder": "Example: 11",
+            }),
+            "paid_parking_spaces": forms.NumberInput(attrs={
+                "class": "form-control",
+                "min": "0",
+                "placeholder": "Example: 1",
+            }),
+            "security_deposit": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter security deposit",
+                "step": "0.01",
+                "min": "0",
+            }),
+
+            "extension_1_start_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
+            "extension_1_end_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
+            "extension_1_monthly_rent": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "min": "0",
+                "placeholder": "Enter Extension 1 monthly rent",
+            }),
+            "extension_1_security_deposit": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "min": "0",
+                "placeholder": "Enter Extension 1 security deposit",
+            }),
+
+            "extension_2_start_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
+            "extension_2_end_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
+            "extension_2_monthly_rent": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "min": "0",
+                "placeholder": "Enter Extension 2 monthly rent",
+            }),
+            "extension_2_security_deposit": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "min": "0",
+                "placeholder": "Enter Extension 2 security deposit",
+            }),
+
+            "cgst_rate": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "min": "0",
+            }),
+            "sgst_rate": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "min": "0",
+            }),
+
+            "rent_due_day": forms.NumberInput(attrs={
+                "class": "form-control",
+                "min": "1",
+                "max": "31",
+            }),
+            "status": forms.Select(attrs={"class": "form-control"}),
+            "termination_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
+            "termination_reason": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 3,
+            }),
+            "notes": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 3,
+            }),
+        }
+
+
+# =========================================================
+# PROPERTY TAX FORM
+# =========================================================
+
+class PropertyTaxForm(forms.ModelForm):
+
+    class Meta:
+        model = PropertyTax
+
+        fields = [
+            "tax_year",
+            "tax_amount",
+            "status",
+            "paid_on",
+            "notes",
+        ]
+
+        widgets = {
+            "tax_year": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "type": "date",
+                    "placeholder": "Example: 2026-27",
                 }
             ),
 
-            "end_date": forms.DateInput(
-                attrs={
-                    "class": "form-control",
-                    "type": "date",
-                }
-            ),
-
-            "monthly_rent": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Enter base monthly rent",
-                    "step": "0.01",
-                }
-            ),
-
-            "term1_increase_percent": forms.NumberInput(
+            "tax_amount": forms.NumberInput(
                 attrs={
                     "class": "form-control",
                     "step": "0.01",
                     "min": "0",
-                    "placeholder": "Example: 5",
-                }
-            ),
-
-            "term2_increase_percent": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "step": "0.01",
-                    "min": "0",
-                    "placeholder": "Example: 10",
-                }
-            ),
-
-            "term3_increase_percent": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "step": "0.01",
-                    "min": "0",
-                    "placeholder": "Example: 15",
-                }
-            ),
-
-            "term4_increase_percent": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "step": "0.01",
-                    "min": "0",
-                    "placeholder": "Example: 20",
-                }
-            ),
-
-            "term5_increase_percent": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "step": "0.01",
-                    "min": "0",
-                    "placeholder": "Example: 25",
-                }
-            ),
-
-            "next_increase_date": forms.DateInput(
-                attrs={
-                    "class": "form-control",
-                    "type": "date",
-                }
-            ),
-
-            "parking_charge": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "step": "0.01",
-                    "min": "0",
-                }
-            ),
-
-            "security_deposit": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "step": "0.01",
-                    "min": "0",
-                }
-            ),
-
-            "cgst_rate": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "step": "0.01",
-                    "min": "0",
-                }
-            ),
-
-            "sgst_rate": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "step": "0.01",
-                    "min": "0",
-                }
-            ),
-
-            "rent_due_day": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "min": "1",
-                    "max": "31",
+                    "placeholder": "Enter tax amount",
                 }
             ),
 
             "status": forms.Select(
-                attrs={"class": "form-control"}
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+
+            "paid_on": forms.DateInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                }
             ),
 
             "notes": forms.Textarea(
                 attrs={
                     "class": "form-control",
-                    "rows": 4,
+                    "rows": 3,
+                    "placeholder": "Optional notes",
                 }
             ),
         }
+
+
+
+
+
+# =========================================================
+# PROPERTY DOCUMENT FORM
+# =========================================================
+
+class PropertyDocumentForm(forms.ModelForm):
+
+    class Meta:
+        model = PropertyDocument
+
+        fields = [
+            "document_name",
+            "document",
+        ]
+
+        widgets = {
+            "document_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Example: Sale Deed",
+                }
+            ),
+
+            "document": forms.ClearableFileInput(
+                attrs={
+                    "class": "form-control",
+                    "accept": "application/pdf",
+                }
+            ),
+        }
+
+        labels = {
+            "document_name": "Document Name",
+            "document": "Scanned PDF",
+        }
+
+    def clean_document(self):
+        document = self.cleaned_data.get("document")
+
+        if document:
+            if not document.name.lower().endswith(".pdf"):
+                raise forms.ValidationError(
+                    "Only PDF files are allowed."
+                )
+
+            if document.content_type != "application/pdf":
+                raise forms.ValidationError(
+                    "Please upload a valid PDF file."
+                )
+
+        return document
+

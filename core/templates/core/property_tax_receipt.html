@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Property Tax Receipt</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .receipt {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 40px;
+            border: 1px solid #ddd;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #222;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .receipt-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .receipt-header p {
+            margin: 0;
+            color: #666;
+        }
+
+        .receipt-title {
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .receipt-title h2 {
+            margin: 0;
+        }
+
+        .details {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .details td {
+            padding: 13px 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .details td:first-child {
+            width: 40%;
+            font-weight: bold;
+        }
+
+        .paid {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .amount {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #777;
+            font-size: 13px;
+        }
+
+        .actions {
+            max-width: 800px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            margin: 5px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .print-btn {
+            background: #198754;
+            color: white;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        @media print {
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .receipt {
+                border: none;
+                padding: 20px;
+            }
+
+            .actions {
+                display: none;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="receipt">
+
+        <div class="receipt-header">
+
+            <h1>Property Tax Receipt</h1>
+
+            <p>
+                Property Tax Payment Receipt
+            </p>
+
+        </div>
+
+
+        <div class="receipt-title">
+
+            <h2>Payment Details</h2>
+
+        </div>
+
+
+        <table class="details">
+
+            <tr>
+
+                <td>Property</td>
+
+                <td>
+                    {{ tax.property.name }}
+                </td>
+
+            </tr>
+
+
+            {% if tax.property.unit_no %}
+
+            <tr>
+
+                <td>Unit Number</td>
+
+                <td>
+                    {{ tax.property.unit_no }}
+                </td>
+
+            </tr>
+
+            {% endif %}
+
+
+            {% if tax.property.address %}
+
+            <tr>
+
+                <td>Address</td>
+
+                <td>
+                    {{ tax.property.address }}
+                </td>
+
+            </tr>
+
+            {% endif %}
+
+
+            {% if tax.property.city %}
+
+            <tr>
+
+                <td>City</td>
+
+                <td>
+                    {{ tax.property.city }}
+                </td>
+
+            </tr>
+
+            {% endif %}
+
+
+            <tr>
+
+                <td>Tax Year</td>
+
+                <td>
+                    {{ tax.tax_year }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Tax Amount</td>
+
+                <td class="amount">
+                    ₹{{ tax.tax_amount|floatformat:2 }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Status</td>
+
+                <td class="paid">
+                    PAID
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Paid On</td>
+
+                <td>
+
+                    {% if tax.paid_on %}
+
+                        {{ tax.paid_on|date:"d-m-Y" }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+        </table>
+
+
+        <div class="footer">
+
+            <p>
+                This is a computer-generated property tax receipt.
+            </p>
+
+            <p>
+                Property Tax Management System
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="actions">
+
+        <button
+            type="button"
+            class="btn print-btn"
+            onclick="window.print()"
+        >
+            Print Receipt
+        </button>
+
+
+        <a
+            href="{% url 'property_tax_report' %}"
+            class="btn back-btn"
+        >
+            Back to Property Tax
+        </a>
+
+    </div>
+
+</body>
+
+</html>

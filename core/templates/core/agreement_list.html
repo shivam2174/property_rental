@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Rental Agreements</title>
+    <title>lease Agreements</title>
 
     <style>
-
         body {
             font-family: Arial, sans-serif;
             background: #f5f6fa;
@@ -82,6 +82,15 @@
         .tenant-btn:hover {
             background: #5c636a;
         }
+        
+        .report-btn {
+            background: #2e3135;
+        }
+
+        .report-btn:hover {
+            background: #63676d;
+        }
+
 
 
         /* CARD */
@@ -131,6 +140,7 @@
             background: #0b5ed7;
         }
 
+        
 
         /* UNIT */
 
@@ -165,99 +175,92 @@
             }
 
         }
-
     </style>
 </head>
 
 
 <body>
 
-<div class="container">
+    <div class="container">
 
 
-    <!-- TOP BAR -->
+        <!-- TOP BAR -->
 
-    <div class="top-bar">
+        <div class="top-bar">
 
-        <h2>Rental Agreements</h2>
-
-
-        <div class="buttons">
-
-            <a
-                href="{% url 'dashboard' %}"
-                class="home-btn"
-            >
-                🏠 Dashboard
-            </a>
+            <h2>lease Agreements</h2>
 
 
-            <a
-                href="{% url 'agreement_add' %}"
-                class="add-btn"
-            >
-                + Add Rental Agreement
-            </a>
+            <div class="buttons">
+
+                <a href="{% url 'dashboard' %}" class="home-btn">
+                    🏠 Dashboard
+                </a>
 
 
-            <a
-                href="{% url 'tenant_list' %}"
-                class="tenant-btn"
-            >
-                Tenants
-            </a>
+                <a href="{% url 'agreement_add' %}" class="add-btn">
+                    + Add Rental Agreement
+                </a>
+
+
+                <a href="{% url 'tenant_list' %}" class="tenant-btn">
+                    Tenants
+                </a>
+                <a href="{% url 'monthly_gst_report' %}" class="report-btn">
+                    Monthly GSIT Report
+                </a>
+
+            </div>
 
         </div>
 
-    </div>
+
+        <!-- AGREEMENT TABLE -->
+
+        <div class="card">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Tenant</th>
+
+                        <th>Property</th>
+
+                        <th style="text-align: right;">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
 
 
-    <!-- AGREEMENT TABLE -->
+                <tbody>
 
-    <div class="card">
+                    {% for agreement in agreements %}
 
-        <table>
+                    <tr>
 
-            <thead>
+                        <td>
 
-                <tr>
+                            <strong>
+                                {{ agreement.tenant.full_name }}
+                            </strong>
 
-                    <th>Tenant</th>
-
-                    <th>Property</th>
-
-                    <th style="text-align: right;">
-                        Action
-                    </th>
-
-                </tr>
-
-            </thead>
+                        </td>
 
 
-            <tbody>
+                        <td>
 
-                {% for agreement in agreements %}
-
-                <tr>
-
-                    <td>
-
-                        <strong>
-                            {{ agreement.tenant.full_name }}
-                        </strong>
-
-                    </td>
+                            <strong>
+                                {{ agreement.property.name }}
+                            </strong>
 
 
-                    <td>
-
-                        <strong>
-                            {{ agreement.property.name }}
-                        </strong>
-
-
-                        {% if agreement.property.unit_no %}
+                            {% if agreement.property.unit_no %}
 
                             <br>
 
@@ -265,47 +268,42 @@
                                 Unit {{ agreement.property.unit_no }}
                             </span>
 
-                        {% endif %}
+                            {% endif %}
 
-                    </td>
-
-
-                    <td style="text-align: right;">
-
-                        <a
-                            href="{% url 'agreement_view' agreement.pk %}"
-                            class="view-btn"
-                        >
-                            View
-                        </a>
-
-                    </td>
-
-                </tr>
+                        </td>
 
 
-                {% empty %}
+                        <td style="text-align: right;">
 
-                <tr>
+                            <a href="{% url 'agreement_view' agreement.pk %}" class="view-btn">
+                                View
+                            </a>
 
-                    <td
-                        colspan="3"
-                        class="empty"
-                    >
-                        No rental agreements found.
-                    </td>
+                        </td>
 
-                </tr>
+                    </tr>
 
-                {% endfor %}
 
-            </tbody>
+                    {% empty %}
 
-        </table>
+                    <tr>
+
+                        <td colspan="3" class="empty">
+                            No rental agreements found.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
 
     </div>
 
-</div>
-
 </body>
+
 </html>

@@ -8,3 +8,9 @@ staticfiles/
 .vscode/
 .idea/
 *.log
+
+# User-uploaded documents and media
+media/
+
+# Local database backups
+*.sqlite3.backup*

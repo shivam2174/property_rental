@@ -41,9 +41,12 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 25px;
+            flex-wrap: wrap;
         }
 
-        .add-btn,
+
+        /* BUTTONS */
+
         .add-tenant {
             background: #2563eb;
             color: white;
@@ -53,13 +56,10 @@
             font-weight: 600;
         }
 
-        .add-btn:hover,
         .add-tenant:hover {
             background: #1d4ed8;
         }
 
-
-        /* DASHBOARD BUTTON */
 
         .home-btn {
             background: #64748b;
@@ -73,6 +73,22 @@
 
         .home-btn:hover {
             background: #475569;
+        }
+
+
+        /* REPORT BUTTON */
+
+        .report-btn {
+            background: #16a34a;
+            color: white;
+            text-decoration: none;
+            padding: 11px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .report-btn:hover {
+            background: #15803d;
         }
 
 
@@ -219,8 +235,13 @@
             }
 
             .header-actions {
-                justify-content: flex-end;
-                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
+
+            .tenant-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
             }
 
         }
@@ -244,6 +265,10 @@
 
         <a href="{% url 'tenant_add' %}" class="add-tenant">
             + Add Tenant
+        </a>
+
+        <a href="{% url 'tenant_report' %}" class="report-btn">
+            📊 Tenant Report
         </a>
 
     </div>
@@ -317,7 +342,7 @@
             <!-- ACTIVE -->
 
             <a
-                href="?status=Active"
+                href="?status=active"
                 class="status-link"
             >
 
@@ -341,7 +366,7 @@
             <!-- INACTIVE -->
 
             <a
-                href="?status=Inactive"
+                href="?status=inactive"
                 class="status-link"
             >
 
@@ -362,7 +387,7 @@
             </a>
 
 
-            <!-- ALL -->
+            <!-- ALL TENANTS -->
 
             <a
                 href="{% url 'tenant_list' %}"
@@ -391,3 +416,4 @@
 
 </body>
 </html>
+

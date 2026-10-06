@@ -5,10 +5,7 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>{{ property.name }} - Property Details</title>
 
@@ -230,6 +227,95 @@
             background: #b91c1c;
         }
 
+        /* ================= PROPERTY DOCUMENTS ================= */
+
+        .documents-section {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.07);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .documents-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 22px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .documents-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .document-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 22px;
+        }
+
+        .document-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 16px 18px;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            background: #f9fafb;
+        }
+
+        .document-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 0;
+        }
+
+        .document-name {
+            color: #111827;
+            font-size: 15px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .document-date {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .view-pdf-btn {
+            display: inline-block;
+            padding: 9px 15px;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white !important;
+            text-decoration: none !important;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .view-pdf-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .no-documents {
+            margin: 22px;
+            padding: 20px;
+            text-align: center;
+            color: #6b7280;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
         /* ================= RESPONSIVE ================= */
 
         @media (max-width: 700px) {
@@ -260,6 +346,21 @@
                 grid-template-columns: 1fr;
             }
 
+            .documents-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .document-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .view-pdf-btn {
+                width: 100%;
+                text-align: center;
+            }
+
         }
 
     </style>
@@ -268,7 +369,6 @@
 
 
 <body>
-
 
 <div class="container">
 
@@ -289,7 +389,6 @@
 
         </div>
 
-
         <div class="header-actions">
 
             <a
@@ -298,7 +397,6 @@
             >
                 ← Back
             </a>
-
 
             <a
                 href="{% url 'property_edit' property.id %}"
@@ -324,9 +422,7 @@
 
         </div>
 
-
         <div class="card-body">
-
 
             <div class="status-row">
 
@@ -334,28 +430,24 @@
                     Property Information
                 </strong>
 
-
                 {% if active_agreement %}
 
-                    <span class="status status-occupied">
-                        🔴 Occupied
-                    </span>
+                <span class="status status-occupied">
+                    🔴 Occupied
+                </span>
 
                 {% else %}
 
-                    <span class="status status-free">
-                        🟢 Free
-                    </span>
+                <span class="status status-free">
+                    🟢 Free
+                </span>
 
                 {% endif %}
 
             </div>
 
-
             <div class="info-grid">
 
-
-                <!-- PROPERTY NAME -->
 
                 <div class="info-item">
 
@@ -369,8 +461,6 @@
 
                 </div>
 
-
-                <!-- UNIT NO -->
 
                 <div class="info-item">
 
@@ -391,8 +481,6 @@
                 </div>
 
 
-                <!-- TOWER -->
-
                 <div class="info-item">
 
                     <div class="label">
@@ -412,8 +500,6 @@
                 </div>
 
 
-                <!-- OWNER -->
-
                 <div class="info-item">
 
                     <div class="label">
@@ -423,21 +509,15 @@
                     <div class="value">
 
                         {% if property.owner %}
-
                             {{ property.owner.name }}
-
                         {% else %}
-
                             Not Assigned
-
                         {% endif %}
 
                     </div>
 
                 </div>
 
-
-                <!-- ADDRESS -->
 
                 <div class="info-item full-width">
 
@@ -466,8 +546,6 @@
                 </div>
 
 
-                <!-- CITY -->
-
                 <div class="info-item">
 
                     <div class="label">
@@ -486,8 +564,6 @@
 
                 </div>
 
-
-                <!-- STATE -->
 
                 <div class="info-item">
 
@@ -508,8 +584,6 @@
                 </div>
 
 
-                <!-- PINCODE -->
-
                 <div class="info-item">
 
                     <div class="label">
@@ -529,8 +603,6 @@
                 </div>
 
 
-                <!-- PURCHASE DATE -->
-
                 <div class="info-item">
 
                     <div class="label">
@@ -548,7 +620,6 @@
                     </div>
 
                 </div>
-
 
             </div>
 
@@ -569,13 +640,9 @@
 
         </div>
 
-
         <div class="card-body">
 
             <div class="info-grid">
-
-
-                <!-- AREA -->
 
                 <div class="info-item">
 
@@ -584,16 +651,12 @@
                     </div>
 
                     <div class="value">
-
                         {{ property.total_area|floatformat:2 }}
                         sq. ft.
-
                     </div>
 
                 </div>
 
-
-                <!-- PRICE -->
 
                 <div class="info-item">
 
@@ -602,15 +665,11 @@
                     </div>
 
                     <div class="value money">
-
                         ₹{{ property.price|floatformat:2 }}
-
                     </div>
 
                 </div>
 
-
-                <!-- PER SQFT -->
 
                 <div class="info-item">
 
@@ -619,15 +678,11 @@
                     </div>
 
                     <div class="value money">
-
                         ₹{{ property.per_sqft_rate|floatformat:2 }}
-
                     </div>
 
                 </div>
 
-
-                <!-- STAMP DUTY -->
 
                 <div class="info-item">
 
@@ -636,15 +691,11 @@
                     </div>
 
                     <div class="value money">
-
                         ₹{{ property.stamp_duty|floatformat:2 }}
-
                     </div>
 
                 </div>
 
-
-                <!-- TOTAL PURCHASE -->
 
                 <div class="info-item">
 
@@ -653,15 +704,11 @@
                     </div>
 
                     <div class="value money">
-
                         ₹{{ property.total_purchase_price|floatformat:2 }}
-
                     </div>
 
                 </div>
 
-
-                <!-- GST NUMBER -->
 
                 <div class="info-item">
 
@@ -680,7 +727,6 @@
                     </div>
 
                 </div>
-
 
             </div>
 
@@ -701,11 +747,9 @@
 
         </div>
 
-
         <div class="card-body">
 
             <div class="info-grid">
-
 
                 <div class="info-item">
 
@@ -714,9 +758,7 @@
                     </div>
 
                     <div class="value money">
-
                         ₹{{ property.lap_amount|floatformat:2 }}
-
                     </div>
 
                 </div>
@@ -729,9 +771,7 @@
                     </div>
 
                     <div class="value money">
-
                         ₹{{ property.monthly_installment|floatformat:2 }}
-
                     </div>
 
                 </div>
@@ -755,7 +795,6 @@
 
                 </div>
 
-
             </div>
 
         </div>
@@ -775,11 +814,9 @@
 
         </div>
 
-
         <div class="card-body">
 
             <div class="info-grid">
-
 
                 <div class="info-item">
 
@@ -799,13 +836,305 @@
 
                 </div>
 
-
             </div>
 
         </div>
 
     </div>
 
+
+    <!-- ================= PROPERTY TAX ================= -->
+
+    <div class="card">
+
+        <div
+            class="card-header"
+            style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 15px;
+            "
+        >
+
+            <h2>
+                Property Tax Records
+            </h2>
+
+            <a
+                href="{% url 'property_tax_add' property.id %}"
+                class="btn edit-btn"
+            >
+                + Add Tax
+            </a>
+
+        </div>
+
+        <div class="card-body">
+
+            {% if property_taxes %}
+
+            <div style="overflow-x: auto;">
+
+                <table
+                    style="
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 14px;
+                    "
+                >
+
+                    <thead>
+
+                        <tr
+                            style="
+                                background: #f9fafb;
+                                border-bottom: 1px solid #e5e7eb;
+                            "
+                        >
+
+                            <th style="padding: 12px; text-align: left;">
+                                Tax Year
+                            </th>
+
+                            <th style="padding: 12px; text-align: left;">
+                                Tax Amount
+                            </th>
+
+                            <th style="padding: 12px; text-align: left;">
+                                Status
+                            </th>
+
+                            <th style="padding: 12px; text-align: left;">
+                                Paid On
+                            </th>
+
+                            <th style="padding: 12px; text-align: left;">
+                                Notes
+                            </th>
+
+                            <th style="padding: 12px; text-align: left;">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for tax in property_taxes %}
+
+                        <tr
+                            style="
+                                border-bottom: 1px solid #f0f0f0;
+                            "
+                        >
+
+                            <td
+                                style="
+                                    padding: 12px;
+                                    font-weight: 600;
+                                "
+                            >
+                                {{ tax.tax_year }}
+                            </td>
+
+                            <td
+                                style="
+                                    padding: 12px;
+                                    font-weight: 600;
+                                "
+                            >
+                                ₹{{ tax.tax_amount|floatformat:2 }}
+                            </td>
+
+                            <td style="padding: 12px;">
+
+                                {% if tax.status == "paid" %}
+
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        padding: 5px 10px;
+                                        border-radius: 15px;
+                                        background: #d1fae5;
+                                        color: #047857;
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                    "
+                                >
+                                    Paid
+                                </span>
+
+                                {% else %}
+
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        padding: 5px 10px;
+                                        border-radius: 15px;
+                                        background: #fee2e2;
+                                        color: #b91c1c;
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                    "
+                                >
+                                    Unpaid
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td style="padding: 12px;">
+
+                                {% if tax.paid_on %}
+                                    {{ tax.paid_on|date:"d-m-Y" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+
+                            </td>
+
+                            <td style="padding: 12px;">
+
+                                {% if tax.notes %}
+                                    {{ tax.notes }}
+                                {% else %}
+                                    -
+                                {% endif %}
+
+                            </td>
+
+                            <td
+                                style="
+                                    padding: 12px;
+                                    white-space: nowrap;
+                                "
+                            >
+
+                                <a
+                                    href="{% url 'property_tax_edit' tax.id %}"
+                                    style="
+                                        display: inline-block;
+                                        padding: 7px 11px;
+                                        border-radius: 6px;
+                                        background: #f59e0b;
+                                        color: white;
+                                        text-decoration: none;
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                        margin-right: 5px;
+                                    "
+                                >
+                                    Edit
+                                </a>
+
+                                <a
+                                    href="{% url 'property_tax_delete' tax.id %}"
+                                    style="
+                                        display: inline-block;
+                                        padding: 7px 11px;
+                                        border-radius: 6px;
+                                        background: #dc2626;
+                                        color: white;
+                                        text-decoration: none;
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                    "
+                                >
+                                    Delete
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty">
+
+                No property tax records have been added yet.
+
+                <br><br>
+
+                <a
+                    href="{% url 'property_tax_add' property.id %}"
+                    class="btn edit-btn"
+                >
+                    + Add First Tax Record
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+   <!-- ================= PROPERTY DOCUMENTS ================= -->
+
+<div class="documents-section">
+
+    <div class="documents-header">
+
+        <h2>
+            Property Documents
+        </h2>
+
+    </div>
+
+    <div class="document-list">
+
+        {% for document in property_documents %}
+
+        <div class="document-card">
+
+            <div class="document-info">
+
+                <div class="document-name">
+                    📄 {{ document.document_name }}
+                </div>
+
+                <div class="document-date">
+                    Uploaded:
+                    {{ document.uploaded_at|date:"d-m-Y H:i" }}
+                </div>
+
+            </div>
+
+            <a
+                href="/media/{{ document.document.name }}"
+                target="_blank"
+                class="view-pdf-btn"
+            >
+                View PDF
+            </a>
+
+        </div>
+
+        {% empty %}
+
+        <div class="no-documents">
+            No property documents uploaded.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>  
 
     <!-- ================= CURRENT TENANT ================= -->
 
@@ -819,150 +1148,130 @@
 
         </div>
 
-
         <div class="card-body">
-
 
             {% if active_agreement %}
 
+            <div class="tenant-box">
 
-                <div class="tenant-box">
+                <div class="tenant-name">
+                    {{ active_agreement.tenant.full_name }}
+                </div>
 
+                <div class="tenant-details">
 
-                    <div class="tenant-name">
+                    <div>
 
-                        {{ active_agreement.tenant.full_name }}
+                        <div class="label">
+                            Mobile
+                        </div>
+
+                        <div class="value">
+
+                            {% if active_agreement.tenant.mobile %}
+                                {{ active_agreement.tenant.mobile }}
+                            {% else %}
+                                -
+                            {% endif %}
+
+                        </div>
 
                     </div>
 
 
-                    <div class="tenant-details">
+                    <div>
 
-
-                        <div>
-
-                            <div class="label">
-                                Mobile
-                            </div>
-
-                            <div class="value">
-
-                                {% if active_agreement.tenant.mobile %}
-                                    {{ active_agreement.tenant.mobile }}
-                                {% else %}
-                                    -
-                                {% endif %}
-
-                            </div>
-
+                        <div class="label">
+                            Email
                         </div>
 
+                        <div class="value">
 
-                        <div>
-
-                            <div class="label">
-                                Email
-                            </div>
-
-                            <div class="value">
-
-                                {% if active_agreement.tenant.email %}
-                                    {{ active_agreement.tenant.email }}
-                                {% else %}
-                                    -
-                                {% endif %}
-
-                            </div>
+                            {% if active_agreement.tenant.email %}
+                                {{ active_agreement.tenant.email }}
+                            {% else %}
+                                -
+                            {% endif %}
 
                         </div>
-
-
-                        <div>
-
-                            <div class="label">
-                                Agreement Start
-                            </div>
-
-                            <div class="value">
-
-                                {{ active_agreement.start_date|date:"d-m-Y" }}
-
-                            </div>
-
-                        </div>
-
-
-                        <div>
-
-                            <div class="label">
-                                Agreement End
-                            </div>
-
-                            <div class="value">
-
-                                {% if active_agreement.end_date %}
-                                    {{ active_agreement.end_date|date:"d-m-Y" }}
-                                {% else %}
-                                    No End Date
-                                {% endif %}
-
-                            </div>
-
-                        </div>
-
-
-                        <div>
-
-                            <div class="label">
-                                Monthly Rent
-                            </div>
-
-                            <div class="value money">
-
-                                ₹{{ active_agreement.monthly_rent|floatformat:2 }}
-
-                            </div>
-
-                        </div>
-
-
-                        <div>
-
-                            <div class="label">
-                                Parking Charge
-                            </div>
-
-                            <div class="value money">
-
-                                ₹{{ active_agreement.parking_charge|floatformat:2 }}
-
-                            </div>
-
-                        </div>
-
 
                     </div>
 
+
+                    <div>
+
+                        <div class="label">
+                            Agreement Start
+                        </div>
+
+                        <div class="value">
+                            {{ active_agreement.start_date|date:"d-m-Y" }}
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="label">
+                            Agreement End
+                        </div>
+
+                        <div class="value">
+
+                            {% if active_agreement.end_date %}
+                                {{ active_agreement.end_date|date:"d-m-Y" }}
+                            {% else %}
+                                No End Date
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="label">
+                            Monthly Rent
+                        </div>
+
+                        <div class="value money">
+                            ₹{{ active_agreement.monthly_rent|floatformat:2 }}
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="label">
+                            Parking Charge
+                        </div>
+
+                        <div class="value money">
+                            ₹{{ active_agreement.parking_charge|floatformat:2 }}
+                        </div>
+
+                    </div>
 
                 </div>
 
+            </div>
 
             {% else %}
 
+            <div class="empty">
 
-                <div class="empty">
+                🟢 This property is currently free.
 
-                    🟢 This property is currently free.
+                <br><br>
 
-                    <br><br>
+                No active tenant agreement is assigned.
 
-                    No active tenant agreement is assigned.
-
-                </div>
-
+            </div>
 
             {% endif %}
-
 
         </div>
 
@@ -985,7 +1294,6 @@
 
 
 </div>
-
 
 </body>
 

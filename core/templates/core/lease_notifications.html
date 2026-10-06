@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lease Renewal Notifications</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #1f2937;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #172554;
+            color: white;
+            position: fixed;
+            inset: 0 auto 0 0;
+            padding: 20px 15px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px 12px 25px;
+            border-bottom: 1px solid #475569;
+            margin-bottom: 20px;
+        }
+
+        .logo span {
+            display: block;
+            font-size: 12px;
+            font-weight: normal;
+            color: #bfdbfe;
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-bottom: 6px;
+        }
+
+        .nav-menu a {
+            display: block;
+            text-decoration: none;
+            color: #dbeafe;
+            padding: 12px 14px;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .main {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+            min-width: 0;
+        }
+
+        .topbar {
+            min-height: 65px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .topbar-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading h1 {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .page-heading p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .notification-card {
+            background: white;
+            padding: 22px;
+            margin-bottom: 16px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+            border-left: 4px solid #2563eb;
+        }
+
+        .notification-card.unread {
+            border-left-color: #f59e0b;
+        }
+
+        .notification-card h3 {
+            font-size: 17px;
+            margin-bottom: 10px;
+        }
+
+        .notification-card p {
+            margin: 8px 0;
+            color: #475569;
+            overflow-wrap: anywhere;
+        }
+
+        .notification-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #dcfce7;
+            color: #166534;
+            margin-top: 5px;
+        }
+
+        .notification-status.unread {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .btn {
+            display: inline-block;
+            border: 0;
+            cursor: pointer;
+            border-radius: 7px;
+            padding: 10px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: none;
+            background: #2563eb;
+            color: white;
+            margin-top: 12px;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .empty {
+            background: white;
+            border-radius: 10px;
+            padding: 35px 20px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 165px;
+                padding: 12px 8px;
+            }
+
+            .logo {
+                font-size: 16px;
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+
+            .nav-menu a {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+
+            .main {
+                margin-left: 165px;
+                width: calc(100% - 165px);
+            }
+
+            .topbar {
+                padding: 15px;
+            }
+
+            .topbar-title {
+                font-size: 15px;
+            }
+
+            .content {
+                padding: 12px;
+            }
+
+            .page-heading h1 {
+                font-size: 22px;
+            }
+
+            .notification-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="logo">
+            Property Rental
+            <span>Management System</span>
+        </div>
+
+        <ul class="nav-menu">
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="{% url 'owner_list' %}">Owners</a></li>
+            <li><a href="{% url 'property_list' %}">Properties</a></li>
+            <li><a href="{% url 'property_tax_report' %}">Property Tax</a></li>
+            <li><a href="{% url 'tenant_list' %}">Tenants</a></li>
+            <li><a href="{% url 'agreement_list' %}">Lease Agreements</a></li>
+            <li><a href="{% url 'invoice_list' %}">Invoices</a></li>
+            <li><a href="{% url 'payment_list' %}">Payments</a></li>
+            <li><a href="{% url 'financial_report' %}">Reports</a></li>
+            <li><a href="{% url 'lease_notifications' %}" class="active">Lease Notifications</a></li>
+        </ul>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div class="topbar-title">Property Rental Management</div>
+            <div>Lease Notifications</div>
+        </div>
+
+        <div class="content">
+            <div class="page-heading">
+                <h1>Lease Renewal Notifications</h1>
+                <p>View your lease renewal reminders and notification status.</p>
+            </div>
+
+            {% if notifications %}
+                {% for notification in notifications %}
+                    <div class="notification-card {% if not notification.is_read %}unread{% endif %}">
+                        <h3>{{ notification.title }}</h3>
+
+                        <p>{{ notification.message }}</p>
+
+                        <p>
+                            <strong>Tenant:</strong>
+                            {% if notification.lease_agreement %}
+                                {{ notification.lease_agreement.tenant.full_name }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </p>
+
+                        <p>
+                            <strong>Created:</strong>
+                            {{ notification.created_at|date:"d M Y, h:i A" }}
+                        </p>
+
+                        <p>
+                            <strong>Status:</strong>
+                            {% if notification.is_read %}
+                                <span class="notification-status">Read</span>
+                            {% else %}
+                                <span class="notification-status unread">Unread</span>
+                            {% endif %}
+                        </p>
+
+                        {% if not notification.is_read %}
+                            <form method="post"
+                                  action="{% url 'mark_lease_notification_read' notification.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn">Mark as Read</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty">
+                    <h3>No notifications available</h3>
+                    <p>You currently have no lease renewal notifications.</p>
+                </div>
+            {% endif %}
+
+            <a href="/" class="btn">Back to Dashboard</a>
+        </div>
+    </main>
+
+</div>
+</body>
+</html>

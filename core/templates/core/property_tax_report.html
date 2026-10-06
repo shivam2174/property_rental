@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Property Tax Master</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6f8;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 9px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .report-btn {
+            background: #343a40;
+            color: white;
+        }
+
+        .details-btn {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .receipt-btn {
+            background: #198754;
+            color: white;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            color: #000;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f3f5;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-unpaid {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+        }
+
+        @media (max-width: 768px) {
+
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            table {
+                min-width: 850px;
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+            }
+
+        }
+
+        @media print {
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .header-buttons,
+            .actions {
+                display: none;
+            }
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+
+            <div>
+
+                <h1>Property Tax Master</h1>
+
+                <p>
+                    Manage property tax records and payment status.
+                </p>
+
+            </div>
+
+            <div class="header-buttons">
+
+                <button type="button" class="btn report-btn" onclick="window.print()">
+                    Report
+                </button>
+
+            </div>
+
+        </div>
+
+
+        {% if taxes %}
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>S.No.</th>
+
+                        <th>Property Name</th>
+
+                        <th>Tax Year</th>
+
+                        <th>Tax Amount</th>
+
+                        <th>Status</th>
+
+                        <th>Details</th>
+
+                        <th>Receipt</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for tax in taxes %}
+
+                    <tr>
+
+                        <td>
+                            {{ forloop.counter }}
+                        </td>
+
+                        <td>
+                            {{ tax.property.name }}
+                        </td>
+
+                        <td>
+                            {{ tax.tax_year }}
+                        </td>
+
+                        <td>
+                            ₹{{ tax.tax_amount|floatformat:2 }}
+                        </td>
+
+                        <td>
+
+                            {% if tax.status == "paid" %}
+
+                            <span class="status status-paid">
+                                Paid
+                            </span>
+
+                            {% else %}
+
+                            <span class="status status-unpaid">
+                                Unpaid
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <div class="actions">
+
+                                <a href="{% url 'property_detail' tax.property.id %}" class="btn details-btn">
+                                    Details
+                                </a>
+
+                                <a href="{% url 'property_tax_edit' tax.pk %}" class="btn edit-btn">
+                                    Edit
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                        <td>
+
+                            {% if tax.status == "paid" %}
+
+                            <a href="{% url 'property_tax_receipt' tax.pk %}" class="btn receipt-btn">
+                                Receipt
+                            </a>
+
+                            {% else %}
+
+                            —
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+
+            <h3>No Property Tax Records</h3>
+
+            <p>
+                No property tax records have been added yet.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+
+</html>

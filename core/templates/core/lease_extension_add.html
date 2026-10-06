@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Add Lease Extension</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 25px;
+        }
+
+        .lease-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .lease-info h3 {
+            margin-top: 0;
+            color: #1e40af;
+        }
+
+        .info-row {
+            display: flex;
+            gap: 30px;
+            margin-top: 8px;
+        }
+
+        .info-item {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .info-value {
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .section {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f8fafc;
+            padding: 14px 18px;
+            font-size: 17px;
+            font-weight: bold;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section-body {
+            padding: 20px;
+        }
+
+        .row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-group {
+            flex: 1;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        small {
+            display: block;
+            margin-top: 6px;
+            color: #6b7280;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 22px;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .back-button {
+            padding: 12px 22px;
+            border-radius: 6px;
+            background: #6b7280;
+            color: white;
+            text-decoration: none;
+        }
+
+        .error-box {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 700px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .row,
+            .info-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Add Lease Extension</h1>
+
+    <div class="subtitle">
+        Add an extension period to the existing lease agreement.
+    </div>
+
+
+    <!-- EXISTING LEASE -->
+
+    <div class="lease-info">
+
+        <h3>Existing Lease Agreement</h3>
+
+        <div class="info-row">
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Tenant
+                </div>
+
+                <div class="info-value">
+                    {{ lease_agreement.tenant.full_name }}
+                </div>
+
+            </div>
+
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Property
+                </div>
+
+                <div class="info-value">
+                    {{ lease_agreement.property.name }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Current Lease Period
+                </div>
+
+                <div class="info-value">
+
+                    {{ lease_agreement.start_date|date:"d-m-Y" }}
+
+                    →
+
+                    {% if lease_agreement.end_date %}
+                        {{ lease_agreement.end_date|date:"d-m-Y" }}
+                    {% else %}
+                        No fixed end date
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="info-item">
+
+                <div class="info-label">
+                    Current Monthly Rent
+                </div>
+
+                <div class="info-value">
+                    ₹{{ lease_agreement.monthly_rent|floatformat:2 }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    {% if form.errors %}
+
+        <div class="error-box">
+
+            <strong>
+                Please correct the following errors:
+            </strong>
+
+            {{ form.non_field_errors }}
+
+            {% for field in form %}
+
+                {% for error in field.errors %}
+
+                    <div>
+                        {{ field.label }}:
+                        {{ error }}
+                    </div>
+
+                {% endfor %}
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+
+        <!-- EXTENSION DETAILS -->
+
+        <div class="section">
+
+            <div class="section-header">
+                Extension Details
+            </div>
+
+            <div class="section-body">
+
+                <div class="row">
+
+                    <div class="form-group">
+
+                        <label>
+                            Extension Number
+                        </label>
+
+                        <input
+                            type="number"
+                            name="extension_number"
+                            value="{{ next_extension_number }}"
+                            readonly
+                        >
+
+                        <small>
+                            Extension number is generated automatically.
+                        </small>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Extension Period (Months)
+                        </label>
+
+                        <input
+                            type="number"
+                            name="extension_months"
+                            value="36"
+                            min="1"
+                            required
+                        >
+
+                        <small>
+                            Example: 36 months.
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row">
+
+                    <div class="form-group">
+
+                        <label>
+                            Extension Start Date
+                        </label>
+
+                        <input
+                            type="date"
+                            name="start_date"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Extension End Date
+                        </label>
+
+                        <input
+                            type="date"
+                            name="end_date"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RENT -->
+
+        <div class="section">
+
+            <div class="section-header">
+                Extension Rent & Security
+            </div>
+
+            <div class="section-body">
+
+                <div class="row">
+
+                    <div class="form-group">
+
+                        <label>
+                            Monthly Rent
+                        </label>
+
+                        <input
+                            type="number"
+                            name="monthly_rent"
+                            step="0.01"
+                            min="0"
+                            placeholder="Enter monthly rent"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Security Deposit
+                        </label>
+
+                        <input
+                            type="number"
+                            name="security_deposit"
+                            step="0.01"
+                            min="0"
+                            placeholder="Enter security deposit"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- NOTES -->
+
+        <div class="section">
+
+            <div class="section-header">
+                Notes
+            </div>
+
+            <div class="section-body">
+
+                <div class="form-group">
+
+                    <label>
+                        Notes
+                    </label>
+
+                    <textarea
+                        name="notes"
+                        rows="5"
+                        placeholder="Optional notes about this extension"
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- BUTTONS -->
+
+        <div class="buttons">
+
+            <button type="submit">
+                Save Lease Extension
+            </button>
+
+            <a
+                href="{% url 'agreement_view' lease_agreement.pk %}"
+                class="back-button"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+
+</html>

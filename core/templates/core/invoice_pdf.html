@@ -1,48 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
     <style>
-
         @page {
             size: A4;
-            margin: 25px;
+            margin: 18px;
         }
 
         body {
             font-family: Helvetica, Arial, sans-serif;
-            font-size: 10px;
-            color: #222;
-        }
-
-        .invoice-container {
-            width: 100%;
-        }
-
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #222;
-            padding-bottom: 12px;
-        }
-
-        .header h1 {
-            font-size: 22px;
+            font-size: 9px;
+            color: #111;
             margin: 0;
-        }
-
-        .header p {
-            margin: 4px 0;
-        }
-
-        .section-title {
-            background-color: #eeeeee;
-            padding: 7px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-top: 12px;
         }
 
         table {
@@ -50,24 +21,43 @@
             border-collapse: collapse;
         }
 
-        .details td {
-            border: 1px solid #cccccc;
-            padding: 6px;
+        .header {
+            text-align: center;
+            border: 1px solid #222;
+            border-bottom: 0;
+            padding: 7px 4px;
         }
 
-        .items {
-            margin-top: 6px;
+        .header h2 {
+            font-size: 14px;
+            margin: 0 0 4px;
+        }
+
+        .header p {
+            margin: 2px 0;
+        }
+
+        .top-details td {
+            border: 1px solid #333;
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        .label {
+            font-weight: bold;
+            width: 20%;
         }
 
         .items th,
         .items td {
-            border: 1px solid #333333;
-            padding: 7px;
+            border: 1px solid #333;
+            padding: 5px 4px;
+            vertical-align: top;
         }
 
         .items th {
-            background-color: #eeeeee;
             text-align: center;
+            font-weight: bold;
         }
 
         .center {
@@ -78,524 +68,286 @@
             text-align: right;
         }
 
-        .amount {
-            width: 45%;
-            margin-left: 55%;
-            margin-top: 12px;
+        .description {
+            line-height: 1.45;
         }
 
-        .amount td {
-            border: 1px solid #333333;
-            padding: 7px;
+        .category {
+            border: 1px solid #333;
+            border-top: 0;
+            padding: 5px;
         }
 
-        .total {
-            font-size: 13px;
+        .totals td {
+            border: 1px solid #333;
+            padding: 5px;
+        }
+
+        .grand-total {
+            font-size: 11px;
             font-weight: bold;
         }
 
-        .terms {
-            margin-top: 25px;
-            border-top: 1px solid #999999;
-            padding-top: 10px;
+        .words {
+            border: 1px solid #333;
+            padding: 6px;
+            font-weight: bold;
         }
 
-    </style>
+        .footer td {
+            padding: 5px;
+            vertical-align: top;
+        }
 
+        .terms {
+            border: 1px solid #333;
+            padding: 6px;
+        }
+
+        .signature {
+            text-align: center;
+            border: 1px solid #333;
+            height: 65px;
+            vertical-align: bottom !important;
+            font-weight: bold;
+        }
+
+        ol {
+            margin: 4px 0 0 16px;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 3px;
+        }
+
+        .muted {
+            color: #444;
+        }
+    </style>
 </head>
 
-
 <body>
+    <div>
 
-<div class="invoice-container">
+        <!-- HEADER -->
+        <div class="header">
+            <h2>TAX INVOICE</h2>
 
+            {% if invoice.owner_company_name %}
+            <p><strong>{{ invoice.owner_company_name }}</strong></p>
+            {% endif %}
 
-    <!-- HEADER -->
-
-    <div class="header">
-
-        <h1>TAX INVOICE</h1>
-
-        {% if invoice.owner_company_name %}
-            <p>
-                <strong>
-                    {{ invoice.owner_company_name }}
-                </strong>
+            <p><strong>{{ invoice.owner_name }}</strong></p>
+            <p>{{ invoice.owner_address }}
+                {% if invoice.owner_city %}, {{ invoice.owner_city }}{% endif %}
+                {% if invoice.owner_state %}, {{ invoice.owner_state }}{% endif %}
+                {% if invoice.owner_pincode %} - {{ invoice.owner_pincode }}{% endif %}
             </p>
-        {% endif %}
 
-        {% if invoice.owner_name %}
-            <p>
-                <strong>
-                    {{ invoice.owner_name }}
-                </strong>
-            </p>
-        {% endif %}
+            {% if invoice.owner_mobile %}
+            <p>Tel: {{ invoice.owner_mobile }}</p>
+            {% endif %}
 
-        <p>
-            <strong>
-                {{ invoice.property_name }}
-            </strong>
-        </p>
+            {% if invoice.owner_email %}
+            <p>Email: {{ invoice.owner_email }}</p>
+            {% endif %}
+        </div>
 
-        <p>
-            {{ invoice.property_address }}
-        </p>
-
-    </div>
-
-
-    <!-- INVOICE INFORMATION -->
-
-    <div class="section-title">
-        Invoice Information
-    </div>
-
-    <table class="details">
-
-        <tr>
-
-            <td>
-                <strong>Invoice No.</strong>
-            </td>
-
-            <td>
-                #{{ invoice.invoice_number }}
-            </td>
-
-            <td>
-                <strong>Invoice Date</strong>
-            </td>
-
-            <td>
-                {{ invoice.invoice_date }}
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-                <strong>Billing From</strong>
-            </td>
-
-            <td>
-                {{ invoice.billing_from }}
-            </td>
-
-            <td>
-                <strong>Billing To</strong>
-            </td>
-
-            <td>
-                {{ invoice.billing_to }}
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-                <strong>Due Date</strong>
-            </td>
-
-            <td>
-                {{ invoice.payment_due_date }}
-            </td>
-
-            <td>
-                <strong>Status</strong>
-            </td>
-
-            <td>
-                {{ invoice.get_status_display }}
-            </td>
-
-        </tr>
-
-    </table>
-
-
-    <!-- OWNER -->
-
-    <div class="section-title">
-        Owner / Company Details
-    </div>
-
-    <table class="details">
-
-        <tr>
-
-            <td width="30%">
-                <strong>Owner Name</strong>
-            </td>
-
-            <td>
-                {{ invoice.owner_name }}
-            </td>
-
-        </tr>
-
-        {% if invoice.owner_company_name %}
-
-        <tr>
-
-            <td>
-                <strong>Company</strong>
-            </td>
-
-            <td>
-                {{ invoice.owner_company_name }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-        <tr>
-
-            <td>
-                <strong>Address</strong>
-            </td>
-
-            <td>
-                {{ invoice.owner_address }}
-
-                {% if invoice.owner_city %}
-                    , {{ invoice.owner_city }}
-                {% endif %}
-
-                {% if invoice.owner_state %}
-                    , {{ invoice.owner_state }}
-                {% endif %}
-
-                {% if invoice.owner_pincode %}
-                    - {{ invoice.owner_pincode }}
-                {% endif %}
-
-            </td>
-
-        </tr>
-
-        {% if invoice.owner_mobile %}
-
-        <tr>
-
-            <td>
-                <strong>Mobile</strong>
-            </td>
-
-            <td>
-                {{ invoice.owner_mobile }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-        {% if invoice.owner_gstin %}
-
-        <tr>
-
-            <td>
-                <strong>GSTIN</strong>
-            </td>
-
-            <td>
-                {{ invoice.owner_gstin }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-        {% if invoice.owner_pan %}
-
-        <tr>
-
-            <td>
-                <strong>PAN</strong>
-            </td>
-
-            <td>
-                {{ invoice.owner_pan }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-    </table>
-
-
-    <!-- BILL TO -->
-
-    <div class="section-title">
-        Billed To
-    </div>
-
-    <table class="details">
-
-        <tr>
-
-            <td width="30%">
-                <strong>Tenant Name</strong>
-            </td>
-
-            <td>
-                {{ invoice.tenant_name }}
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-                <strong>Billing Address</strong>
-            </td>
-
-            <td>
-                {{ invoice.billing_address }}
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-                <strong>Mobile</strong>
-            </td>
-
-            <td>
-                {{ invoice.tenant_mobile }}
-            </td>
-
-        </tr>
-
-        {% if invoice.tenant_email %}
-
-        <tr>
-
-            <td>
-                <strong>Email</strong>
-            </td>
-
-            <td>
-                {{ invoice.tenant_email }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-    </table>
-
-
-    <!-- PROPERTY -->
-
-    <div class="section-title">
-        Property Details
-    </div>
-
-    <table class="details">
-
-        <tr>
-
-            <td width="30%">
-                <strong>Property</strong>
-            </td>
-
-            <td>
-                {{ invoice.property_name }}
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-                <strong>Address</strong>
-            </td>
-
-            <td>
-                {{ invoice.property_address }}
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-                <strong>Unit Number</strong>
-            </td>
-
-            <td>
-                {{ invoice.unit_number }}
-            </td>
-
-        </tr>
-
-    </table>
-
-
-    <!-- ITEMS -->
-
-    <div class="section-title">
-        Invoice Details
-    </div>
-
-    <table class="items">
-
-        <thead>
-
+        <!-- INVOICE / BILLING DETAILS -->
+        <table class="top-details">
             <tr>
-
-                <th width="8%">
-                    S.No.
-                </th>
-
-                <th>
-                    Description
-                </th>
-
-                <th width="15%">
-                    Unit
-                </th>
-
-                <th width="18%">
-                    Rate
-                </th>
-
-                <th width="18%">
-                    Amount
-                </th>
-
+                <td colspan="2">
+                    <strong>INVOICE NO.:</strong>
+                    {{ invoice.invoice_number }}
+                </td>
+                <td colspan="2">
+                    <strong>Dated:</strong>
+                    {{ invoice.invoice_date|date:"d-M-y" }}
+                </td>
             </tr>
 
-        </thead>
-
-        <tbody>
-
-            {% for item in invoice.items.all %}
-
             <tr>
+                <td colspan="2" rowspan="4">
+                    <strong>Billed to:</strong><br>
+                    {{ invoice.tenant_name }}<br>
+                    {{ invoice.billing_address }}<br>
 
-                <td class="center">
-                    {{ forloop.counter }}
+                    {% if invoice.owner_state %}
+                    State: {{ invoice.owner_state }}<br>
+                    {% endif %}
+
+                    {% if invoice.tenant_pan %}
+                    PAN No.: {{ invoice.tenant_pan }}<br>
+                    {% endif %}
+
+                    {% if invoice.tenant_gst %}
+                    GST No.: {{ invoice.tenant_gst }}<br>
+                    {% endif %}
+
+                    {% if invoice.tenant_mobile %}
+                    Mobile: {{ invoice.tenant_mobile }}<br>
+                    {% endif %}
+
+                    {% if invoice.tenant_email %}
+                    Email: {{ invoice.tenant_email }}
+                    {% endif %}
                 </td>
-
+                <td><strong>Billing Period</strong></td>
                 <td>
-                    {{ item.description }}
+                    {{ invoice.billing_from|date:"d-M-Y" }} to
+                    {{ invoice.billing_to|date:"d-M-Y" }}
                 </td>
-
-                <td class="center">
-                    {{ item.unit_number }}
-                </td>
-
-                <td class="right">
-                    ₹{{ item.rate }}
-                </td>
-
-                <td class="right">
-                    ₹{{ item.amount }}
-                </td>
-
             </tr>
 
-            {% endfor %}
+            <tr>
+                <td><strong>GST Number</strong></td>
+                <td>{{ invoice.owner_gstin }}</td>
+            </tr>
 
-        </tbody>
+            <tr>
+                <td><strong>PAN No.</strong></td>
+                <td>{{ invoice.owner_pan }}</td>
+            </tr>
 
-    </table>
+            <tr>
+                <td><strong>Due Date</strong></td>
+                <td>{{ invoice.payment_due_date|date:"d-M-Y" }}</td>
+            </tr>
+        </table>
 
+        <!-- RENT AND PARKING ITEMS -->
+        <table class="items">
+            <thead>
+                <tr>
+                    <th width="6%">S.No.</th>
+                    <th width="40%">Description</th>
+                    <th width="13%">Unit No.</th>
+                    <th width="13%">Area</th>
+                    <th width="14%">Rate</th>
+                    <th width="14%">Amount (₹)</th>
+                </tr>
+            </thead>
 
-    <!-- AMOUNT -->
+        
+            <tbody>
+                {% for item in invoice.items.all %}
+                <tr>
+                    <td class="center">{{ forloop.counter }}</td>
 
-    <table class="amount">
+                    <td class="description">
+                        <strong>{{ item.description }}</strong><br>
 
-        <tr>
+                        {% if item.item_type == "rent" %}
+                        Rent of immovable property<br>
+                        Property: {{ invoice.property_name }}<br>
+                        {{ invoice.property_address }}<br>
+                        For the period:
+                        {{ invoice.billing_from|date:"d-M-Y" }} to
+                        {{ invoice.billing_to|date:"d-M-Y" }}
+                        {% elif item.item_type == "parking" %}
+                        Parking rent<br>
+                        For the period:
+                        {{ invoice.billing_from|date:"d-M-Y" }} to
+                        {{ invoice.billing_to|date:"d-M-Y" }}
+                        {% endif %}
+                    </td>
 
-            <td>
-                Taxable Amount
-            </td>
+                    <td class="center">
+                        {{ item.unit_number|default:"-" }}
+                    </td>
 
-            <td class="right">
-                ₹{{ invoice.taxable_amount }}
-            </td>
+                    <td class="center">
+                        {% if item.item_type == "rent" %}
+                        {{ item.area|floatformat:2 }}<br>
+                        Sq.ft.
+                        {% else %}
+                        {{ item.slots|default:1 }}
+                        {% endif %}
+                    </td>
 
-        </tr>
+                    <td class="right">
+                        {% if item.item_type == "rent" %}
+                        ₹{{ item.rate|floatformat:2 }}<br>
+                        <span class="muted">Per Sq.ft.</span>
+                        {% else %}
+                        ₹{{ item.rate|floatformat:2 }}
+                        {% endif %}
+                    </td>
 
-        <tr>
+                    <td class="right">
+                        ₹{{ item.amount|floatformat:2 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="center">
+                        No invoice items found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            
+        </table>
 
-            <td>
-                CGST ({{ invoice.cgst_rate }}%)
-            </td>
+        <!-- SERVICE CATEGORY -->
+        <div class="category">
+            <strong>Category of service:</strong><br>
+            Renting of Immovable Property Service.
+        </div>
 
-            <td class="right">
-                ₹{{ invoice.cgst_amount }}
-            </td>
+        <!-- TOTALS -->
+        <table class="totals">
+            <tr>
+                <td width="72%" class="right"><strong>Sub Total</strong></td>
+                <td class="right">₹{{ invoice.taxable_amount|floatformat:2 }}</td>
+            </tr>
 
-        </tr>
+            <tr>
+                <td class="right">CGST ({{ invoice.cgst_rate }}%)</td>
+                <td class="right">₹{{ invoice.cgst_amount|floatformat:2 }}</td>
+            </tr>
 
-        <tr>
+            <tr>
+                <td class="right">SGST ({{ invoice.sgst_rate }}%)</td>
+                <td class="right">₹{{ invoice.sgst_amount|floatformat:2 }}</td>
+            </tr>
 
-            <td>
-                SGST ({{ invoice.sgst_rate }}%)
-            </td>
+            <tr class="grand-total">
+                <td class="right">Grand Total</td>
+                <td class="right">₹{{ invoice.total_amount|floatformat:2 }}</td>
+            </tr>
+        </table>
 
-            <td class="right">
-                ₹{{ invoice.sgst_amount }}
-            </td>
+        <!-- AMOUNT IN WORDS -->
+        <div class="words">
+            Total amount payable: ₹{{ invoice.total_amount|floatformat:2 }}
+        </div>
 
-        </tr>
+        <!-- TERMS AND SIGNATURE -->
+        <table class="footer">
+            <tr>
+                <td width="65%">
+                    <div class="terms">
+                        <strong>Terms &amp; Conditions:</strong>
+                        <ol>
+                            <li>Payment should be made on or before the due date.</li>
+                            <li>Late payment charges, if applicable, will be charged according to the rental agreement.
+                            </li>
+                            <li>This invoice is generated electronically.</li>
+                            <li>Please retain this invoice for your records.</li>
+                        </ol>
+                    </div>
+                </td>
 
-        <tr class="total">
-
-            <td>
-                TOTAL
-            </td>
-
-            <td class="right">
-                ₹{{ invoice.total_amount }}
-            </td>
-
-        </tr>
-
-    </table>
-
-
-    <!-- TERMS -->
-
-    <div class="terms">
-
-        <strong>Terms & Conditions</strong>
-
-        <ol>
-
-            <li>
-                Payment should be made on or before the due date.
-            </li>
-
-            <li>
-                Late payment charges, if applicable, will be
-                charged according to the rental agreement.
-            </li>
-
-            <li>
-                This invoice is generated electronically.
-            </li>
-
-            <li>
-                Please retain this invoice for your records.
-            </li>
-
-        </ol>
+                <td class="signature">
+                    For {{ invoice.owner_company_name|default:invoice.owner_name }}<br><br><br>
+                    Authorised Signatory
+                </td>
+            </tr>
+        </table>
 
     </div>
-
-
-</div>
-
 </body>
 
 </html>

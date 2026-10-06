@@ -1,0 +1,482 @@
+                                                        <!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Tenant Report</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 30px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            background: #64748b;
+            color: white;
+        }
+
+        .print-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .report-title {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .report-title h2 {
+            margin-bottom: 5px;
+        }
+
+        .report-title p {
+            color: #666;
+            margin: 0;
+        }
+
+        .summary {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .summary-box {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f1f5f9;
+            font-size: 14px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .contact {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .contact:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .contact-name {
+            font-weight: bold;
+        }
+
+        .contact-info {
+            color: #666;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+
+
+        @media print {
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .header,
+            .actions {
+                display: none;
+            }
+
+            .report-card {
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .summary {
+                margin-bottom: 15px;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th,
+            td {
+                padding: 7px;
+            }
+
+            .report-title {
+                margin-bottom: 15px;
+            }
+
+        }
+
+
+        @media (max-width: 800px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .summary {
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>
+            Tenant Report
+        </h1>
+
+        <div class="actions">
+
+            <a href="{% url 'tenant_list' %}"
+               class="btn back-btn">
+                ← Back to Tenants
+            </a>
+
+            <button
+                onclick="window.print()"
+                class="btn print-btn">
+                🖨 Print Report
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- REPORT -->
+
+    <div class="report-card">
+
+
+        <div class="report-title">
+
+            <h2>
+                Tenant List Report
+            </h2>
+
+            <p>
+                Complete Tenant Information
+            </p>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="summary">
+
+            <div class="summary-box">
+
+                <span class="summary-number">
+                    {{ tenants|length }}
+                </span>
+
+                <span class="summary-label">
+                    Total Tenants
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLE -->
+
+        {% if tenants %}
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                #
+                            </th>
+
+                            <th>
+                                Tenant Name
+                            </th>
+
+                            <th>
+                                Mobile
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+
+                            <th>
+                                GST Number
+                            </th>
+
+                            <th>
+                                Permanent Address
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Contact Persons
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for tenant in tenants %}
+
+                        <tr>
+
+                            <td>
+                                {{ forloop.counter }}
+                            </td>
+
+
+                            <td>
+                                <strong>
+                                    {{ tenant.full_name }}
+                                </strong>
+                            </td>
+
+
+                            <td>
+                                {{ tenant.mobile|default:"-" }}
+                            </td>
+
+
+                            <td>
+                                {{ tenant.email|default:"-" }}
+                            </td>
+
+
+                            <td>
+                                {{ tenant.gst_number|default:"-" }}
+                            </td>
+
+
+                            <td>
+                                {{ tenant.permanent_address|default:"-" }}
+                            </td>
+
+
+                            <td>
+
+                                {% if tenant.status == "active" %}
+
+                                    <span class="status active">
+                                        Active
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="status inactive">
+                                        Inactive
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {% for contact in tenant.contact_persons.all %}
+
+                                    <div class="contact">
+
+                                        <div class="contact-name">
+                                            {{ contact.name }}
+                                        </div>
+
+                                        {% if contact.designation %}
+                                            <div class="contact-info">
+                                                {{ contact.designation }}
+                                            </div>
+                                        {% endif %}
+
+                                        {% if contact.phone %}
+                                            <div class="contact-info">
+                                                Phone: {{ contact.phone }}
+                                            </div>
+                                        {% endif %}
+
+                                        {% if contact.email %}
+                                            <div class="contact-info">
+                                                Email: {{ contact.email }}
+                                            </div>
+                                        {% endif %}
+
+                                    </div>
+
+                                {% empty %}
+
+                                    -
+
+                                {% endfor %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty">
+
+                No tenants have been added yet.
+
+            </div>
+
+        {% endif %}
+
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
+
