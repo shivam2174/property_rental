@@ -14,3 +14,9 @@ media/
 
 # Local database backups
 *.sqlite3.backup*
+
+# Private Render migration export and backups
+render_data.json
+db_before_render_*.sqlite3
+db_before_render_backup.sqlite3
+media_backup_before_render.zip

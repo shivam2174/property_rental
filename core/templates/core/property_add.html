@@ -1,436 +1,1017 @@
+
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Add Property</title>
+    <title>
+        {% if property %}Edit Property{% else %}Property Master{% endif %}
+    </title>
 
     <style>
+        :root {
+            --primary: #234b83;
+            --primary-dark: #18375f;
+            --primary-light: #edf4ff;
+            --background: #f3f6fb;
+            --surface: #ffffff;
+            --text: #172b4d;
+            --muted: #68778d;
+            --border: #dce4ef;
+            --success: #16835f;
+            --danger: #c24141;
+            --shadow: 0 8px 28px rgba(23, 43, 77, .07);
+        }
 
         * {
             box-sizing: border-box;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
             margin: 0;
-            padding: 30px;
+            padding: 30px 20px 45px;
+            background: var(--background);
+            color: var(--text);
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
-        .container {
-            max-width: 700px;
+        .page-container {
+            width: 100%;
+            max-width: 1180px;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
 
-        /* =========================
-           TOP BAR
-        ========================= */
+        /* Top navigation */
 
         .top-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 25px;
-            gap: 15px;
+            gap: 14px;
+            margin-bottom: 22px;
         }
 
-        .back-btn {
+        .nav-link {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 10px 16px;
-            background: #6b7280;
-            color: white;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: var(--surface);
+            color: var(--text);
             text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
             font-weight: 600;
+            transition: .2s ease;
         }
 
-        .back-btn:hover {
-            background: #4b5563;
+        .nav-link:hover {
+            border-color: #a9bfdc;
+            background: var(--primary-light);
         }
 
-        .dashboard-btn {
-            display: inline-flex;
+        .nav-link.dashboard {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-link.dashboard:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Page header */
+
+        .page-header {
+            display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 10px 16px;
-            background: #2563eb;
+            gap: 17px;
+            margin-bottom: 24px;
+            padding: 25px 28px;
+            border: 1px solid #dfe7f2;
+            border-radius: 15px;
+            background: linear-gradient(120deg, #ffffff, #edf4ff);
+            box-shadow: var(--shadow);
+        }
+
+        .header-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 58px;
+            height: 58px;
+            border-radius: 13px;
+            background: var(--primary);
             color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 27px;
         }
 
-        .dashboard-btn:hover {
-            background: #1d4ed8;
+        .page-header h1 {
+            margin: 0 0 5px;
+            color: var(--text);
+            font-size: 26px;
+            font-weight: 750;
+            letter-spacing: -.5px;
         }
 
-        /* =========================
-           HEADING
-        ========================= */
-
-        h1 {
-            margin: 0 0 8px 0;
-            font-size: 28px;
-            color: #111827;
+        .page-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
         }
 
-        .subtitle {
+        .header-tag {
+            margin-left: auto;
+            padding: 7px 11px;
+            border: 1px solid #d5e3f8;
+            border-radius: 20px;
+            background: white;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* Form */
+
+        .form-card {
+            padding: 26px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .section {
             margin-bottom: 25px;
-            color: #6b7280;
-            font-size: 14px;
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fff;
         }
 
-        /* =========================
-           FORM
-        ========================= */
+        .section:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 21px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e8edf5;
+        }
+
+        .section-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 39px;
+            height: 39px;
+            flex-shrink: 0;
+            border-radius: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 19px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .section-heading p {
+            margin: 3px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .section-number {
+            margin-left: auto;
+            color: #91a0b5;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px 22px;
+        }
+
+        .field {
+            min-width: 0;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
 
         label {
             display: block;
-            margin-top: 18px;
             margin-bottom: 7px;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            font-size: 15px;
-            background: white;
-            outline: none;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            border-color: #2563eb;
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
+            color: #34445d;
+            font-size: 13px;
+            font-weight: 650;
         }
 
         .required {
-            color: #dc2626;
+            color: var(--danger);
         }
 
-        /* =========================
-           SAVE BUTTON
-        ========================= */
-
-        .save-btn {
+        input,
+        select,
+        textarea {
+            display: block;
             width: 100%;
-            margin-top: 28px;
-            padding: 13px 20px;
-            background: #16a34a;
-            color: white;
-            border: none;
+            min-width: 0;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #cfd9e7;
             border-radius: 8px;
+            outline: none;
+            background: #fff;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #9aa7b8;
+        }
+
+        input:hover,
+        select:hover,
+        textarea:hover {
+            border-color: #aabbd1;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #4679bd;
+            box-shadow: 0 0 0 3px rgba(55, 113, 187, .12);
+        }
+
+        textarea {
+            min-height: 95px;
+            resize: vertical;
+        }
+
+        .field-help {
+            display: block;
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        /* Compliance */
+
+        .compliance-note {
+            margin: -5px 0 20px;
+            padding: 12px 14px;
+            border: 1px solid #dbe8fa;
+            border-radius: 8px;
+            background: #f5f9ff;
+            color: #526782;
+            font-size: 12px;
+        }
+
+        /* Document uploads */
+
+        .documents-container {
+            display: grid;
+            gap: 13px;
+        }
+
+        .document-row {
+            display: grid;
+            grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr) auto;
+            align-items: end;
+            gap: 16px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #f9fbfe;
+        }
+
+        .document-row input[type="file"] {
+            min-height: 44px;
+            padding: 7px;
+            background: white;
+            font-size: 12px;
+        }
+
+        input[type="file"]::file-selector-button {
+            margin-right: 9px;
+            padding: 7px 10px;
+            border: 0;
+            border-radius: 5px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 650;
             cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
         }
 
-        .save-btn:hover {
-            background: #15803d;
+        .document-help {
+            display: block;
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 11px;
         }
 
-        /* =========================
-           BOTTOM NAVIGATION
-        ========================= */
-
-        .bottom-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .bottom-navigation a {
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 10px 17px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
             text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, transform .2s;
         }
 
-        .properties-link {
-            color: #4b5563;
+        .btn:hover {
+            transform: translateY(-1px);
         }
 
-        .properties-link:hover {
-            color: #111827;
+        .btn-primary {
+            background: var(--primary);
+            color: white;
         }
 
-        /* =========================
-           MOBILE
-        ========================= */
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
 
-        @media (max-width: 600px) {
+        .btn-secondary {
+            border-color: var(--border);
+            background: white;
+            color: #46566e;
+        }
 
+        .btn-secondary:hover {
+            background: #f0f4f9;
+        }
+
+        .btn-add {
+            margin-top: 15px;
+            border-color: #c9dcf7;
+            background: #edf4ff;
+            color: var(--primary);
+        }
+
+        .btn-add:hover {
+            background: #dfeaff;
+        }
+
+        .btn-remove {
+            min-height: 38px;
+            padding: 8px 12px;
+            border-color: #f0cece;
+            background: #fff2f2;
+            color: #b42323;
+            white-space: nowrap;
+        }
+
+        .btn-remove:hover {
+            background: #ffe3e3;
+        }
+
+        /* Alerts */
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 13px 16px;
+            border: 1px solid #c8e8d8;
+            border-radius: 9px;
+            background: #effaf4;
+            color: #176747;
+        }
+
+        .message.error {
+            border-color: #f1caca;
+            background: #fff1f1;
+            color: #a52828;
+        }
+
+        /* Form actions */
+
+        .form-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 23px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-note {
+            max-width: 430px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        @media (max-width: 760px) {
             body {
-                padding: 15px;
+                padding: 15px 10px 30px;
             }
 
-            .container {
-                padding: 20px;
+            .page-header {
+                padding: 19px;
             }
 
-            .top-bar {
-                flex-direction: column;
+            .page-header h1 {
+                font-size: 22px;
+            }
+
+            .header-tag {
+                display: none;
+            }
+
+            .form-card {
+                padding: 14px;
+            }
+
+            .section {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+
+            .form-grid {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 17px;
+            }
+
+            .field.full {
+                grid-column: auto;
+            }
+
+            .document-row {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 13px;
+            }
+
+            .form-footer {
                 align-items: stretch;
+                flex-direction: column;
             }
 
-            .back-btn,
-            .dashboard-btn {
-                justify-content: center;
+            .footer-actions {
+                width: 100%;
             }
 
-            h1 {
-                font-size: 24px;
+            .footer-actions .btn {
+                flex: 1;
             }
 
+            .footer-note {
+                max-width: none;
+            }
         }
 
+        @media (max-width: 420px) {
+            .top-bar {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .page-header {
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .header-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+            }
+
+            .section-heading h2 {
+                font-size: 14px;
+            }
+
+            .section-number {
+                display: none;
+            }
+        }
     </style>
-
 </head>
-
 
 <body>
 
-<div class="container">
-
-    <!-- =========================
-         TOP NAVIGATION
-    ========================= -->
+<div class="page-container">
 
     <div class="top-bar">
-
-        <a
-            href="{% url 'property_list' %}"
-            class="back-btn"
-        >
+        <a href="{% url 'property_list' %}" class="nav-link">
             ← Back to Properties
         </a>
 
-        <a
-            href="{% url 'dashboard' %}"
-            class="dashboard-btn"
-        >
-            🏠 Dashboard
+        <a href="{% url 'dashboard' %}" class="nav-link dashboard">
+            ▦ Dashboard
         </a>
-
     </div>
 
+    <header class="page-header">
+        <div class="header-icon">⌂</div>
 
-    <!-- =========================
-         PAGE TITLE
-    ========================= -->
+        <div>
+            <h1>
+                {% if property %}Edit Property{% else %}Property Master{% endif %}
+            </h1>
+            <p>
+                Manage property ownership, financial records, compliance and documents.
+            </p>
+        </div>
 
-    <h1>Add Property</h1>
+        <div class="header-tag">PROPERTY MANAGEMENT</div>
+    </header>
 
-    <div class="subtitle">
-        Add a new property to your rental management system.
-    </div>
-
-
-    <!-- =========================
-         FORM
-    ========================= -->
-
-    <form method="POST">
-
-        {% csrf_token %}
-
-
-        <!-- OWNER -->
-
-        <label for="owner">
-
-            Owner / Company
-
-            <span class="required">*</span>
-
-        </label>
-
-        <select
-            id="owner"
-            name="owner"
-            required
-        >
-
-            <option value="">
-                -- Select Owner / Company --
-            </option>
-
-            {% for owner in owners %}
-
-                <option value="{{ owner.id }}">
-
-                    {{ owner.name }}
-
-                    {% if owner.company_name %}
-                        - {{ owner.company_name }}
-                    {% endif %}
-
-                </option>
-
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {% if message.tags == 'error' %}error{% endif %}">
+                    {{ message }}
+                </div>
             {% endfor %}
+        </div>
+    {% endif %}
 
-        </select>
+    <div class="form-card">
 
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
 
-        <!-- PROPERTY NAME -->
+            <!-- 01 PROPERTY DETAILS -->
 
-        <label for="name">
+            <section class="section">
+                <div class="section-heading">
+                    <div class="section-icon">⌂</div>
+                    <div>
+                        <h2>Property Details</h2>
+                        <p>Ownership, identification and location</p>
+                    </div>
+                    <span class="section-number">01</span>
+                </div>
 
-            Property Name
+                <div class="form-grid">
 
-            <span class="required">*</span>
+                    <div class="field">
+                        <label for="owner">Property Owner</label>
+                        <select id="owner" name="owner">
+                            <option value="">-- Select Owner --</option>
+                            {% for owner in owners %}
+                                <option
+                                    value="{{ owner.id }}"
+                                    {% if property and property.owner_id == owner.id %}selected{% endif %}
+                                >{{ owner }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-        </label>
+                    <div class="field">
+                        <label for="name">Property Description <span class="required">*</span></label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value="{{ property.name|default:'' }}"
+                            placeholder="Enter property name or description"
+                            required
+                        >
+                    </div>
 
-        <input
-            type="text"
-            id="name"
-            name="name"
-            placeholder="Enter property name"
-            required
-        >
+                    <div class="field full">
+                        <label for="address">Property Address</label>
+                        <textarea
+                            id="address"
+                            name="address"
+                            placeholder="Enter complete property address"
+                        >{{ property.address|default:'' }}</textarea>
+                    </div>
 
+                    <div class="field">
+                        <label for="unit_no">Unit No</label>
+                        <input
+                            type="text"
+                            id="unit_no"
+                            name="unit_no"
+                            value="{{ property.unit_no|default:'' }}"
+                            placeholder="Example: 101"
+                        >
+                    </div>
 
-        <!-- ADDRESS -->
+                    <div class="field">
+                        <label for="tower">Tower</label>
+                        <input
+                            type="text"
+                            id="tower"
+                            name="tower"
+                            value="{{ property.tower|default:'' }}"
+                            placeholder="Enter tower or block"
+                        >
+                    </div>
 
-        <label for="address">
+                    <div class="field">
+                        <label for="city">City</label>
+                        <input
+                            type="text"
+                            id="city"
+                            name="city"
+                            value="{{ property.city|default:'' }}"
+                            placeholder="Enter city"
+                        >
+                    </div>
 
-            Address
+                    <div class="field">
+                        <label for="state">State</label>
+                        <input
+                            type="text"
+                            id="state"
+                            name="state"
+                            value="{{ property.state|default:'' }}"
+                            placeholder="Enter state"
+                        >
+                    </div>
 
-            <span class="required">*</span>
+                    <div class="field">
+                        <label for="pincode">PIN Code</label>
+                        <input
+                            type="text"
+                            id="pincode"
+                            name="pincode"
+                            value="{{ property.pincode|default:'' }}"
+                            maxlength="10"
+                            placeholder="Enter PIN code"
+                        >
+                    </div>
 
-        </label>
+                    <div class="field">
+                        <label for="purchased_on">Purchased On</label>
+                        <input
+                            type="date"
+                            id="purchased_on"
+                            name="purchased_on"
+                            value="{{ property.purchased_on|date:'Y-m-d' }}"
+                        >
+                    </div>
 
-        <textarea
-            id="address"
-            name="address"
-            placeholder="Enter complete property address"
-            required
-        ></textarea>
+                    <div class="field full">
+                        <label for="municipality_property_id">Municipality Property ID</label>
+                        <input
+                            type="text"
+                            id="municipality_property_id"
+                            name="municipality_property_id"
+                            value="{{ property.municipality_property_id|default:'' }}"
+                            placeholder="Enter municipal corporation property ID"
+                        >
+                        <small class="field-help">
+                            Enter the official municipal property identification number, if available.
+                        </small>
+                    </div>
 
+                </div>
+            </section>
 
-        <!-- CITY -->
+            <!-- 02 PURCHASE DETAILS -->
 
-        <label for="city">
-            City
-        </label>
+            <section class="section">
+                <div class="section-heading">
+                    <div class="section-icon">₹</div>
+                    <div>
+                        <h2>Purchase Details</h2>
+                        <p>Acquisition cost and purchase records</p>
+                    </div>
+                    <span class="section-number">02</span>
+                </div>
 
-        <input
-            type="text"
-            id="city"
-            name="city"
-            placeholder="Enter city"
-        >
+                <div class="form-grid">
 
+                    <div class="field">
+                        <label for="total_area">Total Area (sq. ft.)</label>
+                        <input type="number" step="0.01" id="total_area" name="total_area"
+                               value="{{ property.total_area|default:'0' }}" placeholder="0.00">
+                    </div>
 
-        <!-- STATE -->
+                    <div class="field">
+                        <label for="price">Price (₹)</label>
+                        <input type="number" step="0.01" id="price" name="price"
+                               value="{{ property.price|default:'0' }}" placeholder="0.00">
+                    </div>
 
-        <label for="state">
-            State
-        </label>
+                    <div class="field">
+                        <label for="per_sqft_rate">Per Sq. Ft. Rate (₹)</label>
+                        <input type="number" step="0.01" id="per_sqft_rate" name="per_sqft_rate"
+                               value="{{ property.per_sqft_rate|default:'0' }}" placeholder="0.00">
+                    </div>
 
-        <input
-            type="text"
-            id="state"
-            name="state"
-            placeholder="Enter state"
-        >
+                    <div class="field">
+                        <label for="stamp_duty">Stamp Duty (₹)</label>
+                        <input type="number" step="0.01" id="stamp_duty" name="stamp_duty"
+                               value="{{ property.stamp_duty|default:'0' }}" placeholder="0.00">
+                    </div>
 
+                    <div class="field">
+                        <label for="total_purchase_price">Total Purchase Price (₹)</label>
+                        <input type="number" step="0.01" id="total_purchase_price"
+                               name="total_purchase_price"
+                               value="{{ property.total_purchase_price|default:'0' }}"
+                               placeholder="0.00">
+                    </div>
 
-        <!-- PIN CODE -->
+                    <div class="field">
+                        <label for="gst_number">GST Number</label>
+                        <input type="text" id="gst_number" name="gst_number"
+                               value="{{ property.gst_number|default:'' }}"
+                               placeholder="Enter GST number">
+                    </div>
 
-        <label for="pincode">
-            PIN Code
-        </label>
+                </div>
+            </section>
 
-        <input
-            type="text"
-            id="pincode"
-            name="pincode"
-            maxlength="10"
-            placeholder="Enter PIN code"
-        >
+            <!-- 03 LAP DETAILS -->
 
+            <section class="section">
+                <div class="section-heading">
+                    <div class="section-icon">▤</div>
+                    <div>
+                        <h2>Loan Against Property (LAP)</h2>
+                        <p>Loan amount, installments and maturity</p>
+                    </div>
+                    <span class="section-number">03</span>
+                </div>
 
-        <!-- STATUS -->
+                <div class="form-grid">
 
-        <label for="status">
-            Status
-        </label>
+                    <div class="field">
+                        <label for="lap_amount">LAP Amount (₹)</label>
+                        <input type="number" step="0.01" id="lap_amount" name="lap_amount"
+                               value="{{ property.lap_amount|default:'0' }}" placeholder="0.00">
+                    </div>
 
-        <select
-            id="status"
-            name="status"
-        >
+                    <div class="field">
+                        <label for="monthly_installment">Monthly Installment (₹)</label>
+                        <input type="number" step="0.01" id="monthly_installment"
+                               name="monthly_installment"
+                               value="{{ property.monthly_installment|default:'0' }}"
+                               placeholder="0.00">
+                    </div>
 
-            <option value="active">
-                Active
-            </option>
+                    <div class="field">
+                        <label for="lap_maturity">LAP Maturity</label>
+                        <input type="date" id="lap_maturity" name="lap_maturity"
+                               value="{{ property.lap_maturity|date:'Y-m-d' }}">
+                    </div>
 
-            <option value="inactive">
-                Inactive
-            </option>
+                </div>
+            </section>
 
-        </select>
+            <!-- 04 PARKING AND STATUS -->
 
+            <section class="section">
+                <div class="section-heading">
+                    <div class="section-icon">▣</div>
+                    <div>
+                        <h2>Parking & Status</h2>
+                        <p>Parking allocation and property availability</p>
+                    </div>
+                    <span class="section-number">04</span>
+                </div>
 
-        <!-- SAVE -->
+                <div class="form-grid">
 
-        <button
-            type="submit"
-            class="save-btn"
-        >
-            ✓ Save Property
-        </button>
+                    <div class="field">
+                        <label for="parking_slot">Parking Slot</label>
+                        <input type="text" id="parking_slot" name="parking_slot"
+                               value="{{ property.parking_slot|default:'' }}"
+                               placeholder="Example: P-101">
+                    </div>
 
-    </form>
+                    <div class="field">
+                        <label for="status">Property Status</label>
+                        <select id="status" name="status">
+                            <option value="active"
+                                {% if not property or property.status == "active" %}selected{% endif %}>
+                                Active
+                            </option>
+                            <option value="sold_out"
+                                {% if property and property.status == "sold_out" %}selected{% endif %}>
+                                Sold-out
+                            </option>
+                            <option value="inactive"
+                                {% if property and property.status == "inactive" %}selected{% endif %}>
+                                Inactive
+                            </option>
+                        </select>
+                    </div>
 
+                </div>
+            </section>
 
-    <!-- =========================
-         BOTTOM NAVIGATION
-    ========================= -->
+            <!-- 05 MUNICIPAL AND PROPERTY TAX -->
 
-    <div class="bottom-navigation">
+            <section class="section">
+                <div class="section-heading">
+                    <div class="section-icon">▤</div>
+                    <div>
+                        <h2>Municipal & Property Tax</h2>
+                        <p>Mutation status, current tax and previous dues</p>
+                    </div>
+                    <span class="section-number">05</span>
+                </div>
 
-        <a
-            href="{% url 'property_list' %}"
-            class="properties-link"
-        >
-            ← Properties
-        </a>
+                <div class="compliance-note">
+                    Maintain municipal identification and tax arrears details for property compliance and record keeping.
+                </div>
 
-        <a
-            href="{% url 'dashboard' %}"
-        >
-            Dashboard →
-        </a>
+                <div class="form-grid">
 
+                    <div class="field">
+                        <label for="mutation_done">Mutation Done?</label>
+                        <select id="mutation_done" name="mutation_done">
+                            <option value="False"
+                                {% if property and not property.mutation_done %}selected{% endif %}>
+                                No
+                            </option>
+                            <option value="True"
+                                {% if property and property.mutation_done %}selected{% endif %}>
+                                Yes
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="has_previous_tax_arrears">Any Previous Arrears?</label>
+                        <select id="has_previous_tax_arrears" name="has_previous_tax_arrears">
+                            <option value="False"
+                                {% if property and not property.has_previous_tax_arrears %}selected{% endif %}>
+                                No
+                            </option>
+                            <option value="True"
+                                {% if property and property.has_previous_tax_arrears %}selected{% endif %}>
+                                Yes
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="tax_amount">Tax Amount (₹)</label>
+                        <input type="number" step="0.01" min="0" id="tax_amount"
+                               name="tax_amount" value="0"
+                               placeholder="Enter property tax amount">
+                        <small class="field-help">
+                            Retains the existing property tax amount input.
+                        </small>
+                    </div>
+
+                    <div class="field">
+                        <label for="pending_property_tax">Pending Property Tax (₹)</label>
+                        <input type="number" step="0.01" min="0" id="pending_property_tax"
+                               name="pending_property_tax"
+                               value="{{ property.pending_property_tax|default:'0' }}"
+                               placeholder="Enter outstanding tax">
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- 06 PROPERTY DOCUMENTS -->
+
+            <section class="section">
+                <div class="section-heading">
+                    <div class="section-icon">▧</div>
+                    <div>
+                        <h2>Property Documents</h2>
+                        <p>Upload and organize property-related PDF records</p>
+                    </div>
+                    <span class="section-number">06</span>
+                </div>
+
+                <div class="compliance-note">
+                    Accepted format: PDF only. Maximum file size: 300 MB per file.
+                </div>
+
+                <div id="documents-container" class="documents-container">
+                    <div class="document-row">
+
+                        <div class="field">
+                            <label>Document Name</label>
+                            <input type="text" name="document_name"
+                                   placeholder="e.g. Sale Deed">
+                        </div>
+
+                        <div class="field">
+                            <label>Upload Document</label>
+                            <input type="file" name="document"
+                                   accept=".pdf,application/pdf">
+                            <small class="document-help">
+                                PDF only. Maximum file size: 300 MB.
+                            </small>
+                        </div>
+
+                        <div></div>
+
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-add" onclick="addDocumentRow()">
+                    + Add Another Document
+                </button>
+            </section>
+
+            <!-- ACTIONS -->
+
+            <div class="form-footer">
+                <div class="footer-note">
+                    Please verify the property details, financial information and uploaded documents before saving.
+                </div>
+
+                <div class="footer-actions">
+                    <a href="{% url 'property_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        ✓
+                        {% if property %}Update Property{% else %}Add Property{% endif %}
+                    </button>
+                </div>
+            </div>
+
+        </form>
     </div>
-
 </div>
 
-</body>
+<script>
+function addDocumentRow() {
+    const container = document.getElementById("documents-container");
+    const row = document.createElement("div");
 
+    row.className = "document-row";
+
+    row.innerHTML = `
+        <div class="field">
+            <label>Document Name</label>
+            <input
+                type="text"
+                name="document_name"
+                placeholder="e.g. Property Tax Receipt"
+            >
+        </div>
+
+        <div class="field">
+            <label>Upload Document</label>
+            <input
+                type="file"
+                name="document"
+                accept=".pdf,application/pdf"
+            >
+            <small class="document-help">
+                PDF only. Maximum file size: 300 MB.
+            </small>
+        </div>
+
+        <div>
+            <button
+                type="button"
+                class="btn btn-remove"
+                onclick="this.closest('.document-row').remove()"
+            >
+                Remove
+            </button>
+        </div>
+    `;
+
+    container.appendChild(row);
+}
+</script>
+
+</body>
 </html>

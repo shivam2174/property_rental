@@ -84,7 +84,7 @@ class AgreementForm(forms.ModelForm):
             "end_date",
             "monthly_rent",
             "lock_in_months",
-            "rent_free_months",
+            "rent_free_period_days",
             "parking_charge",
             "free_parking_spaces",
             "paid_parking_spaces",
@@ -114,7 +114,7 @@ class AgreementForm(forms.ModelForm):
             "end_date": "Lease End Date",
             "monthly_rent": "Monthly Rent",
             "lock_in_months": "Lock-in Period (Months)",
-            "rent_free_months": "Rent-Free Period (Months)",
+            "rent_free_period_days": "Rent-Free Period (Days)",
             "parking_charge": "Monthly Parking Charge",
             "free_parking_spaces": "Free Parking Spaces",
             "paid_parking_spaces": "Paid Parking Spaces",
@@ -161,10 +161,10 @@ class AgreementForm(forms.ModelForm):
                 "min": "0",
                 "placeholder": "Example: 36",
             }),
-            "rent_free_months": forms.NumberInput(attrs={
+            "rent_free_period_days": forms.NumberInput(attrs={
                 "class": "form-control",
                 "min": "0",
-                "placeholder": "Example: 2",
+                "placeholder": "Example: 60",
             }),
             "parking_charge": forms.NumberInput(attrs={
                 "class": "form-control",
@@ -277,6 +277,8 @@ class PropertyTaxForm(forms.ModelForm):
             "tax_amount",
             "status",
             "paid_on",
+            "paid_by",
+            "noc_received",
             "notes",
         ]
 

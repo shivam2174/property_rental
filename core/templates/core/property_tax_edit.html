@@ -2,18 +2,11 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Property Tax - {{ property.name }}</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
@@ -51,19 +44,23 @@
         }
 
         .btn {
+            display: inline-block;
             text-decoration: none;
-            padding: 10px 15px;
+            padding: 11px 15px;
             border-radius: 7px;
             font-size: 13px;
             font-weight: bold;
+            text-align: center;
         }
 
-        .back-btn {
+        .back-btn,
+        .cancel-btn {
             background: #e5e7eb;
             color: #374151;
         }
 
-        .back-btn:hover {
+        .back-btn:hover,
+        .cancel-btn:hover {
             background: #d1d5db;
         }
 
@@ -124,6 +121,7 @@
         input,
         select,
         textarea {
+            display: block;
             width: 100%;
             padding: 11px 12px;
             border: 1px solid #d1d5db;
@@ -143,19 +141,20 @@
             resize: vertical;
         }
 
-        .helptext {
-            display: block;
-            margin-top: 5px;
-            color: #6b7280;
-            font-size: 12px;
-        }
-
         .errorlist {
-            margin: 5px 0 8px;
-            padding: 0;
-            list-style: none;
+            margin: 6px 0 0;
+            padding-left: 20px;
             color: #dc3545;
             font-size: 13px;
+        }
+
+        .form-errors {
+            margin-bottom: 20px;
+            padding: 12px 15px;
+            background: #fff1f1;
+            border: 1px solid #f1caca;
+            border-radius: 7px;
+            color: #a52828;
         }
 
         .actions {
@@ -163,11 +162,6 @@
             justify-content: flex-end;
             gap: 10px;
             margin-top: 25px;
-        }
-
-        .cancel-btn {
-            background: #e5e7eb;
-            color: #374151;
         }
 
         .save-btn {
@@ -181,8 +175,27 @@
             background: #d97706;
         }
 
-        @media (max-width: 700px) {
+        .noc-field {
+            margin-top: 15px;
+        }
 
+        .noc-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .noc-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        @media (max-width: 700px) {
             body {
                 padding: 15px;
             }
@@ -194,7 +207,6 @@
 
             .header .btn {
                 width: 100%;
-                text-align: center;
             }
 
             .actions {
@@ -204,195 +216,131 @@
             .actions .btn,
             .actions button {
                 width: 100%;
-                text-align: center;
             }
-
         }
-
     </style>
-
 </head>
 
-
 <body>
+    <div class="container">
 
-
-<div class="container">
-
-
-    <!-- HEADER -->
-
-    <div class="header">
-
-        <div>
-
-            <h1>
-                Edit Property Tax
-            </h1>
-
-            <div class="subtitle">
-                {{ property.name }}
+        <div class="header">
+            <div>
+                <h1>Edit Property Tax</h1>
+                <div class="subtitle">{{ property.name }}</div>
             </div>
 
+            <a href="{% url 'property_detail' property.id %}" class="btn back-btn">
+                ← Back
+            </a>
         </div>
 
-
-        <a
-            href="{% url 'property_detail' property.id %}"
-            class="btn back-btn"
-        >
-            ← Back
-        </a>
-
-    </div>
-
-
-    <!-- FORM CARD -->
-
-    <div class="card">
-
-        <div class="card-header">
-
-            <h2>
-                Property Tax Details
-            </h2>
-
-        </div>
-
-
-        <div class="card-body">
-
-
-            <div class="property-box">
-
-                <div class="property-label">
-                    Property
-                </div>
-
-                <div class="property-name">
-                    {{ property.name }}
-                </div>
-
+        <div class="card">
+            <div class="card-header">
+                <h2>Property Tax Details</h2>
             </div>
 
+            <div class="card-body">
 
-            <form method="post">
+                <div class="property-box">
+                    <div class="property-label">Property</div>
+                    <div class="property-name">{{ property.name }}</div>
+                </div>
 
-                {% csrf_token %}
+                <form method="post" action="{% url 'property_tax_edit' tax.pk %}">
+                    {% csrf_token %}
 
+                    {% if form.errors %}
+                    <div class="form-errors">
+                        <strong>Please correct the following errors:</strong>
+                        {{ form.non_field_errors }}
 
-                {% if form.non_field_errors %}
-                    {{ form.non_field_errors }}
-                {% endif %}
+                        {% for field in form %}
+                        {% if field.errors %}
+                        <p>
+                            <strong>{{ field.label }}:</strong>
+                            {{ field.errors }}
+                        </p>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
 
-
-                <div class="form-group">
-
-                    <label for="{{ form.tax_year.id_for_label }}">
-                        Tax Year
-                    </label>
-
-                    {{ form.tax_year }}
-
-                    {% if form.tax_year.errors %}
+                    <div class="form-group">
+                        <label for="{{ form.tax_year.id_for_label }}">
+                            Tax Year
+                        </label>
+                        {{ form.tax_year }}
                         {{ form.tax_year.errors }}
-                    {% endif %}
+                    </div>
 
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="{{ form.tax_amount.id_for_label }}">
-                        Tax Amount
-                    </label>
-
-                    {{ form.tax_amount }}
-
-                    {% if form.tax_amount.errors %}
+                    <div class="form-group">
+                        <label for="{{ form.tax_amount.id_for_label }}">
+                            Tax Amount
+                        </label>
+                        {{ form.tax_amount }}
                         {{ form.tax_amount.errors }}
-                    {% endif %}
+                    </div>
 
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="{{ form.status.id_for_label }}">
-                        Status
-                    </label>
-
-                    {{ form.status }}
-
-                    {% if form.status.errors %}
+                    <div class="form-group">
+                        <label for="{{ form.status.id_for_label }}">
+                            Status
+                        </label>
+                        {{ form.status }}
                         {{ form.status.errors }}
-                    {% endif %}
+                    </div>
 
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="{{ form.paid_on.id_for_label }}">
-                        Paid On
-                    </label>
-
-                    {{ form.paid_on }}
-
-                    {% if form.paid_on.errors %}
+                    <div class="form-group">
+                        <label for="{{ form.paid_on.id_for_label }}">
+                            Paid On
+                        </label>
+                        {{ form.paid_on }}
                         {{ form.paid_on.errors }}
-                    {% endif %}
+                    </div>
 
-                </div>
+                    <div class="form-group">
+                        <label for="{{ form.paid_by.id_for_label }}">
+                            Paid By
+                        </label>
+                        {{ form.paid_by }}
+                        {{ form.paid_by.errors }}
+                    </div>
 
-
-                <div class="form-group">
-
-                    <label for="{{ form.notes.id_for_label }}">
-                        Notes
-                    </label>
-
-                    {{ form.notes }}
-
-                    {% if form.notes.errors %}
+                    <div class="form-group">
+                        <label for="{{ form.notes.id_for_label }}">
+                            Notes
+                        </label>
+                        {{ form.notes }}
                         {{ form.notes.errors }}
-                    {% endif %}
+                    </div>
+                    <div class="form-group noc-field">
+                        <label for="{{ form.noc_received.id_for_label }}">
+                            NOC Received
+                        </label>
 
-                </div>
+                        <label class="noc-checkbox">
+                            {{ form.noc_received }}
+                            <span>Yes, NOC received</span>
+                        </label>
 
+                        {{ form.noc_received.errors }}
+                    </div>
 
-                <div class="actions">
+                    <div class="actions">
+                        <a href="{% url 'property_detail' property.id %}" class="btn cancel-btn">
+                            Cancel
+                        </a>
 
-                    <a
-                        href="{% url 'property_detail' property.id %}"
-                        class="btn cancel-btn"
-                    >
-                        Cancel
-                    </a>
+                        <button type="submit" class="btn save-btn">
+                            Update Property Tax
+                        </button>
+                    </div>
 
+                </form>
 
-                    <button
-                        type="submit"
-                        class="btn save-btn"
-                    >
-                        Update Property Tax
-                    </button>
-
-                </div>
-
-
-            </form>
-
-
+            </div>
         </div>
-
     </div>
-
-
-</div>
-
-
 </body>
 
 </html>
-

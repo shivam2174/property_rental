@@ -139,6 +139,32 @@ class Property(models.Model):
         blank=True,
     )
 
+    
+    municipality_property_id = models.CharField(
+    max_length=100,
+    blank=True,
+    default="",
+    verbose_name="Municipality Property ID",
+    )
+
+    mutation_done = models.BooleanField(
+    default=False,
+    verbose_name="Mutation Done?",
+    )
+
+    pending_property_tax = models.DecimalField(
+    max_digits=14,
+    decimal_places=2,
+    default=0,
+    verbose_name="Pending Property Tax (₹)",
+    )
+
+    has_previous_tax_arrears = models.BooleanField(
+    default=False,
+    verbose_name="Any Previous Arrears?",
+    )
+
+
     # -----------------------------------------------------
     # PURCHASE DETAILS
     # -----------------------------------------------------
@@ -312,6 +338,24 @@ class PropertyTax(models.Model):
     )
     created_at = models.DateTimeField(
         auto_now_add=True
+    )
+
+    PAID_BY_CHOICES = [
+    ("credit_card", "Credit Card"),
+    ("cheque", "NBT / Cheque NBR"),
+    ("cash", "Cash"),
+    ]
+
+    paid_by = models.CharField(
+    max_length=20,
+    choices=PAID_BY_CHOICES,
+    blank=True,
+    default="",
+    verbose_name="Paid By",
+    )
+    noc_received = models.BooleanField(
+    default=False,
+    verbose_name="NOC Received"
     )
 
     class Meta:
@@ -555,9 +599,10 @@ class LeaseAgreement(models.Model):
     # RENT-FREE PERIOD
     # =====================================================
 
-    rent_free_months = models.PositiveIntegerField(
-        default=0,
-        help_text="Number of rent-free months.",
+    rent_free_period_days = models.PositiveIntegerField(
+    default=0,
+    verbose_name="Rent-Free Period (Days)",
+    help_text="Example: first 60 days rent-free.",
     )
 
     # =====================================================
@@ -813,76 +858,32 @@ class LeaseAgreement(models.Model):
         if not self.start_date:
             return None
 
-        if self.rent_free_months <= 0:
+        if self.rent_free_days <= 0:
             return None
 
         from dateutil.relativedelta import relativedelta
 
         return (
             self.start_date
-            + relativedelta(months=self.rent_free_months)
+            + relativedelta(days=self.rent_free_days)
             - relativedelta(days=1)
         )
 
-    # =====================================================
-    # RENT-FREE STATUS
-    # =====================================================
 
-    def is_rent_free(self, check_date=None):
+@property
+def rent_free_end_date(self):
+    if not self.start_date:
+        return None
 
-        if self.rent_free_months <= 0:
-            return False
+    if self.rent_free_period_days <= 0:
+        return None
 
-        if check_date is None:
-            from datetime import date
-            check_date = date.today()
+    from datetime import timedelta
 
-        if not self.start_date:
-            return False
-
-        if self.rent_free_end_date is None:
-            return False
-
-        return (
-            self.start_date
-            <= check_date
-            <= self.rent_free_end_date
-        )
-
-    # =====================================================
-    # LOCK-IN STATUS
-    # =====================================================
-
-    def is_lock_in(self, check_date=None):
-
-        if self.lock_in_months <= 0:
-            return False
-
-        if check_date is None:
-            from datetime import date
-            check_date = date.today()
-
-        if not self.start_date:
-            return False
-
-        if self.lock_in_end_date is None:
-            return False
-
-        return (
-            self.start_date
-            <= check_date
-            <= self.lock_in_end_date
-        )
-
-    # =====================================================
-    # STRING
-    # =====================================================
-
-    def __str__(self):
-        return (
-            f"{self.tenant.full_name} - "
-            f"{self.start_date}"
-        )
+    return (
+        self.start_date
+        + timedelta(days=self.rent_free_period_days - 1)
+    )
 
    
 # =========================================================

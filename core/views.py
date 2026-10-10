@@ -1320,6 +1320,8 @@ def property_edit(request, pk):
             request,
             "This property cannot be deleted because related rental records exist.",
         )
+
+        
 def property_delete(request, pk):
 
     if request.method != "POST":
@@ -5386,34 +5388,30 @@ def property_tax_add(request, property_id):
     )
 
 
-def property_tax_edit(request, pk):
 
+def property_tax_edit(request, pk):
     tax = get_object_or_404(
         PropertyTax.objects.select_related("property"),
         pk=pk,
     )
 
     if request.method == "POST":
-
         form = PropertyTaxForm(
             request.POST,
             instance=tax,
         )
 
         if form.is_valid():
-
             form.save()
-
             return redirect(
                 "property_detail",
                 pk=tax.property.pk,
             )
+        else:
+            print("Property Tax form errors:", form.errors)
 
     else:
-
-        form = PropertyTaxForm(
-            instance=tax,
-        )
+        form = PropertyTaxForm(instance=tax)
 
     return render(
         request,

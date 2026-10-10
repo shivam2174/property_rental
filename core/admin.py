@@ -213,7 +213,7 @@ class LeaseAgreementAdmin(admin.ModelAdmin):
         "end_date",
         "monthly_rent",
         "lock_in_months",
-        "rent_free_months",
+        "rent_free_period_days",
         "parking_charge",
         "free_parking_spaces",
         "security_deposit",

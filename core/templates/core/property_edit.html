@@ -1,15 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Edit Property</title>
 
     <style>
+        :root {
+            --primary: #234b83;
+            --primary-dark: #18375f;
+            --primary-light: #edf4ff;
+            --background: #f3f6fb;
+            --surface: #ffffff;
+            --text: #172b4d;
+            --muted: #68778d;
+            --border: #dce4ef;
+            --danger: #c24141;
+            --shadow: 0 8px 28px rgba(23, 43, 77, .07);
+        }
 
         * {
             box-sizing: border-box;
@@ -17,210 +25,268 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            color: #222;
+            padding: 30px 20px 45px;
+            background: var(--background);
+            color: var(--text);
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
-        /* =========================
-           HEADER
-        ========================= */
+        .container {
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+        }
 
         .header {
-            background: #1f2937;
-            color: white;
-            padding: 18px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 17px;
+            margin-bottom: 24px;
+            padding: 25px 28px;
+            border: 1px solid #dfe7f2;
+            border-radius: 15px;
+            background: linear-gradient(120deg, #fff, #edf4ff);
+            box-shadow: var(--shadow);
         }
 
         .header-inner {
-            max-width: 850px;
-            margin: auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 15px;
+            width: 100%;
         }
 
         .header h1 {
-            margin: 0;
+            margin: 0 0 5px;
+            color: var(--text);
             font-size: 26px;
+            font-weight: 750;
+            letter-spacing: -.5px;
         }
 
         .header p {
-            margin: 6px 0 0;
-            color: #d1d5db;
+            margin: 3px 0 0;
+            color: var(--muted);
+            font-size: 13px;
         }
-
-        /* =========================
-           HEADER NAVIGATION
-        ========================= */
 
         .header-buttons {
             display: flex;
+            align-items: center;
             gap: 10px;
             flex-wrap: wrap;
         }
 
-        .btn {
-            border: none;
-            padding: 10px 16px;
-            border-radius: 7px;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: 600;
-        }
-
-        .btn-back {
-            background: #6b7280;
-            color: white;
-        }
-
-        .btn-back:hover {
-            background: #4b5563;
-        }
-
-        .btn-dashboard {
-            background: #2563eb;
-            color: white;
-        }
-
-        .btn-dashboard:hover {
-            background: #1d4ed8;
-        }
-
-        /* =========================
-           CONTAINER
-        ========================= */
-
-        .container {
-            max-width: 850px;
-            margin: 35px auto;
-            padding: 0 20px;
-        }
-
         .card {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 22px;
+            padding: 26px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
         }
 
-        /* =========================
-           MESSAGES
-        ========================= */
-
-        .messages {
-            margin-bottom: 20px;
+        .card-header {
+            margin-bottom: 22px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e8edf5;
         }
 
-        .message {
-            padding: 12px;
-            background: #dcfce7;
-            color: #166534;
-            border-radius: 6px;
-            margin-bottom: 8px;
+        .card-header h2 {
+            margin: 0;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 750;
         }
-
-        /* =========================
-           FORM
-        ========================= */
 
         .form-group {
+            min-width: 0;
             margin-bottom: 20px;
         }
 
         label {
             display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 7px;
+            color: #34445d;
+            font-size: 13px;
+            font-weight: 650;
         }
 
         input,
         select,
         textarea {
+            display: block;
             width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 15px;
-            background: white;
+            min-width: 0;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #cfd9e7;
+            border-radius: 8px;
+            outline: none;
+            background: #fff;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            transition: border-color .2s, box-shadow .2s;
         }
 
         textarea {
-            min-height: 100px;
+            min-height: 95px;
             resize: vertical;
         }
 
         input:focus,
         select:focus,
         textarea:focus {
-            outline: none;
-            border-color: #2563eb;
+            border-color: #4679bd;
+            box-shadow: 0 0 0 3px rgba(55, 113, 187, .12);
         }
 
-        /* =========================
-           SAVE BUTTON
-        ========================= */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 10px 16px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background .2s, transform .2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-back,
+        .btn-secondary {
+            border-color: var(--border);
+            background: #fff;
+            color: var(--text);
+        }
+
+        .btn-back:hover,
+        .btn-secondary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-dashboard,
+        .btn-save {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-dashboard:hover,
+        .btn-save:hover {
+            background: var(--primary-dark);
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 13px 16px;
+            border: 1px solid #c8e8d8;
+            border-radius: 9px;
+            background: #effaf4;
+            color: #176747;
+        }
+
+        .message.error {
+            border-color: #f1caca;
+            background: #fff1f1;
+            color: #a52828;
+        }
 
         .buttons {
             display: flex;
-            gap: 12px;
-            margin-top: 25px;
             flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 25px;
+            padding-top: 22px;
+            border-top: 1px solid var(--border);
         }
-
-        .btn-save {
-            background: #2563eb;
-            color: white;
-        }
-
-        .btn-save:hover {
-            background: #1d4ed8;
-        }
-
-        /* =========================
-           DELETE SECTION
-        ========================= */
 
         .delete-section {
             margin-top: 30px;
             padding-top: 25px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid var(--border);
         }
 
         .delete-warning {
-            color: #991b1b;
-            background: #fef2f2;
-            padding: 12px;
-            border-radius: 6px;
             margin-bottom: 12px;
-            font-size: 14px;
+            padding: 12px;
+            border: 1px solid #f1caca;
+            border-radius: 8px;
+            background: #fff1f1;
+            color: #991b1b;
+            font-size: 13px;
         }
 
         .btn-delete {
-            background: #dc2626;
+            background: #c24141;
             color: white;
         }
 
         .btn-delete:hover {
-            background: #b91c1c;
+            background: #a52828;
         }
 
-        /* =========================
-           MOBILE
-        ========================= */
-
-        @media (max-width: 600px) {
-
-            .header {
-                padding: 18px;
+        @media (max-width: 760px) {
+            body {
+                padding: 15px 10px 30px;
             }
 
+            .header,
             .header-inner {
+                align-items: flex-start;
                 flex-direction: column;
-                align-items: stretch;
+            }
+
+            .header {
+                padding: 19px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header-buttons {
+                width: 100%;
+            }
+
+            .header-buttons .btn {
+                flex: 1;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .buttons .btn,
+            .delete-section .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .header h1 {
+                font-size: 20px;
             }
 
             .header-buttons {
@@ -229,338 +295,367 @@
 
             .header-buttons .btn {
                 width: 100%;
-                text-align: center;
             }
-
-            .container {
-                margin: 20px auto;
-                padding: 0 15px;
-            }
-
-            .card {
-                padding: 20px;
-            }
-
-            .buttons {
-                flex-direction: column;
-            }
-
-            .buttons .btn,
-            .buttons button {
-                width: 100%;
-                text-align: center;
-            }
-
         }
-
     </style>
-
 </head>
 
-
 <body>
+<div class="container">
 
-    <!-- =========================
-         HEADER
-    ========================= -->
-
-    <div class="header">
-
+    <header class="header">
         <div class="header-inner">
-
             <div>
-
                 <h1>Edit Property</h1>
-
-                <p>Update property information</p>
-
+                <p>Update property information and records.</p>
             </div>
 
-
-            <!-- =========================
-                 NAVIGATION
-            ========================= -->
-
             <div class="header-buttons">
-
-                <a
-                    href="{% url 'property_list' %}"
-                    class="btn btn-back"
-                >
+                <a href="{% url 'property_list' %}" class="btn btn-back">
                     ← Back to Properties
                 </a>
 
-                <a
-                    href="{% url 'dashboard' %}"
-                    class="btn btn-dashboard"
-                >
+                <a href="{% url 'dashboard' %}" class="btn btn-dashboard">
                     🏠 Dashboard
                 </a>
-
             </div>
+        </div>
+    </header>
 
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {% if message.tags == 'error' %}error{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Property Information</h2>
         </div>
 
-    </div>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
 
+            <div class="form-group">
+                <label for="owner">Property Owner *</label>
+                <select id="owner" name="owner" required>
+                    <option value="">-- Select Owner --</option>
 
-    <!-- =========================
-         MAIN CONTENT
-    ========================= -->
-
-    <div class="container">
-
-        <div class="card">
-
-
-            <!-- =========================
-                 MESSAGES
-            ========================= -->
-
-            {% if messages %}
-
-                <div class="messages">
-
-                    {% for message in messages %}
-
-                        <div class="message">
-                            {{ message }}
-                        </div>
-
+                    {% for owner in owners %}
+                        <option value="{{ owner.id }}"
+                            {% if property.owner_id == owner.id %}selected{% endif %}>
+                            {{ owner }}
+                        </option>
                     {% endfor %}
-
-                </div>
-
-            {% endif %}
-
-
-            <!-- =========================
-                 EDIT FORM
-            ========================= -->
-
-            <form method="POST">
-
-                {% csrf_token %}
-
-
-                <!-- OWNER -->
-
-                <div class="form-group">
-
-                    <label>
-                        Owner / Company *
-                    </label>
-
-                    <select
-                        name="owner"
-                        required
-                    >
-
-                        <option value="">
-                            Select Owner
-                        </option>
-
-                        {% for owner in owners %}
-
-                            <option
-                                value="{{ owner.id }}"
-                                {% if property.owner_id == owner.id %}
-                                    selected
-                                {% endif %}
-                            >
-
-                                {{ owner.name }}
-
-                                {% if owner.company_name %}
-                                    - {{ owner.company_name }}
-                                {% endif %}
-
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- PROPERTY NAME -->
-
-                <div class="form-group">
-
-                    <label>
-                        Property Name *
-                    </label>
-
-                    <input
-                        type="text"
-                        name="name"
-                        value="{{ property.name }}"
-                        required
-                    >
-
-                </div>
-
-
-                <!-- ADDRESS -->
-
-                <div class="form-group">
-
-                    <label>
-                        Address *
-                    </label>
-
-                    <textarea
-                        name="address"
-                        required
-                    >{{ property.address }}</textarea>
-
-                </div>
-
-
-                <!-- CITY -->
-
-                <div class="form-group">
-
-                    <label>
-                        City
-                    </label>
-
-                    <input
-                        type="text"
-                        name="city"
-                        value="{{ property.city }}"
-                    >
-
-                </div>
-
-
-                <!-- STATE -->
-
-                <div class="form-group">
-
-                    <label>
-                        State
-                    </label>
-
-                    <input
-                        type="text"
-                        name="state"
-                        value="{{ property.state }}"
-                    >
-
-                </div>
-
-
-                <!-- PINCODE -->
-
-                <div class="form-group">
-
-                    <label>
-                        Pincode
-                    </label>
-
-                    <input
-                        type="text"
-                        name="pincode"
-                        value="{{ property.pincode }}"
-                    >
-
-                </div>
-
-
-                <!-- STATUS -->
-
-                <div class="form-group">
-
-                    <label>
-                        Property Status
-                    </label>
-
-                    <select name="status">
-
-                        <option
-                            value="active"
-                            {% if property.status == "active" %}
-                                selected
-                            {% endif %}
-                        >
-                            Active
-                        </option>
-
-                        <option
-                            value="inactive"
-                            {% if property.status == "inactive" %}
-                                selected
-                            {% endif %}
-                        >
-                            Inactive
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <!-- =========================
-                     SAVE
-                ========================= -->
-
-                <div class="buttons">
-
-                    <button
-                        type="submit"
-                        class="btn btn-save"
-                    >
-                        ✓ Save Changes
-                    </button>
-
-                </div>
-
-            </form>
-
-
-            <!-- =========================
-                 DELETE PROPERTY
-            ========================= -->
-
-            <div class="delete-section">
-
-                <div class="delete-warning">
-
-                    ⚠️ Deleting this property may affect
-                    related units, renters, agreements,
-                    and invoices.
-
-                </div>
-
-
-                <form
-                    method="POST"
-                    action="{% url 'property_delete' property.id %}"
-                    onsubmit="return confirm(
-                        'Are you sure you want to delete this property? This action cannot be undone.'
-                    );"
-                >
-
-                    {% csrf_token %}
-
-                    <button
-                        type="submit"
-                        class="btn btn-delete"
-                    >
-                        🗑 Delete Property
-                    </button>
-
-                </form>
-
+                </select>
             </div>
 
+            <div class="form-group">
+                <label for="name">Property Description *</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value="{{ property.name|default:'' }}"
+                    placeholder="Enter property name or description"
+                    required
+                >
+            </div>
 
+            <div class="form-group">
+                <label for="address">Property Address</label>
+                <textarea
+                    id="address"
+                    name="address"
+                    placeholder="Enter complete property address"
+                >{{ property.address|default:'' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="unit_no">Unit Number</label>
+                <input
+                    type="text"
+                    id="unit_no"
+                    name="unit_no"
+                    value="{{ property.unit_no|default:'' }}"
+                    placeholder="Example: 101"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="tower">Tower / Block</label>
+                <input
+                    type="text"
+                    id="tower"
+                    name="tower"
+                    value="{{ property.tower|default:'' }}"
+                    placeholder="Enter tower or block"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="city">City</label>
+                <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    value="{{ property.city|default:'' }}"
+                    placeholder="Enter city"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="state">State</label>
+                <input
+                    type="text"
+                    id="state"
+                    name="state"
+                    value="{{ property.state|default:'' }}"
+                    placeholder="Enter state"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="pincode">PIN Code</label>
+                <input
+                    type="text"
+                    id="pincode"
+                    name="pincode"
+                    value="{{ property.pincode|default:'' }}"
+                    maxlength="10"
+                    placeholder="Enter PIN code"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="purchased_on">Purchased On</label>
+                <input
+                    type="date"
+                    id="purchased_on"
+                    name="purchased_on"
+                    value="{{ property.purchased_on|date:'Y-m-d' }}"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="municipality_property_id">Municipality Property ID</label>
+                <input
+                    type="text"
+                    id="municipality_property_id"
+                    name="municipality_property_id"
+                    value="{{ property.municipality_property_id|default:'' }}"
+                    placeholder="Enter municipal property ID"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="total_area">Total Area (sq. ft.)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    id="total_area"
+                    name="total_area"
+                    value="{{ property.total_area|default:'0' }}"
+                    placeholder="0.00"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="price">Price (₹)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    id="price"
+                    name="price"
+                    value="{{ property.price|default:'0' }}"
+                    placeholder="0.00"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="per_sqft_rate">Per Sq. Ft. Rate (₹)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    id="per_sqft_rate"
+                    name="per_sqft_rate"
+                    value="{{ property.per_sqft_rate|default:'0' }}"
+                    placeholder="0.00"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="stamp_duty">Stamp Duty (₹)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    id="stamp_duty"
+                    name="stamp_duty"
+                    value="{{ property.stamp_duty|default:'0' }}"
+                    placeholder="0.00"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="total_purchase_price">Total Purchase Price (₹)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    id="total_purchase_price"
+                    name="total_purchase_price"
+                    value="{{ property.total_purchase_price|default:'0' }}"
+                    placeholder="0.00"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="gst_number">GST Number</label>
+                <input
+                    type="text"
+                    id="gst_number"
+                    name="gst_number"
+                    value="{{ property.gst_number|default:'' }}"
+                    placeholder="Enter GST number"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="lap_amount">LAP Amount (₹)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    id="lap_amount"
+                    name="lap_amount"
+                    value="{{ property.lap_amount|default:'0' }}"
+                    placeholder="0.00"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="monthly_installment">Monthly Installment (₹)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    id="monthly_installment"
+                    name="monthly_installment"
+                    value="{{ property.monthly_installment|default:'0' }}"
+                    placeholder="0.00"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="lap_maturity">LAP Maturity Date</label>
+                <input
+                    type="date"
+                    id="lap_maturity"
+                    name="lap_maturity"
+                    value="{{ property.lap_maturity|date:'Y-m-d' }}"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="parking_slot">Parking Slot</label>
+                <input
+                    type="text"
+                    id="parking_slot"
+                    name="parking_slot"
+                    value="{{ property.parking_slot|default:'' }}"
+                    placeholder="Example: P-101"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="status">Property Status</label>
+                <select id="status" name="status">
+                    <option value="active"
+                        {% if property.status == "active" %}selected{% endif %}>
+                        Active
+                    </option>
+                    <option value="sold_out"
+                        {% if property.status == "sold_out" %}selected{% endif %}>
+                        Sold-out
+                    </option>
+                    <option value="inactive"
+                        {% if property.status == "inactive" %}selected{% endif %}>
+                        Inactive
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="mutation_done">Mutation Done?</label>
+                <select id="mutation_done" name="mutation_done">
+                    <option value="False"
+                        {% if property and not property.mutation_done %}selected{% endif %}>
+                        No
+                    </option>
+                    <option value="True"
+                        {% if property and property.mutation_done %}selected{% endif %}>
+                        Yes
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="has_previous_tax_arrears">Any Previous Tax Arrears?</label>
+                <select id="has_previous_tax_arrears" name="has_previous_tax_arrears">
+                    <option value="False"
+                        {% if property and not property.has_previous_tax_arrears %}selected{% endif %}>
+                        No
+                    </option>
+                    <option value="True"
+                        {% if property and property.has_previous_tax_arrears %}selected{% endif %}>
+                        Yes
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="pending_property_tax">Pending Property Tax (₹)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="pending_property_tax"
+                    name="pending_property_tax"
+                    value="{{ property.pending_property_tax|default:'0' }}"
+                    placeholder="Enter outstanding tax"
+                >
+            </div>
+
+            <div class="buttons">
+                <a href="{% url 'property_list' %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <button type="submit" class="btn btn-save">
+                    ✓ Save Changes
+                </button>
+            </div>
+        </form>
+
+        <div class="delete-section">
+            <div class="delete-warning">
+                ⚠️ Deleting this property may affect related records, including
+                agreements, tenants, and invoices.
+            </div>
+
+            <form
+                method="POST"
+                action="{% url 'property_delete' property.id %}"
+                onsubmit="return confirm('Are you sure you want to delete this property? This action cannot be undone.');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="btn btn-delete">
+                    🗑 Delete Property
+                </button>
+            </form>
         </div>
-
     </div>
-
+</div>
 </body>
-
 </html>
