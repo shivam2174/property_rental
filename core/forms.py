@@ -1,4 +1,5 @@
 from django import forms
+from datetime import date
 from .models import Tenant, LeaseAgreement, Property, PropertyTax, PropertyDocument
 
 
@@ -261,7 +262,28 @@ class AgreementForm(forms.ModelForm):
                 "rows": 3,
             }),
         }
+    
+def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
 
+    # Default lease start date to today for a new lease.
+    if not self.instance.pk and not self.initial.get("start_date"):
+        self.initial["start_date"] = date.today()
+
+    # Set predictable IDs for JavaScript.
+    field_ids = {
+        "property": "id_property",
+        "start_date": "id_start_date",
+        "end_date": "id_end_date",
+        "lock_in_months": "id_lock_in_months",
+        "extension_1_start_date": "id_extension_1_start_date",
+        "extension_1_end_date": "id_extension_1_end_date",
+        "extension_2_start_date": "id_extension_2_start_date",
+        "extension_2_end_date": "id_extension_2_end_date",
+    }
+
+    for field_name, field_id in field_ids.items():
+        self.fields[field_name].widget.attrs["id"] = field_id
 
 # =========================================================
 # PROPERTY TAX FORM
