@@ -269,11 +269,6 @@
             border-radius: 4px;
         }
 
-        .print-button {
-            background: #222;
-            color: white;
-        }
-
         .pdf-button {
             background: #555;
             color: white;
@@ -353,33 +348,7 @@
 
         }
 
-        /* ==============================
-           PRINT
-        ============================== */
-
-        @media print {
-
-            body {
-                background: white;
-                padding: 0;
-            }
-
-            .invoice-container {
-                box-shadow: none;
-                max-width: none;
-                padding: 20px;
-            }
-
-            .buttons {
-                display: none;
-            }
-
-            .cancelled-message {
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
-            }
-
-        }
+       
 
     </style>
 
@@ -1231,17 +1200,6 @@
     <!-- ================================================= -->
 
     <div class="buttons">
-
-
-        <!-- PRINT -->
-
-        <button
-            type="button"
-            class="print-button"
-            onclick="window.print()"
-        >
-            Print Invoice
-        </button>
 
 
         <!-- PDF -->

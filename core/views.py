@@ -1756,7 +1756,7 @@ def monthly_gst_report(request):
             CENT, rounding=ROUND_HALF_UP
         )
 
-    # Selected month and year
+    # Selected month
     try:
         month = int(request.GET.get("month", today.month))
         if not 1 <= month <= 12:
@@ -1764,6 +1764,7 @@ def monthly_gst_report(request):
     except (TypeError, ValueError):
         month = today.month
 
+    # Selected year
     try:
         year = int(request.GET.get("year", today.year))
         if not 1900 <= year <= 2200:
@@ -1779,38 +1780,34 @@ def monthly_gst_report(request):
     selected_owner = request.GET.get("owner", "").strip()
 
     month_start = date(year, month, 1)
+
     next_month = (
         date(year + 1, 1, 1)
         if month == 12
         else date(year, month + 1, 1)
     )
+
     month_end = next_month - timedelta(days=1)
 
     owners = Owner.objects.all().order_by("name")
 
     agreements = LeaseAgreement.objects.filter(
         (
-            models.Q(
-                start_date__lte=month_end
-            )
+            models.Q(start_date__lte=month_end)
             & (
                 models.Q(end_date__isnull=True)
                 | models.Q(end_date__gte=month_start)
             )
         )
         | (
-            models.Q(
-                extension_1_start_date__lte=month_end
-            )
+            models.Q(extension_1_start_date__lte=month_end)
             & (
                 models.Q(extension_1_end_date__isnull=True)
                 | models.Q(extension_1_end_date__gte=month_start)
             )
         )
         | (
-            models.Q(
-                extension_2_start_date__lte=month_end
-            )
+            models.Q(extension_2_start_date__lte=month_end)
             & (
                 models.Q(extension_2_end_date__isnull=True)
                 | models.Q(extension_2_end_date__gte=month_start)
@@ -1846,19 +1843,32 @@ def monthly_gst_report(request):
     existing_count = 0
 
     for agreement in agreements:
+
+        # Skip agreements terminated before the selected month.
         if (
             agreement.termination_date
             and agreement.termination_date < month_start
         ):
             continue
 
+        # Check rent-free status only if the model supports it.
+        # This avoids AttributeError when is_rent_free is absent.
+        rent_free_checker = getattr(
+            agreement, "is_rent_free", None
+        )
+        rent_free_end_date = getattr(
+            agreement, "rent_free_end_date", None
+        )
+
         if (
-            agreement.is_rent_free(month_start)
-            and agreement.rent_free_end_date
-            and agreement.rent_free_end_date >= month_end
+            callable(rent_free_checker)
+            and rent_free_end_date
+            and rent_free_end_date >= month_end
+            and rent_free_checker(month_start)
         ):
             continue
 
+        # Find the rent applicable to this month.
         rent_record = (
             agreement.rent_history.filter(
                 effective_from__lte=month_end
@@ -1874,6 +1884,7 @@ def monthly_gst_report(request):
             else agreement.monthly_rent or ZERO
         )
 
+        # Apply the first extension rent when applicable.
         if (
             agreement.extension_1_start_date
             and agreement.extension_1_monthly_rent
@@ -1886,6 +1897,7 @@ def monthly_gst_report(request):
         ):
             monthly_rent = agreement.extension_1_monthly_rent
 
+        # Apply the second extension rent when applicable.
         if (
             agreement.extension_2_start_date
             and agreement.extension_2_monthly_rent
@@ -1901,7 +1913,9 @@ def monthly_gst_report(request):
         monthly_rent = money(monthly_rent)
         parking_charge = money(agreement.parking_charge)
 
-        taxable_amount = money(monthly_rent + parking_charge)
+        taxable_amount = money(
+            monthly_rent + parking_charge
+        )
 
         cgst_rate = agreement.cgst_rate or ZERO
         sgst_rate = agreement.sgst_rate or ZERO
@@ -1912,6 +1926,7 @@ def monthly_gst_report(request):
         sgst_amount = money(
             taxable_amount * sgst_rate / Decimal("100")
         )
+
         total_amount = money(
             taxable_amount + cgst_amount + sgst_amount
         )
@@ -1933,7 +1948,7 @@ def monthly_gst_report(request):
                 ).first()
 
                 if invoice:
-                    # Keep existing invoices and their payment data.
+                    # Preserve existing invoices and payments.
                     existing_count += 1
                 else:
                     due_day = agreement.rent_due_day or 5
@@ -2007,13 +2022,14 @@ def monthly_gst_report(request):
                     )
 
                     area = agreement.rental_area or ZERO
+
                     rate_per_sqft = (
                         money(monthly_rent / area)
                         if area > ZERO
                         else ZERO
                     )
 
-                    # Rent item: rate is monthly rent per sq. ft.
+                    # Rent invoice item.
                     InvoiceItem.objects.create(
                         invoice=invoice,
                         item_type="rent",
@@ -2024,7 +2040,7 @@ def monthly_gst_report(request):
                         amount=monthly_rent,
                     )
 
-                    # Parking item remains separate from rent.
+                    # Parking invoice item.
                     if parking_charge > ZERO:
                         InvoiceItem.objects.create(
                             invoice=invoice,
@@ -2058,6 +2074,7 @@ def monthly_gst_report(request):
             "serial_no": serial_no,
             "invoice": report_invoice,
         })
+
         serial_no += 1
 
         taxable_total += taxable_amount
@@ -2095,6 +2112,7 @@ def monthly_gst_report(request):
         "core/monthly_gst_report.html",
         context,
     )
+
 
 
 def agreement_add(request):
