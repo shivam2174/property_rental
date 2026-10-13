@@ -5,15 +5,11 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Property Rental Dashboard</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
@@ -456,7 +452,6 @@
             }
 
         }
-
     </style>
 
 </head>
@@ -464,471 +459,418 @@
 
 <body>
 
-<div class="container">
+    <div class="container">
 
 
-    <!-- =====================================================
+        <!-- =====================================================
          HEADER
     ====================================================== -->
 
-    <div class="header">
+        <div class="header">
 
-        <div class="header-content">
+            <div class="header-content">
 
-            <h1>
-                Property Rental Dashboard
-            </h1>
+                <h1>
+                    Property Rental Dashboard
+                </h1>
 
-            <p>
-                Overview of your properties, tenants, invoices and payments
-            </p>
+                <p>
+                    Overview of your properties, tenants, invoices and payments
+                </p>
+
+            </div>
+
+
+            <!-- RESET TEST DATA -->
+
+            <form method="POST" action="{% url 'reset_test_data' %}" class="reset-form" onsubmit="
+                return confirm(
+                    'WARNING! This will permanently delete all testing Tenants, Rental Agreements, Invoices, Invoice Items, Payments and Rent History. Owners and Properties will NOT be deleted.\\n\\nAre you sure you want to continue?'
+                );
+            ">
+
+                {% csrf_token %}
+
+                <button type="submit" class="reset-button">
+                    ⚠ Reset Test Data
+                </button>
+
+            </form>
 
         </div>
 
 
-        <!-- RESET TEST DATA -->
-
-        <form
-            method="POST"
-            action="{% url 'reset_test_data' %}"
-            class="reset-form"
-            onsubmit="
-                return confirm(
-                    'WARNING! This will permanently delete all testing Tenants, Rental Agreements, Invoices, Invoice Items, Payments and Rent History. Owners and Properties will NOT be deleted.\\n\\nAre you sure you want to continue?'
-                );
-            "
-        >
-
-            {% csrf_token %}
-
-            <button
-                type="submit"
-                class="reset-button"
-            >
-                ⚠ Reset Test Data
-            </button>
-
-        </form>
-
-    </div>
-
-
-    <!-- =====================================================
+        <!-- =====================================================
          DJANGO MESSAGES
     ====================================================== -->
 
-    {% if messages %}
+        {% if messages %}
 
         {% for message in messages %}
 
-            <div
-                class="
+        <div class="
                     message
                     {% if message.tags == 'error' %}
                         error
                     {% endif %}
-                "
-            >
+                ">
 
-                {{ message }}
+            {{ message }}
 
-            </div>
+        </div>
 
         {% endfor %}
 
-    {% endif %}
+        {% endif %}
 
 
-    <!-- =====================================================
+        <!-- =====================================================
          PROPERTY OVERVIEW
     ====================================================== -->
 
-    <div class="section-title">
-        Property Overview
-    </div>
+        <div class="section-title">
+            Property Overview
+        </div>
 
 
-    <div class="cards">
+        <div class="cards">
 
 
-        <div class="card">
+            <div class="card">
 
-            <div class="card-title">
-                Total Properties
+                <div class="card-title">
+                    Total Properties
+                </div>
+
+                <div class="card-value blue">
+                    {{ total_properties }}
+                </div>
+
             </div>
 
-            <div class="card-value blue">
-                {{ total_properties }}
+
+            <div class="card">
+
+                <div class="card-title">
+                    Total Units
+                </div>
+
+                <div class="card-value blue">
+                    {{ total_units }}
+                </div>
+
             </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Occupied Units
+                </div>
+
+                <div class="card-value green">
+                    {{ occupied_units }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Vacant Units
+                </div>
+
+                <div class="card-value orange">
+                    {{ vacant_units }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Total Tenants
+                </div>
+
+                <div class="card-value blue">
+                    {{ total_tenants|default:total_renters }}
+                </div>
+
+            </div>
+
 
         </div>
 
 
-        <div class="card">
-
-            <div class="card-title">
-                Total Units
-            </div>
-
-            <div class="card-value blue">
-                {{ total_units }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-title">
-                Occupied Units
-            </div>
-
-            <div class="card-value green">
-                {{ occupied_units }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-title">
-                Vacant Units
-            </div>
-
-            <div class="card-value orange">
-                {{ vacant_units }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-title">
-                Total Tenants
-            </div>
-
-            <div class="card-value blue">
-                {{ total_tenants|default:total_renters }}
-            </div>
-
-        </div>
-
-
-    </div>
-
-
-    <!-- =====================================================
+        <!-- =====================================================
          OWNER MANAGEMENT
     ====================================================== -->
 
-    <div class="section-title">
-        Owner Management
-    </div>
+        <div class="section-title">
+            Owner Management
+        </div>
 
 
-    <div class="management">
+        <div class="management">
 
 
-        <div class="management-card">
+            <div class="management-card">
 
-            <h3>
-                Property Owners
-            </h3>
+                <h3>
+                    Property Owners
+                </h3>
 
-            <p>
-                Manage property owner information used throughout
-                your property and invoice records.
-            </p>
+                <p>
+                    Manage property owner information used throughout
+                    your property and invoice records.
+                </p>
 
-            <a
-                href="{% url 'owner_list' %}"
-                class="btn btn-purple"
-            >
-                View Owners
-            </a>
+                <a href="{% url 'owner_list' %}" class="btn btn-purple">
+                    View Owners
+                </a>
+
+            </div>
+
+
+            <div class="management-card">
+
+                <h3>
+                    Add New Owner
+                </h3>
+
+                <p>
+                    Add a new property owner with address,
+                    contact, GST and PAN details.
+                </p>
+
+                <a href="{% url 'owner_add' %}" class="btn btn-blue">
+                    Add Owner
+                </a>
+
+            </div>
+
+
+            <div class="management-card">
+
+                <h3>
+                    Owner Information
+                </h3>
+
+                <p>
+                    Owner information is automatically used when
+                    generating invoices for linked properties.
+                </p>
+
+                <a href="{% url 'owner_list' %}" class="btn btn-gray">
+                    Manage Owners
+                </a>
+
+            </div>
+
 
         </div>
 
 
-        <div class="management-card">
-
-            <h3>
-                Add New Owner
-            </h3>
-
-            <p>
-                Add a new property owner with address,
-                contact, GST and PAN details.
-            </p>
-
-            <a
-                href="{% url 'owner_add' %}"
-                class="btn btn-blue"
-            >
-                Add Owner
-            </a>
-
-        </div>
-
-
-        <div class="management-card">
-
-            <h3>
-                Owner Information
-            </h3>
-
-            <p>
-                Owner information is automatically used when
-                generating invoices for linked properties.
-            </p>
-
-            <a
-                href="{% url 'owner_list' %}"
-                class="btn btn-gray"
-            >
-                Manage Owners
-            </a>
-
-        </div>
-
-
-    </div>
-
-
-    <!-- =====================================================
+        <!-- =====================================================
          FINANCIAL OVERVIEW
     ====================================================== -->
 
-    <div class="section-title">
-        Financial Overview
-    </div>
+        <div class="section-title">
+            Financial Overview
+        </div>
 
 
-    <div class="cards">
+        <div class="cards">
 
 
-        <div class="card">
+            <div class="card">
 
-            <div class="card-title">
-                Total Invoiced
+                <div class="card-title">
+                    Total Invoiced
+                </div>
+
+                <div class="card-value">
+                    ₹{{ total_invoice_amount|floatformat:2 }}
+                </div>
+
             </div>
 
-            <div class="card-value">
-                ₹{{ total_invoice_amount|floatformat:2 }}
+
+            <div class="card">
+
+                <div class="card-title">
+                    Total Collected
+                </div>
+
+                <div class="card-value green">
+                    ₹{{ total_collected|floatformat:2 }}
+                </div>
+
             </div>
+
+
+            <div class="card">
+
+                <div class="stat-card">
+                    <h3>TDS Amount</h3>
+                    <h2>₹{{ total_tds_amount|floatformat:2 }}</h2>
+                    <p>Total TDS deducted</p>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Total Invoices
+                </div>
+
+                <div class="card-value blue">
+                    {{ total_invoices }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Paid Invoices
+                </div>
+
+                <div class="card-value green">
+                    {{ paid_invoices }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Pending Invoices
+                </div>
+
+                <div class="card-value orange">
+                    {{ pending_invoices }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Generated Invoices
+                </div>
+
+                <div class="card-value blue">
+                    {{ generated_invoices }}
+                </div>
+
+            </div>
+
 
         </div>
 
 
-        <div class="card">
-
-            <div class="card-title">
-                Total Collected
-            </div>
-
-            <div class="card-value green">
-                ₹{{ total_collected|floatformat:2 }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-title">
-                Outstanding Amount
-            </div>
-
-            <div class="card-value red">
-                ₹{{ total_outstanding|floatformat:2 }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-title">
-                Total Invoices
-            </div>
-
-            <div class="card-value blue">
-                {{ total_invoices }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-title">
-                Paid Invoices
-            </div>
-
-            <div class="card-value green">
-                {{ paid_invoices }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-title">
-                Pending Invoices
-            </div>
-
-            <div class="card-value orange">
-                {{ pending_invoices }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-title">
-                Generated Invoices
-            </div>
-
-            <div class="card-value blue">
-                {{ generated_invoices }}
-            </div>
-
-        </div>
-
-
-    </div>
-
-
-    <!-- =====================================================
+        <!-- =====================================================
          QUICK ACTIONS
     ====================================================== -->
 
-    <div class="section-title">
-        Quick Actions
-    </div>
+        <div class="section-title">
+            Quick Actions
+        </div>
 
 
-    <div class="actions">
+        <div class="actions">
 
 
-        <a
-            href="{% url 'owner_add' %}"
-            class="btn btn-purple"
-        >
-            Add Owner
-        </a>
+            <a href="{% url 'owner_add' %}" class="btn btn-purple">
+                Add Owner
+            </a>
 
 
-        <a
-            href="{% url 'owner_list' %}"
-            class="btn btn-purple"
-        >
-            View Owners
-        </a>
+            <a href="{% url 'owner_list' %}" class="btn btn-purple">
+                View Owners
+            </a>
 
 
-        <a
-            href="{% url 'property_add' %}"
-            class="btn btn-blue"
-        >
-            Add Property
-        </a>
+            <a href="{% url 'property_add' %}" class="btn btn-blue">
+                Add Property
+            </a>
 
 
-        <a
-            href="{% url 'property_list' %}"
-            class="btn btn-blue"
-        >
-            Manage Properties
-        </a>
+            <a href="{% url 'property_list' %}" class="btn btn-blue">
+                Manage Properties
+            </a>
 
 
-        <a
-            href="{% url 'renter_add' %}"
-            class="btn btn-blue"
-        >
-            Add Tenant
-        </a>
+            <a href="{% url 'renter_add' %}" class="btn btn-blue">
+                Add Tenant
+            </a>
 
 
-        <a
-            href="{% url 'agreement_add' %}"
-            class="btn btn-orange"
-        >
-            Add Agreement
-        </a>
+            <a href="{% url 'agreement_add' %}" class="btn btn-orange">
+                Add Agreement
+            </a>
 
 
-        <a
-            href="{% url 'invoice_generate' %}"
-            class="btn btn-green"
-        >
-            Generate Invoice
-        </a>
+            <a href="{% url 'invoice_generate' %}" class="btn btn-green">
+                Generate Invoice
+            </a>
 
 
-        <a
-            href="{% url 'invoice_list' %}"
-            class="btn btn-gray"
-        >
-            View Invoices
-        </a>
+            <a href="{% url 'invoice_list' %}" class="btn btn-gray">
+                View Invoices
+            </a>
 
 
-        <!-- RESET TEST DATA -->
+            <!-- RESET TEST DATA -->
 
-        <form
-            method="POST"
-            action="{% url 'reset_test_data' %}"
-            style="display: inline; margin: 0;"
-            onsubmit="
+            <form method="POST" action="{% url 'reset_test_data' %}" style="display: inline; margin: 0;" onsubmit="
                 return confirm(
                     'WARNING! This will permanently delete all testing Tenants, Rental Agreements, Invoices, Invoice Items, Payments and Rent History. Owners and Properties will NOT be deleted.\\n\\nAre you sure?'
                 );
-            "
-        >
+            ">
 
-            {% csrf_token %}
+                {% csrf_token %}
 
-            <button
-                type="submit"
-                class="btn reset-action"
-            >
-                ⚠ Reset Test Data
-            </button>
+                <button type="submit" class="btn reset-action">
+                    ⚠ Reset Test Data
+                </button>
 
-        </form>
+            </form>
 
 
-    </div>
+        </div>
 
 
-    <!-- =====================================================
+        <!-- =====================================================
          RECENT ACTIVITY
     ====================================================== -->
 
-    <div class="section-title">
-        Recent Activity
-    </div>
+        <div class="section-title">
+            Recent Activity
+        </div>
 
 
-    <div class="table-grid">
+        <div class="table-grid">
 
 
-        <!-- ================= RECENT PAYMENTS ================= -->
+            <!-- ================= RECENT PAYMENTS ================= -->
 
-        <div class="table-card">
+            <div class="table-card">
 
-            <h3>
-                Recent Payments
-            </h3>
+                <h3>
+                    Recent Payments
+                </h3>
 
 
-            {% if recent_payments %}
+                {% if recent_payments %}
 
                 <table>
 
@@ -961,35 +903,32 @@
 
                         {% for payment in recent_payments %}
 
-                            <tr>
+                        <tr>
 
-                                <td>
-                                    {{ payment.payment_date|date:"d-m-Y" }}
-                                </td>
-
-
-                                <td>
-
-                                    <a
-                                        href="{% url 'invoice_detail' payment.invoice.invoice_number %}"
-                                        class="table-link"
-                                    >
-                                        #{{ payment.invoice.invoice_number }}
-                                    </a>
-
-                                </td>
+                            <td>
+                                {{ payment.payment_date|date:"d-m-Y" }}
+                            </td>
 
 
-                                <td class="amount">
-                                    ₹{{ payment.amount|floatformat:2 }}
-                                </td>
+                            <td>
+
+                                <a href="{% url 'invoice_detail' payment.invoice.invoice_number %}" class="table-link">
+                                    #{{ payment.invoice.invoice_number }}
+                                </a>
+
+                            </td>
 
 
-                                <td>
-                                    {{ payment.get_payment_method_display }}
-                                </td>
+                            <td class="amount">
+                                ₹{{ payment.amount|floatformat:2 }}
+                            </td>
 
-                            </tr>
+
+                            <td>
+                                {{ payment.get_payment_method_display }}
+                            </td>
+
+                        </tr>
 
                         {% endfor %}
 
@@ -997,28 +936,28 @@
 
                 </table>
 
-            {% else %}
+                {% else %}
 
                 <p>
                     No payments recorded yet.
                 </p>
 
-            {% endif %}
+                {% endif %}
 
 
-        </div>
+            </div>
 
 
-        <!-- ================= RECENT INVOICES ================= -->
+            <!-- ================= RECENT INVOICES ================= -->
 
-        <div class="table-card">
+            <div class="table-card">
 
-            <h3>
-                Recent Invoices
-            </h3>
+                <h3>
+                    Recent Invoices
+                </h3>
 
 
-            {% if recent_invoices %}
+                {% if recent_invoices %}
 
                 <table>
 
@@ -1051,67 +990,64 @@
 
                         {% for invoice in recent_invoices %}
 
-                            <tr>
+                        <tr>
 
-                                <td>
+                            <td>
 
-                                    <a
-                                        href="{% url 'invoice_detail' invoice.invoice_number %}"
-                                        class="table-link"
-                                    >
-                                        #{{ invoice.invoice_number }}
-                                    </a>
+                                <a href="{% url 'invoice_detail' invoice.invoice_number %}" class="table-link">
+                                    #{{ invoice.invoice_number }}
+                                </a>
 
-                                </td>
+                            </td>
 
 
-                                <td>
-                                    {{ invoice.tenant_name }}
-                                </td>
+                            <td>
+                                {{ invoice.tenant_name }}
+                            </td>
 
 
-                                <td class="amount">
-                                    ₹{{ invoice.total_amount|floatformat:2 }}
-                                </td>
+                            <td class="amount">
+                                ₹{{ invoice.total_amount|floatformat:2 }}
+                            </td>
 
 
-                                <td>
+                            <td>
 
-                                    {% if invoice.status == "paid" %}
+                                {% if invoice.status == "paid" %}
 
-                                        <span class="status status-paid">
-                                            Paid
-                                        </span>
+                                <span class="status status-paid">
+                                    Paid
+                                </span>
 
-                                    {% elif invoice.status == "pending" %}
+                                {% elif invoice.status == "pending" %}
 
-                                        <span class="status status-pending">
-                                            Pending
-                                        </span>
+                                <span class="status status-pending">
+                                    Pending
+                                </span>
 
-                                    {% elif invoice.status == "generated" %}
+                                {% elif invoice.status == "generated" %}
 
-                                        <span class="status status-generated">
-                                            Generated
-                                        </span>
+                                <span class="status status-generated">
+                                    Generated
+                                </span>
 
-                                    {% elif invoice.status == "cancelled" %}
+                                {% elif invoice.status == "cancelled" %}
 
-                                        <span class="status status-cancelled">
-                                            Cancelled
-                                        </span>
+                                <span class="status status-cancelled">
+                                    Cancelled
+                                </span>
 
-                                    {% else %}
+                                {% else %}
 
-                                        <span class="status">
-                                            {{ invoice.status }}
-                                        </span>
+                                <span class="status">
+                                    {{ invoice.status }}
+                                </span>
 
-                                    {% endif %}
+                                {% endif %}
 
-                                </td>
+                            </td>
 
-                            </tr>
+                        </tr>
 
                         {% endfor %}
 
@@ -1119,22 +1055,22 @@
 
                 </table>
 
-            {% else %}
+                {% else %}
 
                 <p>
                     No invoices generated yet.
                 </p>
 
-            {% endif %}
+                {% endif %}
+
+
+            </div>
 
 
         </div>
 
 
     </div>
-
-
-</div>
 
 </body>
 

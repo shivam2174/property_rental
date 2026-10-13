@@ -13,10 +13,21 @@ from datetime import date, timedelta
 from django.utils.dateparse import parse_date as django_parse_date
 from django.views.decorators.http import require_POST
 from dateutil.relativedelta import relativedelta
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.core.cache import cache
+from django.http import HttpResponse
+from django.utils import timezone
+from django.contrib.auth.views import PasswordResetView
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+
+
 
 from xhtml2pdf import pisa
 
-from .models import (
+from core.models import (
+    AdminUserProfile,
     Owner,
     Property,
     Tenant,
@@ -25,12 +36,14 @@ from .models import (
     LeaseNotification,
     RentHistory,
     Invoice,
+    TDSLedger,
     InvoiceItem,
     Payment,
     PropertyTax,
     PropertyDocument,
+
 )
-from .forms import TenantForm, AgreementForm, PropertyTaxForm
+from .forms import TenantForm, AgreementForm, PropertyTaxForm, AdminProfileForm, AdminUserCreateForm
 
 # =========================================================
 # COMMON HELPERS
@@ -128,6 +141,50 @@ def get_invoice_total_paid(invoice):
         or ZERO
     )
 
+
+def get_invoice_rent_amount(invoice):
+    """Return rent only, excluding GST and parking."""
+    return (
+        invoice.items.filter(item_type="rent")
+        .aggregate(total=Sum("amount"))["total"]
+        or ZERO
+    )
+
+
+def get_invoice_tds_amount(invoice):
+    """Calculate TDS at 10% of rent before GST."""
+    rent_amount = get_invoice_rent_amount(invoice)
+
+    return (
+        rent_amount * Decimal("10.00") / Decimal("100")
+    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def get_invoice_tds_credited(invoice):
+    """Return TDS only when it has been marked as credited."""
+    try:
+        ledger = invoice.tds_ledger
+    except TDSLedger.DoesNotExist:
+        return ZERO
+
+    if ledger.tds_credited:
+        return ledger.tds_amount
+
+    return ZERO
+
+
+def get_invoice_net_payable(invoice):
+    """Invoice total less the calculated TDS deduction."""
+    tds_amount = get_invoice_tds_amount(invoice)
+
+    return max(invoice.total_amount - tds_amount, ZERO)
+
+
+def get_invoice_cash_balance(invoice):
+    """Remaining cash/bank payment expected from the tenant."""
+    paid = get_invoice_total_paid(invoice)
+
+    return max(get_invoice_net_payable(invoice) - paid, ZERO)
 
 def get_invoice_balance(invoice):
     """
@@ -2433,6 +2490,7 @@ def agreement_add(request):
             "",
         ).strip()
         
+    
         
         # =====================================================
         # LEASE EXTENSION 1
@@ -2574,6 +2632,8 @@ def agreement_add(request):
 
                     notes=notes,
                 )
+
+                lease_document=request.FILES.get("lease_document"),
 
                 # =================================================
                 # INITIAL RENT HISTORY
@@ -2990,6 +3050,12 @@ def agreement_edit(request, pk):
             request.POST.get("notes", "").strip()
         )
 
+        form = AgreementForm(
+        request.POST or None,
+        request.FILES or None,
+        instance=agreement,  # Use your existing instance variable.
+        )
+
         # =====================================================
         # SAVE
         # =====================================================
@@ -3211,17 +3277,7 @@ def is_rent_increase_due(
     agreement,
     billing_date,
 ):
-    """
-    Return True when rent increase is due.
-
-    IMPORTANT:
-
-    The increase does NOT automatically happen.
-
-    It only becomes pending.
-
-    The user must approve it.
-    """
+   
 
     if (
         agreement.rent_increase_percentage
@@ -4148,7 +4204,6 @@ def invoice_list(request):
 
 
 def invoice_detail(request, pk):
-
     invoice = get_object_or_404(
         Invoice.objects
         .select_related(
@@ -4156,22 +4211,19 @@ def invoice_detail(request, pk):
             "lease_agreement",
             "lease_agreement__property",
         )
-        .prefetch_related(
-            "items",
-            "payments",
-        ),
+        .prefetch_related("items", "payments"),
         invoice_number=pk,
     )
 
-    total_paid = (
-        get_invoice_total_paid(
-            invoice
-        )
-    )
+    total_paid = get_invoice_total_paid(invoice)
+    tds_amount = get_invoice_tds_amount(invoice)
+    tds_credited = get_invoice_tds_credited(invoice)
+    net_payable = get_invoice_net_payable(invoice)
+    cash_balance = get_invoice_cash_balance(invoice)
 
+    # Accounting balance includes TDS only after it is credited.
     balance = max(
-        invoice.total_amount
-        - total_paid,
+        invoice.total_amount - total_paid - tds_credited,
         ZERO,
     )
 
@@ -4181,10 +4233,13 @@ def invoice_detail(request, pk):
         {
             "invoice": invoice,
             "total_paid": total_paid,
+            "tds_amount": tds_amount,
+            "tds_credited": tds_credited,
+            "net_payable": net_payable,
+            "cash_balance": cash_balance,
             "balance": balance,
         },
     )
-
 
 # =========================================================
 # INVOICE PDF
@@ -4283,19 +4338,15 @@ def payment_list(request):
 
 
 
+
+
+
 def record_payment(request, invoice_id):
     invoice = get_object_or_404(
         Invoice,
         invoice_number=invoice_id,
     )
 
-    total_paid = get_invoice_total_paid(invoice)
-
-    balance = max(
-        invoice.total_amount - total_paid,
-        ZERO,
-    )
-
     if invoice.status == "cancelled":
         messages.error(
             request,
@@ -4306,27 +4357,38 @@ def record_payment(request, invoice_id):
             pk=invoice.invoice_number,
         )
 
-    if balance <= ZERO:
-        messages.warning(
-            request,
-            "This invoice is already fully paid.",
-        )
-        return redirect(
-            "invoice_detail",
-            pk=invoice.invoice_number,
-        )
-
+    # Display the payment form.
     if request.method == "GET":
+        total_paid = get_invoice_total_paid(invoice)
+        tds_amount = get_invoice_tds_amount(invoice)
+        net_payable = get_invoice_net_payable(invoice)
+
+        balance = max(net_payable - total_paid, ZERO)
+
+        if balance <= ZERO:
+            messages.warning(
+                request,
+                "The net payable amount has already been paid.",
+            )
+            return redirect(
+                "invoice_detail",
+                pk=invoice.invoice_number,
+            )
+
         return render(
             request,
             "core/payment_form.html",
             {
                 "invoice": invoice,
                 "balance": balance,
+                "total_paid": total_paid,
+                "tds_amount": tds_amount,
+                "net_payable": net_payable,
                 "today": date.today(),
             },
         )
 
+    # Read submitted payment details.
     payment_amount = parse_decimal(
         request.POST.get("amount")
     )
@@ -4336,19 +4398,14 @@ def record_payment(request, invoice_id):
     ) or date.today()
 
     payment_method = request.POST.get(
-        "payment_method",
-        "",
+        "payment_method", ""
     ).strip()
 
     transaction_reference = request.POST.get(
-        "transaction_reference",
-        "",
+        "transaction_reference", ""
     ).strip()
 
-    notes = request.POST.get(
-        "notes",
-        "",
-    ).strip()
+    notes = request.POST.get("notes", "").strip()
 
     if payment_amount <= ZERO:
         messages.error(
@@ -4360,198 +4417,72 @@ def record_payment(request, invoice_id):
             invoice_id=invoice.invoice_number,
         )
 
-    if payment_amount > balance:
-        messages.error(
-            request,
-            f"Payment cannot exceed outstanding balance of ₹{balance:,.2f}.",
-        )
-        return redirect(
-            "record_payment",
-            invoice_id=invoice.invoice_number,
-        )
-
     with transaction.atomic():
-
         locked_invoice = (
             Invoice.objects
             .select_for_update()
-            .get(
-                invoice_number=invoice.invoice_number
-            )
+            .get(invoice_number=invoice.invoice_number)
         )
 
-        locked_total_paid = (
-            Payment.objects
-            .filter(invoice=locked_invoice)
-            .aggregate(total=Sum("amount"))
-            .get("total")
-            or ZERO
-        )
-
-        locked_balance = max(
-            locked_invoice.total_amount - locked_total_paid,
-            ZERO,
-        )
-
-        if payment_amount > locked_balance:
+        if locked_invoice.status == "cancelled":
             messages.error(
                 request,
-                f"Payment cannot exceed outstanding balance of ₹{locked_balance:,.2f}.",
-            )
-            return redirect(
-                "record_payment",
-                invoice_id=locked_invoice.invoice_number,
-            )
-
-        Payment.objects.create(
-            invoice=locked_invoice,
-            payment_date=payment_date,
-            amount=payment_amount,
-            payment_method=payment_method,
-            transaction_reference=transaction_reference,
-            notes=notes,
-        )
-
-        new_total_paid = locked_total_paid + payment_amount
-
-        if new_total_paid >= locked_invoice.total_amount:
-            locked_invoice.status = "paid"
-            locked_invoice.payment_date = payment_date
-        else:
-            locked_invoice.status = "pending"
-
-        locked_invoice.save(
-            update_fields=[
-                "status",
-                "payment_date",
-            ]
-        )
-
-    messages.success(
-        request,
-        f"Payment of ₹{payment_amount:,.2f} recorded successfully.",
-    )
-
-    return redirect(
-        "invoice_detail",
-        pk=invoice.invoice_number,
-    )
-
-
-    invoice = get_object_or_404(
-        Invoice,
-        invoice_number=invoice_id,
-    )
-
-    total_paid = get_invoice_total_paid(invoice)
-
-    balance = max(
-        invoice.total_amount - total_paid,
-        ZERO,
-    )
-
-    if invoice.status == "cancelled":
-        messages.error(
-            request,
-            "Payment cannot be recorded against a cancelled invoice.",
-        )
-        return redirect(
-            "invoice_detail",
-            pk=invoice.invoice_number,
-        )
-
-    if balance <= ZERO:
-        messages.warning(
-            request,
-            "This invoice is already fully paid.",
-        )
-        return redirect(
-            "invoice_detail",
-            pk=invoice.invoice_number,
-        )
-
-    if request.method != "POST":
-        return redirect(
-            "invoice_detail",
-            pk=invoice.invoice_number,
-        )
-
-    payment_amount = parse_decimal(
-        request.POST.get("amount")
-    )
-
-    payment_date = parse_date(
-        request.POST.get("payment_date")
-    ) or date.today()
-
-    payment_method = request.POST.get(
-        "payment_method",
-        "",
-    ).strip()
-
-    transaction_reference = request.POST.get(
-        "transaction_reference",
-        "",
-    ).strip()
-
-    notes = request.POST.get(
-        "notes",
-        "",
-    ).strip()
-
-    if payment_amount <= ZERO:
-        messages.error(
-            request,
-            "Payment amount must be greater than zero.",
-        )
-        return redirect(
-            "invoice_detail",
-            pk=invoice.invoice_number,
-        )
-
-    if payment_amount > balance:
-        messages.error(
-            request,
-            f"Payment cannot exceed outstanding balance of ₹{balance:,.2f}.",
-        )
-        return redirect(
-            "invoice_detail",
-            pk=invoice.invoice_number,
-        )
-
-    with transaction.atomic():
-
-        locked_invoice = (
-            Invoice.objects
-            .select_for_update()
-            .get(
-                invoice_number=invoice.invoice_number
-            )
-        )
-
-        locked_total_paid = (
-            Payment.objects
-            .filter(invoice=locked_invoice)
-            .aggregate(total=Sum("amount"))
-            .get("total")
-            or ZERO
-        )
-
-        locked_balance = max(
-            locked_invoice.total_amount - locked_total_paid,
-            ZERO,
-        )
-
-        if payment_amount > locked_balance:
-            messages.error(
-                request,
-                f"Payment cannot exceed outstanding balance of ₹{locked_balance:,.2f}.",
+                "Payment cannot be recorded against a cancelled invoice.",
             )
             return redirect(
                 "invoice_detail",
                 pk=locked_invoice.invoice_number,
             )
 
+        # Calculate existing tenant payments.
+        locked_total_paid = (
+            Payment.objects
+            .filter(invoice=locked_invoice)
+            .aggregate(total=Sum("amount"))
+            .get("total")
+            or ZERO
+        )
+
+        # TDS is calculated on rent before GST.
+        locked_tds_amount = get_invoice_tds_amount(
+            locked_invoice
+        )
+
+        # Tenant pays invoice total minus TDS.
+        locked_net_payable = max(
+            locked_invoice.total_amount - locked_tds_amount,
+            ZERO,
+        )
+
+        locked_balance = max(
+            locked_net_payable - locked_total_paid,
+            ZERO,
+        )
+
+        if locked_balance <= ZERO:
+            messages.warning(
+                request,
+                "The net payable amount has already been paid.",
+            )
+            return redirect(
+                "invoice_detail",
+                pk=locked_invoice.invoice_number,
+            )
+
+        if payment_amount > locked_balance:
+            messages.error(
+                request,
+                (
+                    "Payment cannot exceed the outstanding "
+                    f"net payable balance of ₹{locked_balance:,.2f}."
+                ),
+            )
+            return redirect(
+                "record_payment",
+                invoice_id=locked_invoice.invoice_number,
+            )
+
+        # Save the tenant's payment.
         Payment.objects.create(
             invoice=locked_invoice,
             payment_date=payment_date,
@@ -4563,17 +4494,22 @@ def record_payment(request, invoice_id):
 
         new_total_paid = locked_total_paid + payment_amount
 
-        if new_total_paid >= locked_invoice.total_amount:
+        # Invoice status depends on the NET payable amount.
+        # TDS credit is tracked separately.
+        remaining_net_payable = max(
+            locked_net_payable - new_total_paid,
+            ZERO,
+        )
+
+        if remaining_net_payable == ZERO:
             locked_invoice.status = "paid"
             locked_invoice.payment_date = payment_date
         else:
             locked_invoice.status = "pending"
+            locked_invoice.payment_date = None
 
         locked_invoice.save(
-            update_fields=[
-                "status",
-                "payment_date",
-            ]
+            update_fields=["status", "payment_date"]
         )
 
     messages.success(
@@ -4588,9 +4524,7 @@ def record_payment(request, invoice_id):
 
 
 
-
 def payment_receipt(request, payment_id):
-
     payment = get_object_or_404(
         Payment.objects.select_related(
             "invoice",
@@ -4601,15 +4535,12 @@ def payment_receipt(request, payment_id):
 
     invoice = payment.invoice
 
-    total_paid = (
-        get_invoice_total_paid(
-            invoice
-        )
-    )
+    total_paid = get_invoice_total_paid(invoice)
+    tds_amount = get_invoice_tds_amount(invoice)
+    credited_tds = get_invoice_tds_credited(invoice)
 
     balance = max(
-        invoice.total_amount
-        - total_paid,
+        invoice.total_amount - total_paid - credited_tds,
         ZERO,
     )
 
@@ -4620,17 +4551,14 @@ def payment_receipt(request, payment_id):
             "payment": payment,
             "invoice": invoice,
             "total_paid": total_paid,
+            "tds_amount": tds_amount,
+            "credited_tds": credited_tds,
             "balance": balance,
         },
     )
 
-    response = HttpResponse(
-        content_type="application/pdf"
-    )
-
-    response[
-        "Content-Disposition"
-    ] = (
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = (
         f'inline; filename="payment_receipt_{payment.id}.pdf"'
     )
 
@@ -4640,7 +4568,6 @@ def payment_receipt(request, payment_id):
     )
 
     if pisa_status.err:
-
         return HttpResponse(
             "Unable to generate payment receipt.",
             status=500,
@@ -4648,18 +4575,31 @@ def payment_receipt(request, payment_id):
 
     return response
 
+
+
+
 def invoice_payment_history(request, invoice_id):
-    invoice = get_object_or_404(Invoice, pk=invoice_id)
+    invoice = get_object_or_404(
+        Invoice,
+        invoice_number=invoice_id,
+    )
 
     payments = Payment.objects.filter(
         invoice=invoice
     ).order_by("-payment_date", "-id")
 
-    total_paid = payments.aggregate(
-        total=Sum("amount")
-    )["total"] or Decimal("0.00")
+    total_paid = (
+        payments.aggregate(total=Sum("amount"))["total"]
+        or ZERO
+    )
 
-    balance = invoice.total_amount - total_paid
+    tds_amount = get_invoice_tds_amount(invoice)
+    credited_tds = get_invoice_tds_credited(invoice)
+
+    balance = max(
+        invoice.total_amount - total_paid - credited_tds,
+        ZERO,
+    )
 
     return render(
         request,
@@ -4668,15 +4608,19 @@ def invoice_payment_history(request, invoice_id):
             "invoice": invoice,
             "payments": payments,
             "total_paid": total_paid,
+            "tds_amount": tds_amount,
+            "credited_tds": credited_tds,
             "balance": balance,
         },
     )
+
+
 # =========================================================
 # DASHBOARD
 # =========================================================
 
 def dashboard(request):
-
+    today = date.today()
     total_properties = (
         Property.objects.count()
     )
@@ -4721,10 +4665,10 @@ def dashboard(request):
         or ZERO
     )
 
-    total_outstanding = max(
-        total_invoiced
-        - total_collected,
-        ZERO,
+    total_tds_amount = (
+    TDSLedger.objects
+    .aggregate(total=Sum("tds_amount"))["total"]
+    or ZERO
     )
 
     recent_payments = (
@@ -4754,6 +4698,43 @@ def dashboard(request):
     # =====================================================
     # UPCOMING LEASE RENEWALS — NEXT 6 MONTHS
     # =====================================================
+
+    
+    # =====================================================
+    # OVERDUE PAYMENT ALERTS
+    # Uses the existing TDS-adjusted balance helper.
+    # =====================================================
+
+    overdue_payment_alerts = []
+
+    overdue_invoices = (
+        Invoice.objects
+        .filter(payment_due_date__lt=today)
+        .exclude(status__in=["paid", "cancelled"])
+        .select_related("tenant")
+        .order_by("payment_due_date")
+    )
+
+    for invoice in overdue_invoices:
+        balance = get_invoice_cash_balance(invoice)
+
+        # Do not show invoices with no remaining net payable balance.
+        if balance <= ZERO:
+            continue
+
+        overdue_payment_alerts.append({
+            "invoice": invoice,
+            "tenant_name": (
+                getattr(invoice, "tenant_name", "")
+                or str(invoice.tenant)
+            ),
+            "due_date": invoice.payment_due_date,
+            "days_overdue": (
+                today - invoice.payment_due_date
+            ).days,
+            "balance": balance,
+        })
+
 
     today = date.today()
     renewal_cutoff = today + relativedelta(months=6)
@@ -4860,8 +4841,7 @@ def dashboard(request):
         "total_collected":
             total_collected,
 
-        "total_outstanding":
-            total_outstanding,
+        "total_tds_amount": total_tds_amount,
 
         "recent_payments":
             recent_payments,
@@ -4872,6 +4852,8 @@ def dashboard(request):
         "upcoming_renewals": upcoming_renewals,
         "unread_notifications": unread_notifications,
         "unread_notification_count": unread_notification_count,
+        "overdue_payment_alerts": overdue_payment_alerts,
+        "overdue_payment_count": len(overdue_payment_alerts),
     }
 
     return render(
@@ -5092,7 +5074,7 @@ def financial_report(request):
 
         "total_collected": total_collected,
 
-        "total_outstanding": total_outstanding,
+        "total_tds_amount": total_tds_amount,
 
         # Compatibility
         "outstanding_amount": outstanding_amount,
@@ -5107,9 +5089,9 @@ def financial_report(request):
         "generated_invoices": generated_invoices,
 
         # Tables
-        "tenant_outstanding": tenant_outstanding,
+        "total_tds_amount": total_tds_amount,
 
-        "renter_outstanding": tenant_outstanding,
+        "total_tds_amount": total_tds_amount,
 
         "property_collection": property_collection,
 
@@ -5289,49 +5271,44 @@ def financial_report(request):
 # RESET TEST DATA
 # =========================================================
 
-def reset_test_data(request):
 
+def reset_test_data(request):
     if request.method != "POST":
         return redirect("dashboard")
 
     try:
-
         with transaction.atomic():
 
-            # Delete payment records first
+            # 1. Delete TDS ledger records first because they
+            #    protect their related invoices.
+            TDSLedger.objects.all().delete()
+
+            # 2. Delete payment records.
             Payment.objects.all().delete()
 
-            # Delete invoice line items
+            # 3. Delete invoice line items.
             InvoiceItem.objects.all().delete()
 
-            # Delete invoices
+            # 4. Delete invoices.
             Invoice.objects.all().delete()
 
-            # Delete lease agreements
-            # Related RentHistory records are deleted automatically
+            # 5. Delete lease agreements.
+            #    Related RentHistory records may be deleted
+            #    automatically, depending on their FK settings.
             LeaseAgreement.objects.all().delete()
 
-            # Delete tenants
+            # 6. Delete tenants.
             Tenant.objects.all().delete()
 
-            # Owners and Properties are preserved
-            # They are master data
+            # Owners and Properties are preserved as master data.
 
-        # Reset invoice numbering for SQLite
-        try:
-
-            if connection.vendor == "sqlite":
-
-                with connection.cursor() as cursor:
-
-                    cursor.execute(
-                        "DELETE FROM sqlite_sequence "
-                        "WHERE name = %s",
-                        ["core_invoice"],
-                    )
-
-        except Exception:
-            pass
+        # Reset invoice numbering for SQLite.
+        if connection.vendor == "sqlite":
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "DELETE FROM sqlite_sequence WHERE name = %s",
+                    ["core_invoice"],
+                )
 
         messages.success(
             request,
@@ -5340,13 +5317,13 @@ def reset_test_data(request):
         )
 
     except Exception as exc:
-
         messages.error(
             request,
             f"Unable to reset test data: {exc}",
         )
 
     return redirect("dashboard")
+
 
 def property_tax_report(request):
     properties = Property.objects.select_related("owner").all()
@@ -5538,3 +5515,296 @@ def mark_lease_notification_read(request, pk):
     notification.save(update_fields=["is_read"])
 
     return redirect("lease_notifications")
+
+
+def tds_ledger_report(request):
+    today = date.today()
+
+    mode = request.GET.get("mode", "month")
+    month_value = request.GET.get("month", "2026-10")
+    from_date_value = request.GET.get("from_date", "2026-10-01")
+    to_date_value = request.GET.get("to_date", "2026-10-31")
+    tenant_id = request.GET.get("tenant", "all")
+
+    tenants = Tenant.objects.all().order_by("full_name")
+
+    entries = TDSLedger.objects.select_related(
+        "invoice",
+        "tenant",
+        "invoice__lease_agreement",
+    ).all()
+
+    # Create missing ledger entries for existing invoices.
+    # Rent is taken from the invoice's rent line, not GST.
+    invoices = Invoice.objects.exclude(status="cancelled").prefetch_related(
+        "items"
+    )
+
+    for invoice in invoices:
+        rent_item = invoice.items.filter(item_type="rent").first()
+
+        if rent_item is None:
+            continue
+
+        rent_amount = rent_item.amount or Decimal("0.00")
+
+        TDSLedger.objects.get_or_create(
+            invoice=invoice,
+            defaults={
+                "tenant": invoice.tenant,
+                "rent_amount": rent_amount,
+                "tds_rate": Decimal("10.00"),
+            },
+        )
+
+    # Reload after syncing existing invoices.
+    entries = TDSLedger.objects.select_related(
+        "invoice",
+        "tenant",
+        "invoice__lease_agreement",
+    ).all()
+
+    if mode == "month":
+        try:
+            year, month = map(int, month_value.split("-"))
+            if not 1 <= month <= 12:
+                raise ValueError
+
+            entries = entries.filter(
+                invoice__billing_from__year=year,
+                invoice__billing_from__month=month,
+            )
+        except (ValueError, TypeError):
+            mode = "month"
+            month_value = f"{today.year}-{today.month:02d}"
+            entries = entries.filter(
+                invoice__billing_from__year=today.year,
+                invoice__billing_from__month=today.month,
+            )
+
+    elif mode == "date":
+        try:
+            start_date = date.fromisoformat(from_date_value)
+            end_date = date.fromisoformat(to_date_value)
+
+            if start_date > end_date:
+                start_date, end_date = end_date, start_date
+
+            entries = entries.filter(
+                invoice__billing_from__gte=start_date,
+                invoice__billing_from__lte=end_date,
+            )
+        except (ValueError, TypeError):
+            mode = "month"
+            month_value = f"{today.year}-{today.month:02d}"
+            entries = entries.filter(
+                invoice__billing_from__year=today.year,
+                invoice__billing_from__month=today.month,
+            )
+
+    # mode=all does not apply a date filter.
+    if tenant_id != "all":
+        if tenant_id.isdigit():
+            entries = entries.filter(tenant_id=int(tenant_id))
+        else:
+            tenant_id = "all"
+
+    entries = entries.order_by(
+        "invoice__billing_from",
+        "invoice__invoice_number",
+    )
+
+    totals = entries.aggregate(
+        total_rent=Sum("rent_amount"),
+        total_tds=Sum("tds_amount"),
+    )
+
+    context = {
+        "entries": entries,
+        "tenants": tenants,
+        "selected_tenant": tenant_id,
+        "mode": mode,
+        "month_value": month_value,
+        "from_date_value": from_date_value,
+        "to_date_value": to_date_value,
+        "total_rent": totals["total_rent"] or Decimal("0.00"),
+        "total_tds": totals["total_tds"] or Decimal("0.00"),
+    }
+
+    return render(
+        request,
+        "core/tds_ledger_report.html",
+        context,
+    )
+
+
+
+@login_required
+
+def admin_profile(request):
+    # Only active superusers can access this page.
+    if not request.user.is_active or not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Access denied. An active superuser account is required."
+        )
+
+    profile, _ = AdminUserProfile.objects.get_or_create(
+        user=request.user
+    )
+
+    if request.method == "POST":
+        form = AdminProfileForm(
+            request.POST,
+            instance=profile,
+            user=request.user,
+        )
+
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+
+                messages.success(
+                    request,
+                    "Your profile and account details were updated successfully.",
+                )
+                return redirect("admin_profile")
+
+            except Exception:
+                messages.error(
+                    request,
+                    "Unable to save your changes. Please try again.",
+                )
+    else:
+        form = AdminProfileForm(
+            instance=profile,
+            user=request.user,
+        )
+
+    return render(
+        request,
+        "registration/admin_profile.html",
+        {"form": form},
+    )
+
+
+def admin_change_password(request):
+    if (
+        not request.user.is_authenticated
+        or not request.user.is_active
+        or not request.user.is_superuser
+    ):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("Superuser access required.")
+
+    if request.method == "POST":
+        form = PasswordChangeForm(
+            user=request.user,
+            data=request.POST,
+        )
+
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(
+                request,
+                "Your password was changed successfully.",
+            )
+            return redirect("admin_change_password")
+    else:
+        form = PasswordChangeForm(user=request.user)
+
+    return render(
+        request,
+        "registration/admin_change_password.html",
+        {"form": form},
+    )
+
+def password_reset_rate_limited(request):
+    ip = request.META.get("REMOTE_ADDR", "unknown")
+    key = f"password_reset_rate:{ip}"
+
+    count = cache.get(key, 0)
+
+    if count >= 5:
+        return True
+
+    cache.set(key, count + 1, timeout=15 * 60)
+    return False
+
+
+
+
+class RateLimitedPasswordResetView(PasswordResetView):
+    def post(self, request, *args, **kwargs):
+        if password_reset_rate_limited(request):
+            return HttpResponse(
+                "Too many password-reset requests. Please try again in 15 minutes.",
+                status=429,
+            )
+
+        return super().post(request, *args, **kwargs)
+
+
+MAX_ADMIN_USERS = 4
+
+
+@login_required
+def admin_user_create(request):
+    User = get_user_model()
+
+    if not request.user.is_active or not request.user.is_superuser:
+        return HttpResponseForbidden("Superuser access required.")
+
+    MAX_ADMIN_USERS = 4
+
+    if request.method == "POST":
+        form = AdminUserCreateForm(request.POST)
+
+        if form.is_valid():
+            active_admin_count = User.objects.filter(
+                is_active=True,
+                is_superuser=True,
+            ).count()
+
+            if active_admin_count >= MAX_ADMIN_USERS:
+                form.add_error(
+                    None,
+                    "The maximum of 4 active administrator accounts "
+                    "has been reached.",
+                )
+            else:
+                try:
+                    new_user = form.save()
+
+                    messages.success(
+                        request,
+                        f"Administrator '{new_user.username}' "
+                        "was created successfully.",
+                    )
+                    return redirect("admin_profile")
+
+                except IntegrityError:
+                    form.add_error(
+                        None,
+                        "The account could not be created because "
+                        "of a database conflict. Please try again.",
+                    )
+
+    else:
+        form = AdminUserCreateForm()
+
+    active_admin_count = User.objects.filter(
+        is_active=True,
+        is_superuser=True,
+    ).count()
+
+    return render(
+        request,
+        "registration/admin_user_create.html",
+        {
+            "form": form,
+            "active_admin_count": active_admin_count,
+            "max_admin_users": MAX_ADMIN_USERS,
+        },
+    )

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login | Property Manager</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+            color: #172033;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 410px;
+            padding: 34px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(15, 23, 42, .10);
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 25px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 26px;
+        }
+
+        label {
+            display: block;
+            margin: 16px 0 7px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: 2px solid #2563eb;
+            border-color: #2563eb;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 24px;
+            padding: 13px;
+            border: 0;
+            border-radius: 8px;
+            background: #1d4ed8;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1e40af;
+        }
+
+        .error {
+            padding: 10px;
+            border-radius: 7px;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-size: 14px;
+        }
+
+        .footer {
+            margin-top: 22px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="login-card">
+        <h1>Property Manager</h1>
+        <p class="subtitle">Sign in with your authorized administrator account.</p>
+
+        {% if form.errors %}
+        <p class="error">
+            Login failed. Check your username and password, and try again.
+        </p>
+        {% endif %}
+
+        {% if next %}
+        {% if user.is_authenticated %}
+        <p class="error">
+            Your account does not have permission to access that page.
+        </p>
+        {% endif %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="next" value="/">
+
+            <label for="id_username">Username</label>
+            <input type="text" name="username" id="id_username" autocomplete="username" required autofocus>
+
+            <label for="id_password">Password</label>
+            <input type="password" name="password" id="id_password" autocomplete="current-password" required>
+
+            <button type="submit">Sign In</button>
+        </form>
+
+        <p style="margin-top:16px;">
+            <a href="{% url 'password_reset' %}">Forgot Password?</a>
+        </p>
+
+
+        <p class="footer">Restricted access · Authorized superusers only</p>
+    </main>
+</body>
+
+</html>

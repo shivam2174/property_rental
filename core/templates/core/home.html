@@ -411,6 +411,70 @@
             color: #991b1b;
         }
 
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 12px 24px;
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .top-header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-actions a {
+            text-decoration: none;
+        }
+
+        .header-actions form {
+            margin: 0;
+        }
+
+        .header-actions a {
+            text-decoration: none;
+            color: #2563eb;
+        }
+
+        .header-actions a:hover {
+            text-decoration: underline;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .top-header {
+                padding: 12px;
+                flex-wrap: wrap;
+            }
+
+            .top-header h2 {
+                font-size: 18px;
+            }
+
+            .header-actions {
+                gap: 12px;
+            }
+        }
+
+
         /* RESPONSIVE */
         @media (max-width: 1200px) {
             .stats {
@@ -467,6 +531,21 @@
                 padding: 15px;
             }
         }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: #b02a37;
+        }
+
 
         @media (max-width: 420px) {
             .sidebar {
@@ -544,6 +623,12 @@
                 <li>
                     <a href="{% url 'payment_list' %}">Payments</a>
                 </li>
+
+                <a href="{% url 'tds_ledger_report' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'tds_ledger_report' %}active{% endif %}">
+                    TDS Ledger
+                </a>
+
                 <li>
                     <a href="{% url 'financial_report' %}">Reports</a>
                 </li>
@@ -553,13 +638,26 @@
         <!-- MAIN CONTENT -->
         <main class="main">
 
-            <!-- TOP BAR -->
-            <div class="topbar">
-                <div class="topbar-title">
-                    Property Rental Management
+
+            <header class="top-header">
+                <h2>Property Rental Management</h2>
+
+
+                <div class="header-actions">
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+
+                    <a href="{% url 'admin_profile' %}">Profile</a>
+
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn">
+                            Logout
+                        </button>
+                    </form>
                 </div>
-                <div class="user">Dashboard</div>
-            </div>
+
+            </header>
+
 
             <div class="content">
 
@@ -662,6 +760,62 @@
                     {% endif %}
                 </section>
 
+                <!-- OVERDUE PAYMENT ALERTS -->
+                <section class="dashboard-section">
+                    <div class="section-header">
+                        <h2>Overdue Payment Alerts</h2>
+                        <span class="notification-count">
+                            {{ overdue_payment_count }} overdue
+                        </span>
+                    </div>
+
+                    {% if overdue_payment_alerts %}
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Invoice</th>
+                                    <th>Tenant</th>
+                                    <th>Due Date</th>
+                                    <th>Days Overdue</th>
+                                    <th>Outstanding Balance</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in overdue_payment_alerts %}
+                                <tr>
+                                    <td>
+                                        #{{ item.invoice.invoice_number }}
+                                    </td>
+                                    <td>{{ item.tenant_name }}</td>
+                                    <td>
+                                        {{ item.due_date|date:"d M Y" }}
+                                    </td>
+                                    <td>
+                                        <span class="status-warning">
+                                            {{ item.days_overdue }} days
+                                        </span>
+                                    </td>
+                                    <td>
+                                        ₹{{ item.balance|floatformat:2 }}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'invoice_list' %}">
+                                            View Invoices
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p>No overdue payments with outstanding balances.</p>
+                    {% endif %}
+                </section>
+
+
                 <!-- FIRST ROW OF STATISTICS -->
                 <div class="stats">
                     <div class="card">
@@ -714,11 +868,11 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-title">Outstanding</div>
+                        <div class="card-title">TDS Amount</div>
                         <div class="card-value">
-                            ₹{{ total_outstanding|floatformat:2 }}
+                            ₹{{ total_tds_amount|floatformat:2 }}
                         </div>
-                        <div class="card-description">Amount pending</div>
+                        <div class="card-description">Total TDS deducted</div>
                     </div>
                 </div>
 

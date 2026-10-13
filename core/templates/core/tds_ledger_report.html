@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDS Ledger Report</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 25px;
+            color: #222;
+            font-size: 14px;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 0 0 8px;
+            font-size: 22px;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin: 0 0 30px;
+            color: #555;
+        }
+
+        /* Filter row */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field label {
+            font-size: 13px;
+        }
+
+        input,
+        select,
+        button,
+        .button {
+            padding: 9px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            min-height: 37px;
+        }
+
+        button,
+        .button {
+            cursor: pointer;
+            background: #198754;
+            color: white;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .print-button {
+            background: #0d6efd;
+        }
+
+        /* Back button aligned to the right */
+        .back-wrapper {
+            margin-left: auto;
+            display: flex;
+            align-items: end;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #1e293b;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            background: #334155;
+        }
+
+        /* Report table */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            border: 1px solid #777;
+            padding: 9px 7px;
+            text-align: left;
+        }
+
+        th {
+            background: #eee;
+            white-space: nowrap;
+        }
+
+        .number {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .totals {
+            font-weight: bold;
+            background: #f5f5f5;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                margin: 12px;
+            }
+
+            .filters {
+                align-items: stretch;
+            }
+
+            .field {
+                width: 100%;
+            }
+
+            .field input,
+            .field select {
+                width: 100%;
+            }
+
+            .back-wrapper {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .back-btn {
+                text-align: center;
+                width: 100%;
+            }
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                font-size: 11px;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            th,
+            td {
+                padding: 6px;
+            }
+
+            @page {
+                size: A4 landscape;
+                margin: 12mm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>TDS LEDGER REPORT</h2>
+    <p class="subtitle">Invoice-wise Tenant TDS Statement</p>
+
+    <form method="get" class="filters no-print">
+
+        <div class="field">
+            <label for="mode">Date Filter</label>
+            <select name="mode" id="mode" onchange="toggleDateFields()">
+                <option value="month" {% if mode == "month" %}selected{% endif %}>
+                    Month and Year
+                </option>
+                <option value="date" {% if mode == "date" %}selected{% endif %}>
+                    Date Range
+                </option>
+                <option value="all" {% if mode == "all" %}selected{% endif %}>
+                    All Dates
+                </option>
+            </select>
+        </div>
+
+        <div class="field" id="month-field">
+            <label for="month">Billing Month</label>
+            <input type="month" name="month" id="month"
+                   value="{{ month_value }}">
+        </div>
+
+        <div class="field" id="from-field">
+            <label for="from_date">From Date</label>
+            <input type="date" name="from_date" id="from_date"
+                   value="{{ from_date_value }}">
+        </div>
+
+        <div class="field" id="to-field">
+            <label for="to_date">To Date</label>
+            <input type="date" name="to_date" id="to_date"
+                   value="{{ to_date_value }}">
+        </div>
+
+        <div class="field">
+            <label for="tenant">Tenant</label>
+            <select name="tenant" id="tenant">
+                <option value="all"
+                    {% if selected_tenant == "all" %}selected{% endif %}>
+                    All Tenants
+                </option>
+
+                {% for tenant in tenants %}
+                <option value="{{ tenant.pk }}"
+                    {% if selected_tenant == tenant.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ tenant.full_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit">Apply Filters</button>
+
+        <button type="button" class="print-button"
+                onclick="window.print()">
+            Print Report
+        </button>
+
+        <div class="back-wrapper">
+            <a href="{% url 'dashboard' %}" class="back-btn">
+                &larr; Back to Dashboard
+            </a>
+        </div>
+
+    </form>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>S.No.</th>
+                    <th>Invoice No.</th>
+                    <th>Invoice Date</th>
+                    <th>Billing Month</th>
+                    <th>Tenant Name</th>
+                    <th class="number">Rent Amount (₹)</th>
+                    <th class="number">TDS Rate</th>
+                    <th class="number">TDS Amount (₹)</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ entry.invoice.invoice_number }}</td>
+                    <td>{{ entry.invoice.invoice_date|date:"d-m-Y" }}</td>
+                    <td>{{ entry.invoice.billing_from|date:"F Y" }}</td>
+                    <td>{{ entry.tenant.full_name }}</td>
+                    <td class="number">
+                        {{ entry.rent_amount|floatformat:2 }}
+                    </td>
+                    <td class="number">
+                        {{ entry.tds_rate|floatformat:2 }}%
+                    </td>
+                    <td class="number">
+                        {{ entry.tds_amount|floatformat:2 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="empty">
+                        No TDS ledger entries found for the selected filters.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+            <tfoot>
+                <tr class="totals">
+                    <td colspan="5">TOTAL</td>
+                    <td class="number">
+                        {{ total_rent|floatformat:2 }}
+                    </td>
+                    <td></td>
+                    <td class="number">
+                        {{ total_tds|floatformat:2 }}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <script>
+        function toggleDateFields() {
+            const mode = document.getElementById("mode").value;
+
+            document.getElementById("month-field").style.display =
+                mode === "month" ? "flex" : "none";
+
+            document.getElementById("from-field").style.display =
+                mode === "date" ? "flex" : "none";
+
+            document.getElementById("to-field").style.display =
+                mode === "date" ? "flex" : "none";
+        }
+
+        toggleDateFields();
+    </script>
+
+</body>
+</html>

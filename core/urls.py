@@ -1,8 +1,112 @@
+
 from django.urls import path
+from django.contrib.auth import views as auth_views
+
 from . import views
+from .forms import SuperuserLoginForm, SuperuserPasswordResetForm
 
 
 urlpatterns = [
+
+    # =====================================================
+    # AUTHENTICATION AND PASSWORD MANAGEMENT
+    # =====================================================
+
+    path(
+        "login/",
+        auth_views.LoginView.as_view(
+            template_name="registration/login.html",
+            authentication_form=SuperuserLoginForm,
+        ),
+        name="login",
+    ),
+
+    path(
+        "logout/",
+        auth_views.LogoutView.as_view(),
+        name="logout",
+    ),
+
+    path(
+        "profile/",
+        views.admin_profile,
+        name="admin_profile",
+    ),
+
+    # Change password while logged in
+    path(
+        "profile/change-password/",
+        auth_views.PasswordChangeView.as_view(
+            template_name="registration/password_pages.html",
+            extra_context={"page_type": "change"},
+            success_url="/profile/change-password/done/",
+        ),
+        name="password_change",
+    ),
+
+    path(
+        "profile/change-password/done/",
+        auth_views.PasswordChangeDoneView.as_view(
+            template_name="registration/password_pages.html",
+            extra_context={"page_type": "change_done"},
+        ),
+        name="password_change_done",
+    ),
+
+    # Forgot password: email recovery
+    path(
+        "password-reset/",
+        views.RateLimitedPasswordResetView.as_view(
+            template_name="registration/password_pages.html",
+            extra_context={"page_type": "reset"},
+            email_template_name="registration/password_reset_email.html",
+            subject_template_name="registration/password_reset_subject.txt",
+            form_class=SuperuserPasswordResetForm,
+            success_url="/password-reset/sent/",
+        ),
+        name="password_reset",
+    ),
+
+    path(
+        "password-reset/sent/",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="registration/password_pages.html",
+            extra_context={"page_type": "reset_sent"},
+        ),
+        name="password_reset_done",
+    ),
+
+    path(
+        "reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="registration/password_pages.html",
+            extra_context={"page_type": "reset_confirm"},
+            success_url="/reset/complete/",
+        ),
+        name="password_reset_confirm",
+    ),
+
+    path(
+        "reset/complete/",
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="registration/password_pages.html",
+            extra_context={"page_type": "reset_complete"},
+        ),
+        name="password_reset_complete",
+    ),
+
+    # Keep this only if your existing view is still required
+    path(
+        "change-password/",
+        views.admin_change_password,
+        name="admin_change_password",
+    ),
+
+    path(
+    "admin-users/add/",
+    views.admin_user_create,
+    name="admin_user_create",
+    ),
 
     # =====================================================
     # DASHBOARD
@@ -13,51 +117,43 @@ urlpatterns = [
         views.dashboard,
         name="dashboard",
     ),
-    # =====================================================
-# PROPERTY
-# =====================================================
-
-path(
-    "property/",
-    views.property_list,
-    name="property_list",
-),
-
-path(
-    "property/add/",
-    views.property_add,
-    name="property_add",
-),
-
-path(
-    "property/<int:pk>/",
-    views.property_detail,
-    name="property_detail",
-),
-
-path(
-    "property/<int:pk>/edit/",
-    views.property_edit,
-    name="property_edit",
-),
-
-path(
-    "property/<int:pk>/delete/",
-    views.property_delete,
-    name="property_delete",
-),
-
-
-   
 
     # =====================================================
-    # UNIT
+    # PROPERTY
     # =====================================================
 
-    
+    path(
+        "property/",
+        views.property_list,
+        name="property_list",
+    ),
+
+    path(
+        "property/add/",
+        views.property_add,
+        name="property_add",
+    ),
+
+    path(
+        "property/<int:pk>/",
+        views.property_detail,
+        name="property_detail",
+    ),
+
+    path(
+        "property/<int:pk>/edit/",
+        views.property_edit,
+        name="property_edit",
+    ),
+
+    path(
+        "property/<int:pk>/delete/",
+        views.property_delete,
+        name="property_delete",
+    ),
 
     # =====================================================
-    # TENANT
+    # TENANTS
     # =====================================================
 
     path(
@@ -65,16 +161,23 @@ path(
         views.tenant_list,
         name="tenant_list",
     ),
+
     path(
-    "tenants/report/",
-    views.tenant_report,
-    name="tenant_report",
+        "tenants/report/",
+        views.tenant_report,
+        name="tenant_report",
     ),
 
     path(
         "tenants/add/",
         views.tenant_add,
         name="tenant_add",
+    ),
+
+    path(
+        "tenants/<int:pk>/",
+        views.tenant_detail,
+        name="tenant_detail",
     ),
 
     path(
@@ -89,38 +192,14 @@ path(
         name="tenant_delete",
     ),
 
-    path(
-    "tenants/<int:pk>/",
-    views.tenant_detail,
-    name="tenant_detail",
-    ),
-
-    path(
-    "tenants/<int:pk>/edit/",
-    views.tenant_edit,
-    name="tenant_edit",
-),
-
-path(
-    "tenants/<int:pk>/delete/",
-    views.tenant_delete,
-    name="tenant_delete",
-),
-
-
     # =====================================================
-    # RENTAL AGREEMENT
+    # AGREEMENTS
     # =====================================================
 
     path(
         "agreements/",
         views.agreement_list,
         name="agreement_list",
-    ),
-    path(
-    "reports/monthly-gst/",
-    views.monthly_gst_report,
-    name="monthly_gst_report",
     ),
 
     path(
@@ -152,53 +231,71 @@ path(
         views.generate_invoice,
         name="generate_invoice",
     ),
+
     path(
-    "agreements/<int:pk>/view/",
-    views.agreement_view,
-    name="agreement_view",
-),
-
-
-    # =====================================================
-    # OWNER
-    # =====================================================
-# =====================================================
-# OWNERS
-# =====================================================
-
-path(
-    "owners/",
-    views.owner_list,
-    name="owner_list",
-),
-
-path(
-    "owners/add/",
-    views.owner_add,
-    name="owner_add",
-),
-
-path(
-    "owners/<int:pk>/",
-    views.owner_detail,
-    name="owner_detail",
-),
-
-path(
-    "owners/<int:pk>/edit/",
-    views.owner_edit,
-    name="owner_edit",
-),
-
-path(
-    "owners/<int:pk>/delete/",
-    views.owner_delete,
-    name="owner_delete",
-),
-
+        "agreements/<int:pk>/view/",
+        views.agreement_view,
+        name="agreement_view",
+    ),
 
     # =====================================================
-    # INVOICE
+    # REPORTS
+    # =====================================================
+
+    path(
+        "reports/monthly-gst/",
+        views.monthly_gst_report,
+        name="monthly_gst_report",
+    ),
+
+    path(
+        "reports/tds-ledger/",
+        views.tds_ledger_report,
+        name="tds_ledger_report",
+    ),
+
+    path(
+        "financial-report/",
+        views.financial_report,
+        name="financial_report",
+    ),
+
+    # =====================================================
+    # OWNERS
+    # =====================================================
+
+    path(
+        "owners/",
+        views.owner_list,
+        name="owner_list",
+    ),
+
+    path(
+        "owners/add/",
+        views.owner_add,
+        name="owner_add",
+    ),
+
+    path(
+        "owners/<int:pk>/",
+        views.owner_detail,
+        name="owner_detail",
+    ),
+
+    path(
+        "owners/<int:pk>/edit/",
+        views.owner_edit,
+        name="owner_edit",
+    ),
+
+    path(
+        "owners/<int:pk>/delete/",
+        views.owner_delete,
+        name="owner_delete",
+    ),
+
+    # =====================================================
+    # INVOICES
     # =====================================================
 
     path(
@@ -219,9 +316,14 @@ path(
         name="invoice_pdf",
     ),
 
+    path(
+        "invoices/<int:invoice_id>/payments/",
+        views.invoice_payment_history,
+        name="invoice_payment_history",
+    ),
 
     # =====================================================
-    # PAYMENT
+    # PAYMENTS
     # =====================================================
 
     path(
@@ -241,23 +343,56 @@ path(
         views.payment_receipt,
         name="payment_receipt",
     ),
-    path(
-    "invoices/<int:invoice_id>/payments/",
-    views.invoice_payment_history,
-    name="invoice_payment_history",
-),
-
 
     # =====================================================
-    # FINANCIAL REPORT
+    # PROPERTY TAX
     # =====================================================
 
     path(
-        "financial-report/",
-        views.financial_report,
-        name="financial_report",
+        "property-tax/",
+        views.property_tax_report,
+        name="property_tax_report",
     ),
 
+    path(
+        "property-tax/add/<int:property_id>/",
+        views.property_tax_add,
+        name="property_tax_add",
+    ),
+
+    path(
+        "property-tax/<int:pk>/edit/",
+        views.property_tax_edit,
+        name="property_tax_edit",
+    ),
+
+    path(
+        "property-tax/<int:pk>/delete/",
+        views.property_tax_delete,
+        name="property_tax_delete",
+    ),
+
+    path(
+        "property-tax/<int:pk>/receipt/",
+        views.property_tax_receipt,
+        name="property_tax_receipt",
+    ),
+
+    # =====================================================
+    # LEASE NOTIFICATIONS
+    # =====================================================
+
+    path(
+        "lease-notifications/",
+        views.lease_notifications,
+        name="lease_notifications",
+    ),
+
+    path(
+        "lease-notifications/<int:pk>/read/",
+        views.mark_lease_notification_read,
+        name="mark_lease_notification_read",
+    ),
 
     # =====================================================
     # RESET TEST DATA
@@ -268,40 +403,4 @@ path(
         views.reset_test_data,
         name="reset_test_data",
     ),
-    path(
-    "property-tax/",
-    views.property_tax_report,
-    name="property_tax_report",
-),
-    path( "property-tax/add/<int:property_id>/", views.property_tax_add, name="property_tax_add", ),
-
-path(
-    "property-tax/<int:pk>/edit/",
-    views.property_tax_edit,
-    name="property_tax_edit",
-),
-
-path(
-    "property-tax/<int:pk>/delete/",
-    views.property_tax_delete,
-    name="property_tax_delete",
-),
-
-path(
-    "property-tax/<int:pk>/receipt/",
-    views.property_tax_receipt,
-    name="property_tax_receipt",
-),
-path(
-    "lease-notifications/",
-    views.lease_notifications,
-    name="lease_notifications",
-),
-
-path(
-    "lease-notifications/<int:pk>/read/",
-    views.mark_lease_notification_read,
-    name="mark_lease_notification_read",
-),
-
 ]

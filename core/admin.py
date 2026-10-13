@@ -12,6 +12,7 @@ from .models import (
     Payment,
     PropertyDocument,
     PropertyTax,
+    AdminUserProfile,
 )
 
 
@@ -385,3 +386,19 @@ class PaymentAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+
+@admin.register(AdminUserProfile)
+class AdminUserProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "mobile_number",
+        "mobile_verified",
+        "updated_at",
+    )
+    search_fields = (
+        "user__username",
+        "user__email",
+        "mobile_number",
+    )
+    list_filter = ("mobile_verified",)

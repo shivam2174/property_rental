@@ -2,6 +2,8 @@ import builtins
 
 from decimal import Decimal, ROUND_HALF_UP
 
+from django.conf import settings
+
 from django.db import models
 
 
@@ -750,6 +752,13 @@ class LeaseAgreement(models.Model):
         blank=True,
     )
 
+    lease_document = models.FileField(
+    upload_to="lease_documents/",
+    blank=True,
+    null=True,
+    verbose_name="Lease Agreement PDF",
+   )
+
     # =====================================================
     # SYSTEM DATES
     # =====================================================
@@ -1261,6 +1270,82 @@ class Invoice(models.Model):
     def __str__(self):
         return f"Invoice #{self.invoice_number}"
 
+
+
+#TDS model 
+
+from decimal import Decimal, ROUND_HALF_UP
+
+from django.db import models
+
+
+class TDSLedger(models.Model):
+    invoice = models.OneToOneField(
+        "Invoice",
+        on_delete=models.PROTECT,
+        related_name="tds_ledger",
+    )
+
+    tenant = models.ForeignKey(
+        "Tenant",
+        on_delete=models.PROTECT,
+        related_name="tds_ledger_entries",
+    )
+
+    rent_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+    )
+
+    tds_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("10.00"),
+    )
+
+    tds_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-invoice__billing_from", "-id"]
+        verbose_name = "TDS Ledger Entry"
+        verbose_name_plural = "TDS Ledger"
+
+    def save(self, *args, **kwargs):
+        self.tds_amount = (
+            self.rent_amount * self.tds_rate / Decimal("100")
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return (
+            f"Invoice #{self.invoice_id} - "
+            f"{self.tenant.full_name} - "
+            f"TDS ₹{self.tds_amount}"
+        )
+
+    tds_credited = models.BooleanField(
+    default=False,
+    verbose_name="TDS Credited",
+    )
+
+    tds_credited_date = models.DateField(
+    null=True,
+    blank=True,
+    verbose_name="TDS Credit Date", 
+    )
+
+
+
 # =========================================================
 # INVOICE ITEM
 # =========================================================
@@ -1398,3 +1483,64 @@ class Payment(models.Model):
             f"Payment ₹{self.amount} - "
             f"Invoice #{self.invoice.invoice_number}"
         )
+
+
+class PaymentReminderNotification(models.Model):
+    """
+    One persistent reminder record per invoice.
+
+    A successful email is sent once. Failed email attempts remain
+    eligible for retry by the scheduled management command.
+    """
+
+    invoice = models.OneToOneField(
+        "core.Invoice",
+        on_delete=models.CASCADE,
+        related_name="payment_reminder",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    email_sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    email_last_attempt_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    email_last_error = models.TextField(
+        blank=True,
+        default="",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Payment Reminder"
+        verbose_name_plural = "Payment Reminders"
+
+    def __str__(self):
+        return f"Payment reminder for Invoice #{self.invoice_id}"
+
+
+
+class AdminUserProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="admin_profile",
+    )
+    mobile_number = models.CharField(
+        max_length=15,
+        blank=True,
+        help_text="Include country code, for example +91...",
+    )
+    mobile_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Profile: {self.user.username}"
+

@@ -1,5 +1,18 @@
 from django import forms
 from datetime import date
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.forms import AuthenticationForm
+from django.db.models import Q
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import (
+    PasswordChangeForm,
+    SetPasswordForm,
+    PasswordResetForm,
+)
+
+from .models import AdminUserProfile
 from .models import Tenant, LeaseAgreement, Property, PropertyTax, PropertyDocument
 
 
@@ -74,6 +87,16 @@ class AgreementForm(forms.ModelForm):
             "min": "0",
         }),
     )
+    
+    lease_document = forms.FileField(
+        label="Lease Agreement PDF",
+        required=False,
+        widget=forms.ClearableFileInput(attrs={
+            "class": "form-control file-input",
+            "accept": ".pdf,application/pdf",
+        }),
+    )
+
 
     class Meta:
         model = LeaseAgreement
@@ -106,6 +129,7 @@ class AgreementForm(forms.ModelForm):
             "termination_date",
             "termination_reason",
             "notes",
+            "lease_document",
         ]
 
         labels = {
@@ -398,3 +422,221 @@ class PropertyDocumentForm(forms.ModelForm):
 
         return document
 
+User = get_user_model()
+
+
+class SuperuserLoginForm(AuthenticationForm):
+    username = forms.CharField(
+        label="Username, Email or Mobile",
+        widget=forms.TextInput(attrs={
+            "placeholder": "Enter username, email or mobile number",
+            "autocomplete": "username",
+            "autofocus": True,
+        }),
+    )
+
+    def clean(self):
+        identifier = self.cleaned_data.get("username", "").strip()
+        password = self.cleaned_data.get("password")
+
+        if not identifier or not password:
+            raise forms.ValidationError("Enter your login details.")
+
+        # Find an account by username or email.
+        user = User.objects.filter(
+            Q(username__iexact=identifier) |
+            Q(email__iexact=identifier)
+        ).distinct().first()
+
+        # If not found, try a verified mobile number.
+        if user is None:
+            profiles = AdminUserProfile.objects.filter(
+                mobile_number=identifier,
+                mobile_verified=True,
+                user__is_active=True,
+                user__is_superuser=True,
+            ).select_related("user")
+
+            profile = profiles.first()
+            if profile:
+                user = profile.user
+
+        # Only authenticate active superusers.
+        if user is None or not user.is_active or not user.is_superuser:
+            raise forms.ValidationError(
+                "Invalid login details or insufficient access."
+            )
+
+        authenticated_user = authenticate(
+            self.request,
+            username=user.get_username(),
+            password=password,
+        )
+
+        if authenticated_user is None:
+            raise forms.ValidationError("Invalid login details.")
+
+        self.confirm_login_allowed(authenticated_user)
+        self.user_cache = authenticated_user
+        return self.cleaned_data
+
+
+User = get_user_model()
+
+
+
+class AdminProfileForm(forms.ModelForm):
+    username = forms.CharField(
+        max_length=150,
+        label="Username",
+        widget=forms.TextInput(attrs={
+            "autocomplete": "username",
+            "placeholder": "Enter username",
+            "class": "form-control",
+        }),
+    )
+
+    email = forms.EmailField(
+        label="Email address",
+        widget=forms.EmailInput(attrs={
+            "autocomplete": "email",
+            "class": "form-control",
+        }),
+    )
+
+    current_password = forms.CharField(
+        label="Confirm current password",
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            "autocomplete": "current-password",
+            "placeholder": "Required to save account changes",
+            "class": "form-control",
+        }),
+    )
+
+    class Meta:
+        model = AdminUserProfile
+        fields = ["mobile_number"]
+
+        widgets = {
+            "mobile_number": forms.TextInput(attrs={
+                "autocomplete": "tel",
+                "class": "form-control",
+            }),
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+        if user:
+            self.fields["username"].initial = user.username
+            self.fields["email"].initial = user.email
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+
+        if not username:
+            raise forms.ValidationError("Username is required.")
+
+        users = User.objects.filter(username__iexact=username)
+        if self.user:
+            users = users.exclude(pk=self.user.pk)
+
+        if users.exists():
+            raise forms.ValidationError(
+                "This username is already being used."
+            )
+
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+
+        users = User.objects.filter(email__iexact=email)
+        if self.user:
+            users = users.exclude(pk=self.user.pk)
+
+        if users.exists():
+            raise forms.ValidationError(
+                "This email address is already assigned to another account."
+            )
+
+        return email
+
+    def clean_current_password(self):
+        password = self.cleaned_data["current_password"]
+
+        if not self.user or not self.user.check_password(password):
+            raise forms.ValidationError(
+                "Your current password is incorrect."
+            )
+
+        return password
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+
+        if not self.user:
+            raise ValueError("The current user is required.")
+
+        self.user.username = self.cleaned_data["username"]
+        self.user.email = self.cleaned_data["email"]
+
+        if commit:
+            self.user.save()
+            profile.save()
+
+        return profile
+
+
+
+User = get_user_model()
+
+
+class SuperuserPasswordResetForm(PasswordResetForm):
+    """Send recovery links only to active superuser accounts."""
+
+    def get_users(self, email):
+        users = User._default_manager.filter(
+            email__iexact=email,
+            is_active=True,
+            is_superuser=True,
+        )
+        return (
+            user for user in users
+            if user.has_usable_password()
+        )
+
+
+class AdminUserCreateForm(UserCreationForm):
+    email = forms.EmailField(
+        required=True,
+        label="Email address",
+    )
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username", "email")
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(
+                "This email address is already registered."
+            )
+
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        user.is_active = True
+        user.is_staff = True
+        user.is_superuser = True
+
+        if commit:
+            user.save()
+
+        return user

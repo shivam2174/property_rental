@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Add Administrator | Property Rental Management</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 28px 16px;
+            background: #f1f5f9;
+            color: #0f172a;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 650px;
+            margin: 35px auto;
+            padding: 30px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            box-shadow: 0 8px 28px #0f172a0b;
+        }
+
+        .eyebrow {
+            color: #2563eb;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+        }
+
+        h1 { margin: 8px 0; font-size: 28px; }
+
+        .muted {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .limit {
+            margin: 22px 0;
+            padding: 15px;
+            border: 1px solid #bfdbfe;
+            border-radius: 11px;
+            background: #eff6ff;
+            color: #1e40af;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            margin: 18px 0 7px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #2563eb;
+        }
+
+        .help {
+            display: block;
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .error {
+            margin-top: 7px;
+            color: #b91c1c;
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 26px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 17px;
+            border: 0;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .primary { background: #2563eb; color: white; }
+        .secondary {
+            background: white;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 22px 17px; }
+            .actions { flex-direction: column; }
+            .button { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <div class="eyebrow">User management</div>
+        <h1>Add New Administrator</h1>
+        <p class="muted">
+            Create an account for a trusted person who needs access to the
+            Property Rental Management system.
+        </p>
+
+        <div class="limit">
+            <strong>Administrator accounts:</strong>
+            {{ active_admin_count }} of {{ max_admin_users }} active accounts used.
+        </div>
+
+        {% if active_admin_count >= max_admin_users %}
+            <p class="error">
+                The account limit has been reached. No additional administrator
+                account can be created.
+            </p>
+        {% else %}
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="error">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                {% for field in form %}
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <small class="help">{{ field.help_text|safe }}</small>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="error">{{ field.errors }}</div>
+                    {% endif %}
+                {% endfor %}
+
+                <div class="actions">
+                    <button class="button primary" type="submit">
+                        Create Administrator
+                    </button>
+                    <a class="button secondary"
+                       href="{% url 'admin_profile' %}">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        {% endif %}
+    </main>
+</body>
+</html>

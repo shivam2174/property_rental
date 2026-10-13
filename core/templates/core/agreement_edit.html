@@ -196,7 +196,7 @@
                     <option value="">-- Select Tenant --</option>
 
                     {% for tenant in tenants %}
-                    <option value="{{ tenant.id }}" {% if agreement.tenant_id == tenant.id %}selected{% endif %}>
+                    <option value="{{ tenant.id }}" {% if agreement.tenant_id==tenant.id %}selected{% endif %}>
                         {{ tenant.full_name }}
                     </option>
                     {% endfor %}
@@ -212,7 +212,7 @@
                     <option value="">-- Select Property --</option>
 
                     {% for property in properties %}
-                    <option value="{{ property.id }}" {% if agreement.property_id == property.id %}selected{% endif %}>
+                    <option value="{{ property.id }}" {% if agreement.property_id==property.id %}selected{% endif %}>
                         {{ property.name }}
                         {% if property.unit_no %}
                         - Unit {{ property.unit_no }}
@@ -479,15 +479,15 @@
                 <label for="status">Lease Status</label>
 
                 <select id="status" name="status" required>
-                    <option value="active" {% if agreement.status == "active" %}selected{% endif %}>
+                    <option value="active" {% if agreement.status=="active" %}selected{% endif %}>
                         Active
                     </option>
 
-                    <option value="expired" {% if agreement.status == "expired" %}selected{% endif %}>
+                    <option value="expired" {% if agreement.status=="expired" %}selected{% endif %}>
                         Expired
                     </option>
 
-                    <option value="terminated" {% if agreement.status == "terminated" %}selected{% endif %}>
+                    <option value="terminated" {% if agreement.status=="terminated" %}selected{% endif %}>
                         Terminated
                     </option>
                 </select>
@@ -522,6 +522,37 @@
 
                 <textarea id="notes" name="notes" rows="4">{{ agreement.notes|default_if_none:'' }}</textarea>
             </div>
+
+
+            <!-- Lease Agreement Documents -->
+            <div class="form-section">
+                <h3>Lease Agreement Documents</h3>
+                <p>Upload the signed lease agreement PDF for this tenant.</p>
+
+                <div class="form-group">
+                    <label for="{{ form.lease_document.id_for_label }}">
+                        Lease Agreement PDF
+                    </label>
+
+                    {{ form.lease_document }}
+
+                    {% if form.instance.lease_document %}
+                    <p>
+                        Current document:
+                        <a href="{{ form.instance.lease_document.url }}" target="_blank" rel="noopener">
+                            View / Download Lease PDF
+                        </a>
+                    </p>
+                    {% endif %}
+
+                    {% if form.lease_document.errors %}
+                    <div class="error">
+                        {{ form.lease_document.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
 
             <!-- BUTTONS -->
 
