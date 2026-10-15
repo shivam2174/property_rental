@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Staff Account</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px 16px;
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+            color: #172033;
+        }
+
+        .form-card {
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 28px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin: 18px 0 7px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 11px 17px;
+            border: 0;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .save {
+            background: #2563eb;
+            color: white;
+        }
+
+        .back {
+            background: #64748b;
+            color: white;
+        }
+
+        .messages {
+            padding: 12px;
+            background: #eff6ff;
+            border-radius: 7px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-card">
+    <h1>Edit Staff Account</h1>
+    <p>Update the staff member's username, email, or password.</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p class="messages">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="username">Username</label>
+        <input
+            id="username"
+            type="text"
+            name="username"
+            value="{{ staff_user.username }}"
+            required
+        >
+
+        <label for="email">Email address</label>
+        <input
+            id="email"
+            type="email"
+            name="email"
+            value="{{ staff_user.email }}"
+        >
+
+        <label for="new_password">New password</label>
+        <input
+            id="new_password"
+            type="password"
+            name="new_password"
+            autocomplete="new-password"
+            placeholder="Leave blank to keep the current password"
+        >
+
+        <div class="actions">
+            <button class="btn save" type="submit">
+                Save Changes
+            </button>
+
+            <a class="btn back" href="{% url 'admin_profile' %}">
+                Back to Profile
+            </a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

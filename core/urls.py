@@ -20,6 +20,22 @@ urlpatterns = [
         ),
         name="login",
     ),
+    path("role-redirect/", views.role_redirect, name="role_redirect"),
+
+    
+    path(
+    "admin-users/<int:user_id>/edit/",
+    views.admin_edit_staff,
+    name="admin_edit_staff",
+    ),
+    
+    path(
+    "admin-users/<int:pk>/edit/",
+    views.staff_account_edit,
+    name="staff_account_edit",
+    ),
+
+
 
     path(
         "logout/",

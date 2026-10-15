@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,6 @@
     <title>Tenants</title>
 
     <style>
-
         body {
             font-family: Arial, sans-serif;
             background: #f5f6fa;
@@ -245,45 +245,47 @@
             }
 
         }
-
     </style>
 </head>
 
 
 <body>
 
-<div class="container">
+    <div class="container">
 
 
-    <!-- HEADER -->
+        <!-- HEADER -->
 
-    <div class="header-actions">
+        <div class="header-actions">
 
-        <a href="{% url 'dashboard' %}" class="home-btn">
-            🏠 Dashboard
-        </a>
+            {% if request.user.is_superuser %}
+            <a href="{% url 'dashboard' %}" class="btn">
+                🏠 Dashboard
+            </a>
 
-        <a href="{% url 'tenant_add' %}" class="add-tenant">
-            + Add Tenant
-        </a>
+            <a href="{% url 'tenant_report' %}" class="btn">
+                📊 Tenant Report
+            </a>
+            {% endif %}
 
-        <a href="{% url 'tenant_report' %}" class="report-btn">
-            📊 Tenant Report
-        </a>
-
-    </div>
-
-
-    <!-- MAIN CONTENT -->
-
-    <div class="main-layout">
+            <a href="{% url 'tenant_add' %}" class="add-tenant">
+                + Add Tenant
+            </a>
 
 
-        <!-- TENANT LIST -->
+        </div>
 
-        <div class="tenant-list">
 
-            {% for tenant in tenants %}
+        <!-- MAIN CONTENT -->
+
+        <div class="main-layout">
+
+
+            <!-- TENANT LIST -->
+
+            <div class="tenant-list">
+
+                {% for tenant in tenants %}
 
                 <div class="tenant-card">
 
@@ -296,9 +298,9 @@
                         <div class="tenant-email">
 
                             {% if tenant.email %}
-                                {{ tenant.email }}
+                            {{ tenant.email }}
                             {% else %}
-                                No email provided
+                            No email provided
                             {% endif %}
 
                         </div>
@@ -308,10 +310,7 @@
 
                     <div>
 
-                        <a
-                            href="{% url 'tenant_detail' tenant.pk %}"
-                            class="view-btn"
-                        >
+                        <a href="{% url 'tenant_detail' tenant.pk %}" class="view-btn">
                             View Details
                         </a>
 
@@ -319,101 +318,92 @@
 
                 </div>
 
-            {% empty %}
+                {% empty %}
 
                 <div class="empty">
                     No tenants found.
                 </div>
 
-            {% endfor %}
+                {% endfor %}
 
-        </div>
-
-
-        <!-- RIGHT SIDEBAR -->
-
-        <div class="sidebar">
-
-            <div class="sidebar-title">
-                Tenant Status
             </div>
 
 
-            <!-- ACTIVE -->
+            <!-- RIGHT SIDEBAR -->
 
-            <a
-                href="?status=active"
-                class="status-link"
-            >
+            <div class="sidebar">
 
-                <div class="status-left">
-
-                    <span class="active-dot"></span>
-
-                    <span>
-                        Active
-                    </span>
-
+                <div class="sidebar-title">
+                    Tenant Status
                 </div>
 
-                <span class="count">
-                    {{ active_count }}
-                </span>
 
-            </a>
+                <!-- ACTIVE -->
 
+                <a href="?status=active" class="status-link">
 
-            <!-- INACTIVE -->
+                    <div class="status-left">
 
-            <a
-                href="?status=inactive"
-                class="status-link"
-            >
+                        <span class="active-dot"></span>
 
-                <div class="status-left">
+                        <span>
+                            Active
+                        </span>
 
-                    <span class="inactive-dot"></span>
+                    </div>
 
-                    <span>
-                        Inactive
+                    <span class="count">
+                        {{ active_count }}
                     </span>
 
-                </div>
-
-                <span class="count">
-                    {{ inactive_count }}
-                </span>
-
-            </a>
+                </a>
 
 
-            <!-- ALL TENANTS -->
+                <!-- INACTIVE -->
 
-            <a
-                href="{% url 'tenant_list' %}"
-                class="status-link"
-            >
+                <a href="?status=inactive" class="status-link">
 
-                <div class="status-left">
+                    <div class="status-left">
 
-                    <span>
-                        All Tenants
+                        <span class="inactive-dot"></span>
+
+                        <span>
+                            Inactive
+                        </span>
+
+                    </div>
+
+                    <span class="count">
+                        {{ inactive_count }}
                     </span>
 
-                </div>
+                </a>
 
-                <span class="count">
-                    {{ total_count }}
-                </span>
 
-            </a>
+                <!-- ALL TENANTS -->
+
+                <a href="{% url 'tenant_list' %}" class="status-link">
+
+                    <div class="status-left">
+
+                        <span>
+                            All Tenants
+                        </span>
+
+                    </div>
+
+                    <span class="count">
+                        {{ total_count }}
+                    </span>
+
+                </a>
+
+            </div>
 
         </div>
 
     </div>
 
-</div>
-
 </body>
-</html>
 
+</html>

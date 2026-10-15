@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.forms import (
     PasswordChangeForm,
     SetPasswordForm,
@@ -454,18 +455,18 @@ class SuperuserLoginForm(AuthenticationForm):
                 mobile_number=identifier,
                 mobile_verified=True,
                 user__is_active=True,
-                user__is_superuser=True,
+                
             ).select_related("user")
 
             profile = profiles.first()
             if profile:
                 user = profile.user
 
-        # Only authenticate active superusers.
-        if user is None or not user.is_active or not user.is_superuser:
+        # Allow any active account to authenticate.
+        if user is None or not user.is_active:
             raise forms.ValidationError(
-                "Invalid login details or insufficient access."
-            )
+            "Invalid login details or inactive account."
+      )
 
         authenticated_user = authenticate(
             self.request,
@@ -609,10 +610,21 @@ class SuperuserPasswordResetForm(PasswordResetForm):
         )
 
 
+
 class AdminUserCreateForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
         label="Email address",
+    )
+
+    role = forms.ChoiceField(
+        choices=[
+            ("admin", "Administrator"),
+            ("staff", "Staff"),
+        ],
+        initial="staff",
+        label="User Role",
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
 
     class Meta(UserCreationForm.Meta):
@@ -631,10 +643,165 @@ class AdminUserCreateForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+
         user.email = self.cleaned_data["email"]
+        role = self.cleaned_data["role"]
+
         user.is_active = True
-        user.is_staff = True
-        user.is_superuser = True
+
+        if role == "admin":
+            user.is_superuser = True
+            user.is_staff = True
+        else:
+            user.is_superuser = False
+            user.is_staff = False
+
+        if commit:
+            user.save()
+
+        return user
+
+
+
+User = get_user_model()
+
+
+class StaffAccountUpdateForm(forms.ModelForm):
+    new_password = forms.CharField(
+        required=False,
+        label="New password",
+        widget=forms.PasswordInput(
+            attrs={"autocomplete": "new-password"}
+        ),
+        help_text="Leave blank to keep the current password.",
+    )
+
+    confirm_password = forms.CharField(
+        required=False,
+        label="Confirm new password",
+        widget=forms.PasswordInput(
+            attrs={"autocomplete": "new-password"}
+        ),
+    )
+
+    class Meta:
+        model = User
+        fields = ["username", "email"]
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+
+        existing = User.objects.filter(
+            username__iexact=username
+        ).exclude(pk=self.instance.pk)
+
+        if existing.exists():
+            raise ValidationError(
+                "This username is already in use."
+            )
+
+        return username
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        password = cleaned_data.get("new_password")
+        confirmation = cleaned_data.get("confirm_password")
+
+        if password or confirmation:
+            if not password:
+                self.add_error(
+                    "new_password",
+                    "Enter the new password."
+                )
+            elif password != confirmation:
+                self.add_error(
+                    "confirm_password",
+                    "The passwords do not match."
+                )
+            else:
+                try:
+                    password_validation.validate_password(
+                        password,
+                        self.instance,
+                    )
+                except ValidationError as error:
+                    self.add_error("new_password", error)
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        password = self.cleaned_data.get("new_password")
+        if password:
+            user.set_password(password)
+
+        if commit:
+            user.save()
+
+        return user
+
+
+class StaffAccountEditForm(forms.ModelForm):
+    new_password = forms.CharField(
+        required=False,
+        label="New password",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Leave blank to keep the current password",
+                "autocomplete": "new-password",
+            }
+        ),
+    )
+
+    class Meta:
+        model = User
+        fields = ("username", "email")
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "form-control"}),
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.edited_user = kwargs.get("instance")
+        super().__init__(*args, **kwargs)
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+
+        duplicate = User.objects.filter(
+            username__iexact=username
+        ).exclude(pk=self.instance.pk)
+
+        if duplicate.exists():
+            raise forms.ValidationError(
+                "This username is already in use."
+            )
+
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+
+        duplicate = User.objects.filter(
+            email__iexact=email
+        ).exclude(pk=self.instance.pk)
+
+        if duplicate.exists():
+            raise forms.ValidationError(
+                "This email address is already in use."
+            )
+
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        new_password = self.cleaned_data.get("new_password")
+        if new_password:
+            user.set_password(new_password)
 
         if commit:
             user.save()

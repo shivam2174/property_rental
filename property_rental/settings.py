@@ -69,9 +69,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'core.middleware.SuperuserOnlyMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.SuperuserOnlyMiddleware',
 ]
 
 
@@ -189,8 +189,9 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "role_redirect"
 LOGOUT_REDIRECT_URL = "/login/"
+
 
 
 

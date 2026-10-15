@@ -1,12 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Add Administrator | Property Rental Management</title>
+    <title>Add User | Property Rental Management</title>
+
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             margin: 0;
@@ -35,7 +37,10 @@
             text-transform: uppercase;
         }
 
-        h1 { margin: 8px 0; font-size: 28px; }
+        h1 {
+            margin: 8px 0;
+            font-size: 28px;
+        }
 
         .muted {
             color: #64748b;
@@ -59,17 +64,41 @@
             font-weight: 700;
         }
 
-        input {
+        input,
+        select {
+            display: block;
             width: 100%;
             padding: 12px 13px;
             border: 1px solid #cbd5e1;
             border-radius: 9px;
+            background: white;
+            color: #0f172a;
             font-size: 14px;
         }
 
-        input:focus {
+        input:focus,
+        select:focus {
             outline: 2px solid #bfdbfe;
             border-color: #2563eb;
+        }
+
+        .role-section {
+            margin: 22px 0;
+            padding: 17px;
+            border: 1px solid #bfdbfe;
+            border-radius: 11px;
+            background: #f8fbff;
+        }
+
+        .role-section label {
+            margin-top: 0;
+        }
+
+        .role-help {
+            margin: 8px 0 0;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.5;
         }
 
         .help {
@@ -84,6 +113,11 @@
             margin-top: 7px;
             color: #b91c1c;
             font-size: 13px;
+        }
+
+        .error ul {
+            margin: 5px 0;
+            padding-left: 20px;
         }
 
         .actions {
@@ -104,73 +138,206 @@
             cursor: pointer;
         }
 
-        .primary { background: #2563eb; color: white; }
+        .primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .primary:hover {
+            background: #1d4ed8;
+        }
+
         .secondary {
             background: white;
             color: #334155;
             border: 1px solid #cbd5e1;
         }
 
+        .secondary:hover {
+            background: #f8fafc;
+        }
+
+        .limit-error {
+            margin: 12px 0;
+            padding: 12px;
+            border: 1px solid #fecaca;
+            border-radius: 9px;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-size: 13px;
+        }
+
         @media (max-width: 480px) {
-            .card { padding: 22px 17px; }
-            .actions { flex-direction: column; }
-            .button { text-align: center; }
+            body {
+                padding: 12px;
+            }
+
+            .card {
+                margin: 12px auto;
+                padding: 22px 17px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .button {
+                width: 100%;
+                text-align: center;
+            }
         }
     </style>
 </head>
+
 <body>
     <main class="card">
         <div class="eyebrow">User management</div>
-        <h1>Add New Administrator</h1>
-        <p class="muted">
+
+        <h1 id="page-title">Add New Staff</h1>
+
+        <p class="muted" id="page-description">
             Create an account for a trusted person who needs access to the
             Property Rental Management system.
         </p>
 
-        <div class="limit">
-            <strong>Administrator accounts:</strong>
-            {{ active_admin_count }} of {{ max_admin_users }} active accounts used.
-        </div>
+        <form method="post">
+            {% csrf_token %}
 
-        {% if active_admin_count >= max_admin_users %}
-            <p class="error">
-                The account limit has been reached. No additional administrator
-                account can be created.
-            </p>
-        {% else %}
-            <form method="post">
-                {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="error">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
 
-                {% if form.non_field_errors %}
-                    <div class="error">{{ form.non_field_errors }}</div>
-                {% endif %}
+            {% if form.role.errors %}
+                <div class="error">
+                    {{ form.role.errors }}
+                </div>
+            {% endif %}
 
-                {% for field in form %}
+            <!-- Role selection appears at the top -->
+            <div class="role-section">
+                <label for="{{ form.role.id_for_label }}">
+                    User Role
+                </label>
+
+                {{ form.role }}
+
+                <p class="role-help" id="role-help">
+                    Staff can access only the permitted operational tasks.
+                </p>
+            </div>
+
+            <div class="limit" id="admin-limit">
+                <strong>Administrator accounts:</strong>
+                {{ active_admin_count }} of {{ max_admin_users }}
+                active accounts used.
+            </div>
+
+            {% if form.role.value == "admin" and active_admin_count >= max_admin_users %}
+                <div class="limit-error" id="limit-error">
+                    The maximum number of active administrator accounts
+                    has been reached. Select Staff to create a Staff account.
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                {% if field.name != "role" %}
                     <label for="{{ field.id_for_label }}">
                         {{ field.label }}
                     </label>
+
                     {{ field }}
 
                     {% if field.help_text %}
-                        <small class="help">{{ field.help_text|safe }}</small>
+                        <small class="help">
+                            {{ field.help_text|safe }}
+                        </small>
                     {% endif %}
 
                     {% if field.errors %}
-                        <div class="error">{{ field.errors }}</div>
+                        <div class="error">
+                            {{ field.errors }}
+                        </div>
                     {% endif %}
-                {% endfor %}
+                {% endif %}
+            {% endfor %}
 
-                <div class="actions">
-                    <button class="button primary" type="submit">
-                        Create Administrator
-                    </button>
-                    <a class="button secondary"
-                       href="{% url 'admin_profile' %}">
-                        Cancel
-                    </a>
-                </div>
-            </form>
-        {% endif %}
+            <div class="actions">
+                <button
+                    class="button primary"
+                    type="submit"
+                    id="submit-button"
+                >
+                    Create Staff
+                </button>
+
+                <a
+                    class="button secondary"
+                    href="{% url 'admin_profile' %}"
+                >
+                    Cancel
+                </a>
+            </div>
+        </form>
     </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const roleSelect = document.getElementById("id_role");
+            const pageTitle = document.getElementById("page-title");
+            const submitButton = document.getElementById("submit-button");
+            const roleHelp = document.getElementById("role-help");
+
+            const adminLimit = document.getElementById("admin-limit");
+            const limitError = document.getElementById("limit-error");
+
+            const activeAdmins = Number(
+                "{{ active_admin_count|default:0 }}"
+            );
+            const maxAdmins = Number(
+                "{{ max_admin_users|default:4 }}"
+            );
+
+            if (!roleSelect) {
+                return;
+            }
+
+            function updateRoleUI() {
+                const isAdmin = roleSelect.value === "admin";
+                const roleName = isAdmin ? "Administrator" : "Staff";
+                const limitReached = activeAdmins >= maxAdmins;
+
+                pageTitle.textContent = "Add New " + roleName;
+                submitButton.textContent = "Create " + roleName;
+
+                roleHelp.textContent = isAdmin
+                    ? "Administrators have full system access and can manage user accounts."
+                    : "Staff can access only the permitted operational tasks.";
+
+                if (adminLimit) {
+                    adminLimit.style.display = isAdmin ? "block" : "none";
+                }
+
+                if (limitError) {
+                    limitError.style.display =
+                        isAdmin && limitReached ? "block" : "none";
+                }
+
+                submitButton.disabled = isAdmin && limitReached;
+                submitButton.style.opacity =
+                    submitButton.disabled ? "0.6" : "1";
+                submitButton.style.cursor =
+                    submitButton.disabled ? "not-allowed" : "pointer";
+            }
+
+            roleSelect.addEventListener("change", updateRoleUI);
+            updateRoleUI();
+        });
+    </script>
 </body>
 </html>

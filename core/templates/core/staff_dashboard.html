@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard | Property Rental Management</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f3f5fb;
+            color: #1e293b;
+        }
+
+        .top-header {
+            background: #ffffff;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .top-header h2 {
+            margin: 0;
+            font-size: 22px;
+            color: #172554;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 16px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .profile-btn {
+            background: #e8edf5;
+            color: #1e293b;
+        }
+
+        .logout-btn {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 30px 24px;
+        }
+
+        .page-heading {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            margin: 0 0 28px;
+            color: #64748b;
+        }
+
+        .section-title {
+            margin: 0 0 18px;
+            font-size: 20px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 32px;
+        }
+
+        .action-card {
+            display: block;
+            background: #ffffff;
+            padding: 24px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #1e293b;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
+            border: 1px solid #e8edf5;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
+        }
+
+        .action-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: #eaf0ff;
+            color: #2563eb;
+            font-size: 23px;
+            margin-bottom: 16px;
+        }
+
+        .action-card h3 {
+            margin: 0 0 8px;
+            font-size: 17px;
+        }
+
+        .action-card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .tax-section {
+            background: #ffffff;
+            border: 1px solid #e8edf5;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+        }
+
+        .tax-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .tax-section-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .tax-count {
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #fff1f2;
+            color: #be123c;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .tax-record {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 18px 0;
+            border-top: 1px solid #edf0f5;
+        }
+
+        .tax-record h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+
+        .tax-record p {
+            margin: 4px 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .tax-amount {
+            color: #b91c1c !important;
+            font-weight: 700;
+        }
+
+        .payment-btn {
+            flex-shrink: 0;
+            background: #15803d;
+            color: #ffffff;
+        }
+
+        .empty-state {
+            border-top: 1px solid #edf0f5;
+            padding: 28px 10px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 900px) {
+            .quick-actions {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .top-header {
+                padding: 16px;
+            }
+
+            .top-header h2 {
+                font-size: 18px;
+            }
+
+            .container {
+                padding: 22px 14px;
+            }
+
+            .page-heading {
+                font-size: 24px;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .action-card {
+                padding: 18px;
+            }
+
+            .tax-section {
+                padding: 18px;
+            }
+
+            .tax-record {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .payment-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="top-header">
+        <h2>Property Rental Management</h2>
+
+        <div class="header-actions">
+            <a class="btn profile-btn" href="{% url 'admin_profile' %}">
+                Profile
+            </a>
+
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="btn logout-btn" type="submit">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 class="page-heading">Staff Dashboard</h1>
+        <p class="subtitle">Manage property records and outstanding property tax.</p>
+
+        <section>
+            <h2 class="section-title">Quick Actions</h2>
+
+            <div class="quick-actions">
+                <a class="action-card" href="{% url 'owner_add' %}">
+                    <span class="action-icon">👤</span>
+                    <h3>Add Owner</h3>
+                    <p>Create owner details and contact information.</p>
+                </a>
+
+                <a class="action-card" href="{% url 'property_add' %}">
+                    <span class="action-icon">🏢</span>
+                    <h3>Add Property</h3>
+                    <p>Register a new property in the system.</p>
+                </a>
+
+                <a class="action-card" href="{% url 'tenant_add' %}">
+                    <span class="action-icon">👥</span>
+                    <h3>Add Tenant</h3>
+                    <p>Create a tenant master record.</p>
+                </a>
+
+                <a class="action-card" href="{% url 'agreement_add' %}">
+                    <span class="action-icon">📄</span>
+                    <h3>New Agreement</h3>
+                    <p>Create a lease agreement for a property and tenant.</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="tax-section">
+            <div class="tax-section-header">
+                <h2>Unpaid Property Tax</h2>
+                <span class="tax-count">
+                    {{ unpaid_property_taxes|length }} pending
+                </span>
+            </div>
+
+            {% for tax in unpaid_property_taxes %}
+                <div class="tax-record">
+                    <div>
+                        <h3>{{ tax.property }}</h3>
+                        <p>Tax year: {{ tax.tax_year }}</p>
+                        <p class="tax-amount">
+                            Amount: ₹{{ tax.tax_amount|floatformat:2 }}
+                        </p>
+                    </div>
+
+                    <a class="btn payment-btn"
+                       href="{% url 'property_tax_edit' tax.pk %}">
+                        Record Payment
+                    </a>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    No unpaid property tax records.
+                </div>
+            {% endfor %}
+        </section>
+    </main>
+</body>
+</html>

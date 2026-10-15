@@ -11,7 +11,6 @@
     <title>Add Lease Agreement</title>
 
     <style>
-
         * {
 
             box-sizing: border-box;
@@ -460,6 +459,30 @@
 
         }
 
+        a.back-dashboard-btn {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 18px !important;
+            background-color: #ffffff !important;
+            color: #4f46e5 !important;
+            border: 1px solid #c7d2fe !important;
+            border-radius: 7px !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            line-height: 20px;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        a.back-dashboard-btn:hover {
+            background-color: #eef2ff !important;
+            color: #3730a3 !important;
+            border-color: #4f46e5 !important;
+        }
+
         @media (max-width: 700px) {
 
             body {
@@ -679,7 +702,7 @@
 
                                 <option value="{{ property.pk }}">
 
-                                    {{ property.name }}{% if property.unit_no %} - Unit {{ property.unit_no }}{% endif %}
+                                    {{ property.name }}{% if property.unit_no %} - Unit {{ property.unit_no }}{% endif%}
 
                                 </option>
 
@@ -728,7 +751,6 @@
                                 </label>
 
                                 <input type="date" id="start_date" name="start_date"
-
                                     value="{{ request.POST.start_date }}" required>
 
                             </div>
@@ -758,7 +780,6 @@
                                 <label for="lock_in_months">Lock-in Period (Months)</label>
 
                                 <input type="number" id="lock_in_months" name="lock_in_months" min="0"
-
                                     value="{% if request.POST.lock_in_months %}{{ request.POST.lock_in_months }}{% else %}36{% endif %}">
 
                                 <small>Example: 36 months.</small>
@@ -770,7 +791,6 @@
                                 <label for="rent_free_months">Rent-Free Period (Months)</label>
 
                                 <input type="number" id="rent_free_months" name="rent_free_months" min="0"
-
                                     value="{% if request.POST.rent_free_months %}{{ request.POST.rent_free_months }}{% else %}2{% endif %}">
 
                                 <small>Example: first 2 months rent-free.</small>
@@ -796,7 +816,6 @@
                                 </label>
 
                                 <input type="number" id="monthly_rent" name="monthly_rent" step="0.01" min="0"
-
                                     value="{{ request.POST.monthly_rent }}" placeholder="Enter monthly rent" required>
 
                                 <small>
@@ -812,9 +831,7 @@
                                 <label for="security_deposit">Security Deposit</label>
 
                                 <input type="number" id="security_deposit" name="security_deposit" step="0.01" min="0"
-
                                     value="{% if request.POST.security_deposit %}{{ request.POST.security_deposit }}{% else %}0{% endif %}"
-
                                     placeholder="Enter security deposit">
 
                             </div>
@@ -836,7 +853,6 @@
                                 <label for="extension_1_start_date">Extension 1 Start Date</label>
 
                                 <input type="date" id="extension_1_start_date" name="extension_1_start_date"
-
                                     value="{{ request.POST.extension_1_start_date }}">
 
                             </div>
@@ -846,7 +862,6 @@
                                 <label for="extension_1_end_date">Extension 1 End Date</label>
 
                                 <input type="date" id="extension_1_end_date" name="extension_1_end_date"
-
                                     value="{{ request.POST.extension_1_end_date }}">
 
                             </div>
@@ -864,9 +879,7 @@
                                 </label>
 
                                 <input type="number" id="extension_1_monthly_rent" name="extension_1_monthly_rent"
-
                                     step="0.01" min="0" value="{{ request.POST.extension_1_monthly_rent }}"
-
                                     placeholder="Enter extension 1 rent">
 
                             </div>
@@ -880,11 +893,8 @@
                                 </label>
 
                                 <input type="number" id="extension_1_security_deposit"
-
                                     name="extension_1_security_deposit" step="0.01" min="0"
-
                                     value="{{ request.POST.extension_1_security_deposit }}"
-
                                     placeholder="Enter extension 1 deposit">
 
                             </div>
@@ -906,7 +916,6 @@
                                 <label for="extension_2_start_date">Extension 2 Start Date</label>
 
                                 <input type="date" id="extension_2_start_date" name="extension_2_start_date"
-
                                     value="{{ request.POST.extension_2_start_date }}">
 
                             </div>
@@ -916,7 +925,6 @@
                                 <label for="extension_2_end_date">Extension 2 End Date</label>
 
                                 <input type="date" id="extension_2_end_date" name="extension_2_end_date"
-
                                     value="{{ request.POST.extension_2_end_date }}">
 
                             </div>
@@ -934,9 +942,7 @@
                                 </label>
 
                                 <input type="number" id="extension_2_monthly_rent" name="extension_2_monthly_rent"
-
                                     step="0.01" min="0" value="{{ request.POST.extension_2_monthly_rent }}"
-
                                     placeholder="Enter extension 2 rent">
 
                             </div>
@@ -950,11 +956,8 @@
                                 </label>
 
                                 <input type="number" id="extension_2_security_deposit"
-
                                     name="extension_2_security_deposit" step="0.01" min="0"
-
                                     value="{{ request.POST.extension_2_security_deposit }}"
-
                                     placeholder="Enter extension 2 deposit">
 
                             </div>
@@ -976,7 +979,6 @@
                                 <label for="rental_area">Rental Area (sq. ft.)</label>
 
                                 <input type="number" id="rental_area" name="rental_area" min="0" step="0.01"
-
                                     value="{{ request.POST.rental_area|default:'' }}" placeholder="Enter rental area">
 
                             </div>
@@ -1000,7 +1002,6 @@
                             </label>
 
                             <input type="text" id="property_parking_display" readonly
-
                                 placeholder="Select a property to view parking slots">
 
                         </div>
@@ -1026,7 +1027,6 @@
                                 <label for="free_parking_spaces">Free Parking Slots</label>
 
                                 <input type="number" id="free_parking_spaces" name="free_parking_spaces" min="0"
-
                                     value="{% if request.POST.free_parking_spaces %}{{ request.POST.free_parking_spaces }}{% else %}0{% endif %}">
 
                                 <small>Number of free parking slots.</small>
@@ -1042,7 +1042,6 @@
                                 <label for="paid_parking_spaces">Paid Parking Slots</label>
 
                                 <input type="number" id="paid_parking_spaces" name="paid_parking_spaces" min="0"
-
                                     value="{% if request.POST.paid_parking_spaces %}{{ request.POST.paid_parking_spaces }}{% else %}0{% endif %}">
 
                                 <small>Number of paid parking slots.</small>
@@ -1054,7 +1053,6 @@
                                 <label for="parking_charge">Monthly Parking Charge</label>
 
                                 <input type="number" id="parking_charge" name="parking_charge" step="0.01" min="0"
-
                                     value="{% if request.POST.parking_charge %}{{ request.POST.parking_charge }}{% else %}0{% endif %}">
 
                                 <small>Monthly charge for paid parking.</small>
@@ -1084,7 +1082,6 @@
                             <label for="cgst_rate">CGST Rate (%)</label>
 
                             <input type="number" id="cgst_rate" name="cgst_rate" step="0.01" min="0" max="100"
-
                                 value="{% if request.POST.cgst_rate %}{{ request.POST.cgst_rate }}{% else %}0{% endif %}">
 
                         </div>
@@ -1094,7 +1091,6 @@
                             <label for="sgst_rate">SGST Rate (%)</label>
 
                             <input type="number" id="sgst_rate" name="sgst_rate" step="0.01" min="0" max="100"
-
                                 value="{% if request.POST.sgst_rate %}{{ request.POST.sgst_rate }}{% else %}0{% endif %}">
 
                         </div>
@@ -1120,9 +1116,7 @@
                             <label for="rent_due_day">Rent Due Day</label>
 
                             <input type="number" id="rent_due_day" name="rent_due_day" min="1" max="31"
-
                                 value="{% if request.POST.rent_due_day %}{{ request.POST.rent_due_day }}{% else %}5{% endif %}"
-
                                 required>
 
                             <small>Choose a day from 1 to 31.</small>
@@ -1135,19 +1129,19 @@
 
                             <select id="status" name="status" required>
 
-                                <option value="active" {% if request.POST.status == "active" or not request.POST.status %}selected{% endif %}>
+                                <option value="active" {% if request.POST.status == "active" or not request.POST.status%}selected{% endif %}>
 
                                     Active
 
                                 </option>
 
-            <option value="expired" {% if request.POST.status == "expired" %}selected{% endif %}>
+                                <option value="expired" {% if request.POST.status == "expired" %}selected{% endif %}>
 
                                     Expired
 
-             </option>
+                                </option>
 
-              <option value="terminated" {% if request.POST.status == "terminated" %}selected{% endif %}>
+                                <option value="terminated" {% if request.POST.status == "terminated" %}selected{% endif %}>
 
                                     Terminated
 
@@ -1178,7 +1172,6 @@
                             <label for="termination_date">Termination Date</label>
 
                             <input type="date" id="termination_date" name="termination_date"
-
                                 value="{{ request.POST.termination_date }}">
 
                         </div>
@@ -1192,7 +1185,6 @@
                         <label for="termination_reason">Termination Reason</label>
 
                         <textarea id="termination_reason" name="termination_reason" rows="3"
-
                             placeholder="Enter termination reason">{{ request.POST.termination_reason }}</textarea>
 
                     </div>
@@ -1212,7 +1204,6 @@
                     <div class="form-group">
 
                         <textarea id="notes" name="notes" rows="5"
-
                             placeholder="Optional notes about the lease agreement">{{ request.POST.notes }}</textarea>
 
                     </div>
@@ -1221,22 +1212,17 @@
 
             </div>
 
-<div class="form-section lease-document-section">
-    <h3>Lease Agreement Documents</h3>
-    <p>Upload the signed lease agreement PDF for this tenant.</p>
+            <div class="form-section lease-document-section">
+                <h3>Lease Agreement Documents</h3>
+                <p>Upload the signed lease agreement PDF for this tenant.</p>
 
-    <div class="form-group">
-        <label for="lease_document">Lease Agreement PDF</label>
-        <input
-            type="file"
-            id="lease_document"
-            name="lease_document"
-            accept=".pdf,application/pdf"
-            class="file-input"
-        >
-        <small>Select the signed lease agreement PDF.</small>
-    </div>
-</div>
+                <div class="form-group">
+                    <label for="lease_document">Lease Agreement PDF</label>
+                    <input type="file" id="lease_document" name="lease_document" accept=".pdf,application/pdf"
+                        class="file-input">
+                    <small>Select the signed lease agreement PDF.</small>
+                </div>
+            </div>
 
             <!-- BUTTONS -->
 
@@ -1248,6 +1234,9 @@
 
                     Back to Agreements
 
+                </a>
+                <a href="{% url 'dashboard' %}" class="back-dashboard-btn">
+                    ← Back to Dashboard
                 </a>
 
             </div>

@@ -599,40 +599,57 @@
             </div>
 
             <ul class="nav-menu">
+
+                {% if request.user.is_superuser %}
                 <li>
-                    <a href="/" class="active">Dashboard</a>
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
                 </li>
+                {% endif %}
+
                 <li>
                     <a href="{% url 'owner_list' %}">Owners</a>
                 </li>
+
                 <li>
                     <a href="{% url 'property_list' %}">Properties</a>
                 </li>
+
                 <li>
                     <a href="{% url 'property_tax_report' %}">Property Tax</a>
                 </li>
+
                 <li>
                     <a href="{% url 'tenant_list' %}">Tenants</a>
                 </li>
+
+                <li>
+                    <a href="{% url 'agreement_add' %}">Create Lease Agreement</a>
+                </li>
+
+                {% if request.user.is_superuser %}
                 <li>
                     <a href="{% url 'agreement_list' %}">Lease Agreements</a>
                 </li>
+
                 <li>
                     <a href="{% url 'invoice_list' %}">Invoices</a>
                 </li>
+
                 <li>
                     <a href="{% url 'payment_list' %}">Payments</a>
                 </li>
 
-                <a href="{% url 'tds_ledger_report' %}"
-                    class="nav-link {% if request.resolver_match.url_name == 'tds_ledger_report' %}active{% endif %}">
-                    TDS Ledger
-                </a>
+                <li>
+                    <a href="{% url 'tds_ledger_report' %}">TDS Ledger</a>
+                </li>
 
                 <li>
                     <a href="{% url 'financial_report' %}">Reports</a>
                 </li>
+                {% endif %}
+
             </ul>
+
         </aside>
 
         <!-- MAIN CONTENT -->
@@ -644,7 +661,9 @@
 
 
                 <div class="header-actions">
+                    {% if request.user.is_superuser %}
                     <a href="{% url 'dashboard' %}">Dashboard</a>
+                    {% endif %}
 
                     <a href="{% url 'admin_profile' %}">Profile</a>
 

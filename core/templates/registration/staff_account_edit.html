@@ -1,0 +1,22 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Staff Account</title>
+</head>
+<body>
+    <h1>Edit Staff Account</h1>
+
+    <p>Username: {{ staff_user.username }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit">Save Changes</button>
+        <a href="{% url 'admin_profile' %}">Cancel</a>
+    </form>
+</body>
+</html>

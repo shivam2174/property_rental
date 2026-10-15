@@ -21,6 +21,9 @@ from django.utils import timezone
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.shortcuts import redirect
+User = get_user_model()
 
 
 
@@ -201,8 +204,13 @@ def get_invoice_balance(invoice):
 # =========================================================
 # OWNER MANAGEMENT
 # =========================================================
-
+@login_required
 def owner_list(request):
+
+    if not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Access denied. Only Administrators can view the owner list."
+        )
 
     owners = (
         Owner.objects
@@ -499,6 +507,11 @@ def owner_delete(request, pk):
 
 
 def property_list(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Access denied. Only Administrators can view the property list."
+        )
+
 
     properties = (
         Property.objects
@@ -1773,6 +1786,10 @@ def tenant_delete(request, pk):
 # =========================================================
 
 def agreement_list(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Access denied. Only Administrators can view lease agreements."
+        )
 
     agreements = (
         LeaseAgreement.objects
@@ -4618,8 +4635,27 @@ def invoice_payment_history(request, invoice_id):
 # =========================================================
 # DASHBOARD
 # =========================================================
-
+@login_required
 def dashboard(request):
+
+    # STAFF DASHBOARD — show only permitted information
+    if not request.user.is_superuser:
+        unpaid_property_taxes = (
+            PropertyTax.objects
+            .filter(status="unpaid")
+            .select_related("property")
+            .order_by("tax_year")
+        )
+
+        return render(
+            request,
+            "core/staff_dashboard.html",
+            {
+                "unpaid_property_taxes": unpaid_property_taxes,
+            },
+        )
+
+    # ADMINISTRATOR DASHBOARD — existing code continues below
     today = date.today()
     total_properties = (
         Property.objects.count()
@@ -5640,12 +5676,12 @@ def tds_ledger_report(request):
 
 
 @login_required
-
 def admin_profile(request):
-    # Only active superusers can access this page.
+    User = get_user_model()
+
     if not request.user.is_active or not request.user.is_superuser:
         return HttpResponseForbidden(
-            "Access denied. An active superuser account is required."
+            "Access denied. An active Administrator account is required."
         )
 
     profile, _ = AdminUserProfile.objects.get_or_create(
@@ -5666,14 +5702,14 @@ def admin_profile(request):
 
                 messages.success(
                     request,
-                    "Your profile and account details were updated successfully.",
+                    "Your profile and account details were updated successfully."
                 )
                 return redirect("admin_profile")
 
             except Exception:
                 messages.error(
                     request,
-                    "Unable to save your changes. Please try again.",
+                    "Unable to save your changes. Please try again."
                 )
     else:
         form = AdminProfileForm(
@@ -5681,11 +5717,105 @@ def admin_profile(request):
             user=request.user,
         )
 
+    # Staff accounts: all non-superuser accounts
+    staff_users = User.objects.filter(
+        is_superuser=False
+    ).order_by("username")
+
+    # Summary card counts
+    active_user_count = User.objects.filter(
+        is_active=True
+    ).count()
+
+    admin_count = User.objects.filter(
+        is_active=True,
+        is_superuser=True,
+    ).count()
+
+    staff_count = User.objects.filter(
+        is_active=True,
+        is_superuser=False,
+    ).count()
+
+    context = {
+        "form": form,
+        "staff_users": staff_users,
+        "active_user_count": active_user_count,
+        "admin_count": admin_count,
+        "staff_count": staff_count,
+    }
+
     return render(
         request,
         "registration/admin_profile.html",
-        {"form": form},
+        context,
     )
+
+    
+
+
+
+@login_required
+def admin_edit_staff(request, user_id):
+    # Only active administrators may manage staff accounts.
+    if not request.user.is_active or not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Only administrators can manage staff accounts."
+        )
+
+    staff_user = get_object_or_404(
+        User,
+        pk=user_id,
+        is_superuser=False,
+    )
+
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip()
+        new_password = request.POST.get("new_password", "").strip()
+
+        if not username:
+            messages.error(request, "Username is required.")
+        elif User.objects.filter(
+            username__iexact=username
+        ).exclude(pk=staff_user.pk).exists():
+            messages.error(request, "That username is already in use.")
+        elif email and User.objects.filter(
+            email__iexact=email
+        ).exclude(pk=staff_user.pk).exists():
+            messages.error(request, "That email address is already in use.")
+        else:
+            try:
+                with transaction.atomic():
+                    staff_user.username = username
+                    staff_user.email = email
+
+                    if new_password:
+                        validate_password(new_password, staff_user)
+                        staff_user.set_password(new_password)
+
+                    staff_user.save()
+
+                messages.success(
+                    request,
+                    f"Staff account '{staff_user.username}' was updated."
+                )
+                return redirect("admin_profile")
+
+            except ValidationError as exc:
+                messages.error(request, " ".join(exc.messages))
+            except Exception:
+                messages.error(
+                    request,
+                    "Could not update this staff account."
+                )
+
+    return render(
+        request,
+        "registration/admin_edit_staff.html",
+        {"staff_user": staff_user},
+    )
+
 
 
 def admin_change_password(request):
@@ -5694,7 +5824,8 @@ def admin_change_password(request):
         or not request.user.is_active
         or not request.user.is_superuser
     ):
-        from django.http import HttpResponseForbidden
+
+        
         return HttpResponseForbidden("Superuser access required.")
 
     if request.method == "POST":
@@ -5749,25 +5880,27 @@ class RateLimitedPasswordResetView(PasswordResetView):
 MAX_ADMIN_USERS = 4
 
 
+
 @login_required
 def admin_user_create(request):
     User = get_user_model()
+    MAX_ADMIN_USERS = 4
 
     if not request.user.is_active or not request.user.is_superuser:
         return HttpResponseForbidden("Superuser access required.")
-
-    MAX_ADMIN_USERS = 4
 
     if request.method == "POST":
         form = AdminUserCreateForm(request.POST)
 
         if form.is_valid():
+            role = form.cleaned_data["role"]
+
             active_admin_count = User.objects.filter(
                 is_active=True,
                 is_superuser=True,
             ).count()
 
-            if active_admin_count >= MAX_ADMIN_USERS:
+            if role == "admin" and active_admin_count >= MAX_ADMIN_USERS:
                 form.add_error(
                     None,
                     "The maximum of 4 active administrator accounts "
@@ -5777,9 +5910,15 @@ def admin_user_create(request):
                 try:
                     new_user = form.save()
 
+                    role_label = (
+                        "Administrator"
+                        if new_user.is_superuser
+                        else "Staff"
+                    )
+
                     messages.success(
                         request,
-                        f"Administrator '{new_user.username}' "
+                        f"{role_label} '{new_user.username}' "
                         "was created successfully.",
                     )
                     return redirect("admin_profile")
@@ -5790,8 +5929,8 @@ def admin_user_create(request):
                         "The account could not be created because "
                         "of a database conflict. Please try again.",
                     )
-
     else:
+        # Initialize an empty form when the page is opened.
         form = AdminUserCreateForm()
 
     active_admin_count = User.objects.filter(
@@ -5807,4 +5946,76 @@ def admin_user_create(request):
             "active_admin_count": active_admin_count,
             "max_admin_users": MAX_ADMIN_USERS,
         },
+    )
+
+
+@login_required
+def role_redirect(request):
+    if not request.user.is_active:
+        return redirect("login")
+
+    return redirect("dashboard")
+
+
+
+@login_required
+def staff_account_edit(request, user_id):
+    User = get_user_model()
+
+    # Only active administrators can manage staff accounts.
+    if not request.user.is_active or not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Access denied. Administrator access is required."
+        )
+
+    staff_user = get_object_or_404(
+        User,
+        pk=user_id,
+        is_superuser=False,
+    )
+
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+        confirm_password = request.POST.get("confirm_password", "")
+
+        if not username:
+            messages.error(request, "Username is required.")
+
+        elif User.objects.filter(
+            username__iexact=username
+        ).exclude(pk=staff_user.pk).exists():
+            messages.error(request, "This username is already in use.")
+
+        elif email and User.objects.filter(
+            email__iexact=email
+        ).exclude(pk=staff_user.pk).exists():
+            messages.error(request, "This email is already in use.")
+
+        elif password and password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+
+        else:
+            staff_user.username = username
+            staff_user.email = email
+
+            if password:
+                staff_user.set_password(password)
+
+            staff_user.save()
+
+            messages.success(
+                request,
+                f"Staff account '{staff_user.username}' updated successfully."
+            )
+
+            # If the staff member's password was changed, they may need
+            # to log in again on their next session.
+            return redirect("admin_profile")
+
+    return render(
+        request,
+        "registration/staff_account_edit.html",
+        {"staff_user": staff_user},
     )
