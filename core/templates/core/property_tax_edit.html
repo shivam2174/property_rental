@@ -230,9 +230,6 @@
                 <div class="subtitle">{{ property.name }}</div>
             </div>
 
-            <a href="{% url 'property_detail' property.id %}" class="btn back-btn">
-                ← Back
-            </a>
         </div>
 
         <div class="card">
@@ -327,9 +324,13 @@
                     </div>
 
                     <div class="actions">
-                        <a href="{% url 'property_detail' property.id %}" class="btn cancel-btn">
-                            Cancel
-                        </a>
+                        
+                        {% if request.user.is_staff and not request.user.is_superuser %}
+                        <a href="{% url 'property_tax_master' %}">Cancel</a>
+                        {% else %}
+                        <a href="{% url 'property_detail' pk=property.pk %}">Cancel</a>
+                        {% endif %}
+                        
 
                         <button type="submit" class="btn save-btn">
                             Update Property Tax

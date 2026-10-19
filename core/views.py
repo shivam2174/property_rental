@@ -40,6 +40,7 @@ from core.models import (
     RentHistory,
     Invoice,
     TDSLedger,
+    GSTLedger,
     InvoiceItem,
     Payment,
     PropertyTax,
@@ -5361,27 +5362,6 @@ def reset_test_data(request):
     return redirect("dashboard")
 
 
-def property_tax_report(request):
-    properties = Property.objects.select_related("owner").all()
-
-    property_rows = []
-
-    for property in properties:
-        latest_tax = property.property_taxes.first()
-
-        property_rows.append({
-            "property": property,
-            "tax": latest_tax,
-        })
-
-    return render(
-        request,
-        "core/property_tax_report.html",
-        {
-            "property_rows": property_rows,
-        },
-    )
-
 
 def property_tax_add(request, property_id):
 
@@ -5420,6 +5400,7 @@ def property_tax_add(request, property_id):
 
 
 
+@login_required
 def property_tax_edit(request, pk):
     tax = get_object_or_404(
         PropertyTax.objects.select_related("property"),
@@ -5434,10 +5415,17 @@ def property_tax_edit(request, pk):
 
         if form.is_valid():
             form.save()
+
+            # Staff: redirect to Staff Dashboard
+            if request.user.is_staff and not request.user.is_superuser:
+                return redirect("dashboard")
+
+            # Admin: retain the existing Property Details redirect
             return redirect(
                 "property_detail",
                 pk=tax.property.pk,
             )
+
         else:
             print("Property Tax form errors:", form.errors)
 
@@ -6018,4 +6006,73 @@ def staff_account_edit(request, user_id):
         request,
         "registration/staff_account_edit.html",
         {"staff_user": staff_user},
+    )
+
+@login_required
+def gst_ledger_report(request):
+    from decimal import Decimal
+    from django.db.models import Sum
+
+    if not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Access denied. Only Administrators can view the GST Ledger."
+        )
+
+    # Include existing invoices and exclude cancelled invoices.
+    invoices = (
+        Invoice.objects
+        .exclude(status="cancelled")
+        .select_related("tenant")
+        .prefetch_related("items")
+        .order_by("-invoice_date", "-invoice_number")
+    )
+
+    # Synchronize the ledger from saved invoice values.
+    # This does not change or recalculate invoice GST.
+    for invoice in invoices:
+        rent_item = invoice.items.filter(
+            item_type="rent"
+        ).first()
+
+        if rent_item is not None:
+            rent_amount = rent_item.amount or Decimal("0.00")
+        else:
+            # Fallback for older invoices without a rent line.
+            rent_amount = invoice.taxable_amount or Decimal("0.00")
+
+        GSTLedger.objects.update_or_create(
+            invoice=invoice,
+            defaults={
+                "tenant": invoice.tenant,
+                "rent_amount": rent_amount,
+                "cgst_amount": invoice.cgst_amount or Decimal("0.00"),
+                "sgst_amount": invoice.sgst_amount or Decimal("0.00"),
+            },
+        )
+
+    entries = (
+        GSTLedger.objects
+        .select_related("invoice", "tenant")
+        .order_by("-invoice__invoice_date", "-invoice__invoice_number")
+    )
+
+    totals = entries.aggregate(
+        total_rent=Sum("rent_amount"),
+        total_cgst=Sum("cgst_amount"),
+        total_sgst=Sum("sgst_amount"),
+        total_gst=Sum("total_gst_amount"),
+    )
+
+    context = {
+        "entries": entries,
+        "total_rent": totals["total_rent"] or Decimal("0.00"),
+        "total_cgst": totals["total_cgst"] or Decimal("0.00"),
+        "total_sgst": totals["total_sgst"] or Decimal("0.00"),
+        "total_gst": totals["total_gst"] or Decimal("0.00"),
+    }
+
+    return render(
+        request,
+        "core/gst_ledger_report.html",
+        context,
     )

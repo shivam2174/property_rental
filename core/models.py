@@ -1544,3 +1544,67 @@ class AdminUserProfile(models.Model):
     def __str__(self):
         return f"Profile: {self.user.username}"
 
+
+# =========================================================
+# GST LEDGER
+# =========================================================
+
+class GSTLedger(models.Model):
+    invoice = models.OneToOneField(
+        "Invoice",
+        on_delete=models.PROTECT,
+        related_name="gst_ledger",
+    )
+
+    tenant = models.ForeignKey(
+        "Tenant",
+        on_delete=models.PROTECT,
+        related_name="gst_ledger_entries",
+    )
+
+    # Rent amount copied from the invoice's rent line.
+    rent_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+    )
+
+    # Copy the existing invoice GST values; do not recalculate
+    # GST using a new rate or change invoice-generation logic.
+    cgst_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+    )
+
+    sgst_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+    )
+
+    total_gst_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-invoice__billing_from", "-id"]
+        verbose_name = "GST Ledger Entry"
+        verbose_name_plural = "GST Ledger"
+
+    def save(self, *args, **kwargs):
+        self.total_gst_amount = (
+            self.cgst_amount + self.sgst_amount
+        )
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return (
+            f"Invoice #{self.invoice_id} - "
+            f"{self.tenant.full_name} - "
+            f"GST ₹{self.total_gst_amount}"
+        )

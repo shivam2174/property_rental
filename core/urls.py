@@ -363,9 +363,12 @@ urlpatterns = [
     # =====================================================
     # PROPERTY TAX
     # =====================================================
+    
+
+    
 
     path(
-        "property-tax/",
+        "property-tax/report/",
         views.property_tax_report,
         name="property_tax_report",
     ),
@@ -409,6 +412,18 @@ urlpatterns = [
         views.mark_lease_notification_read,
         name="mark_lease_notification_read",
     ),
+
+    
+    path(
+    "reports/gst-ledger/",
+    views.gst_ledger_report,
+    name="gst_ledger_report",
+    ),
+
+   
+
+    
+
 
     # =====================================================
     # RESET TEST DATA

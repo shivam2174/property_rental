@@ -301,35 +301,7 @@
             </div>
         </section>
 
-        <section class="tax-section">
-            <div class="tax-section-header">
-                <h2>Unpaid Property Tax</h2>
-                <span class="tax-count">
-                    {{ unpaid_property_taxes|length }} pending
-                </span>
-            </div>
-
-            {% for tax in unpaid_property_taxes %}
-                <div class="tax-record">
-                    <div>
-                        <h3>{{ tax.property }}</h3>
-                        <p>Tax year: {{ tax.tax_year }}</p>
-                        <p class="tax-amount">
-                            Amount: ₹{{ tax.tax_amount|floatformat:2 }}
-                        </p>
-                    </div>
-
-                    <a class="btn payment-btn"
-                       href="{% url 'property_tax_edit' tax.pk %}">
-                        Record Payment
-                    </a>
-                </div>
-            {% empty %}
-                <div class="empty-state">
-                    No unpaid property tax records.
-                </div>
-            {% endfor %}
-        </section>
+        
     </main>
 </body>
 </html>
