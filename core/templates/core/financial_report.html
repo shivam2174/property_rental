@@ -376,6 +376,25 @@
             padding: 15px 0;
         }
 
+
+        .btn-home {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .btn-home:hover {
+            background: #1d4ed8;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+
         /* RESPONSIVE */
 
         @media (max-width: 1000px) {
@@ -497,42 +516,30 @@
 
         <!-- HEADER -->
 
+
+        <!-- HEADER -->
         <div class="report-header">
-
             <div>
-
-                <h1>
-                    Financial Report
-                </h1>
-
+                <h1>Financial Report</h1>
                 <p>
-
                     Financial summary from
-
-                    <strong>
-                        {{ start_date }}
-                    </strong>
-
+                    <strong>{{ start_date }}</strong>
                     to
-
-                    <strong>
-                        {{ end_date }}
-                    </strong>
-
+                    <strong>{{ end_date }}</strong>
                 </p>
-
             </div>
 
-
             <div class="header-actions">
+                <a href="{% url 'dashboard' %}" class="btn btn-home">
+                    Home
+                </a>
 
                 <button type="button" class="btn btn-print" onclick="window.print()">
                     Print Report
                 </button>
-
             </div>
-
         </div>
+
 
 
         <!-- MESSAGES -->

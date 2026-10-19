@@ -1,185 +1,254 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Tenants</title>
+    <title>Tenant Master</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f6fa;
             margin: 0;
-            padding: 30px;
+            padding: 24px;
+            background: #ffffff;
+            color: #111827;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
         .container {
-            max-width: 1200px;
-            margin: auto;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-
 
         /* HEADER */
-
-        .header {
+        .page-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            justify-content: space-between;
+            gap: 20px;
+            padding-bottom: 18px;
+            margin-bottom: 22px;
+            border-bottom: 1px solid #9ca3af;
         }
 
-        .header h1 {
+        .heading {
+            flex: 1;
+            text-align: center;
+        }
+
+        .heading h1 {
             margin: 0;
-            color: #222;
+            font-size: 23px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .heading p {
+            margin: 5px 0 0;
+            font-size: 13px;
+            color: #475569;
         }
 
         .header-actions {
             display: flex;
-            justify-content: flex-end;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 25px;
+            justify-content: flex-end;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
-
         /* BUTTONS */
-
-        .add-tenant {
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            padding: 11px 18px;
-            border-radius: 6px;
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: 8px 13px;
+            border: 1px solid #1e293b;
+            border-radius: 4px;
+            background: #1e293b;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 12px;
             font-weight: 600;
-        }
-
-        .add-tenant:hover {
-            background: #1d4ed8;
-        }
-
-
-        .home-btn {
-            background: #64748b;
-            color: white;
             text-decoration: none;
-            padding: 11px 17px;
-            border-radius: 7px;
-            font-weight: bold;
+            cursor: pointer;
             white-space: nowrap;
         }
 
-        .home-btn:hover {
-            background: #475569;
+        .btn:hover {
+            background: #334155;
         }
 
-
-        /* REPORT BUTTON */
-
-        .report-btn {
-            background: #16a34a;
-            color: white;
-            text-decoration: none;
-            padding: 11px 18px;
-            border-radius: 6px;
-            font-weight: 600;
+        .btn-primary {
+            background: #2563eb;
+            border-color: #2563eb;
         }
 
-        .report-btn:hover {
-            background: #15803d;
+        .btn-primary:hover {
+            background: #1d4ed8;
         }
 
+        .btn-report {
+            background: #ffffff;
+            color: #1e293b;
+            border-color: #9ca3af;
+        }
+
+        .btn-report:hover {
+            background: #f3f4f6;
+        }
 
         /* MAIN LAYOUT */
-
         .main-layout {
             display: grid;
-            grid-template-columns: 1fr 260px;
-            gap: 25px;
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 22px;
             align-items: start;
         }
 
+        /* TENANT PANEL */
+        .tenant-panel,
+        .sidebar {
+            border: 1px solid #9ca3af;
+            background: #ffffff;
+        }
 
-        /* TENANT LIST */
+        .panel-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 11px 14px;
+            border-bottom: 1px solid #9ca3af;
+            background: #ededed;
+        }
 
+        .panel-heading h2 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .tenant-total {
+            color: #475569;
+            font-size: 12px;
+        }
+
+        /* TENANT ROWS */
         .tenant-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
         }
 
         .tenant-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 16px 14px;
+            border-bottom: 1px solid #d1d5db;
+            background: #ffffff;
+        }
+
+        .tenant-card:last-child {
+            border-bottom: none;
+        }
+
+        .tenant-card:hover {
+            background: #f8fafc;
+        }
+
+        .tenant-info {
+            min-width: 0;
         }
 
         .tenant-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: #222;
-            margin-bottom: 7px;
+            margin-bottom: 4px;
+            color: #111827;
+            font-size: 15px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
         }
 
         .tenant-email {
-            color: #666;
-            font-size: 14px;
+            color: #64748b;
+            font-size: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .tenant-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
         .view-btn {
-            background: #e8eefc;
-            color: #2563eb;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 7px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: #e8efff;
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 700;
             text-decoration: none;
-            padding: 9px 15px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
+            white-space: nowrap;
         }
 
         .view-btn:hover {
-            background: #dbe5ff;
+            background: #dbe7ff;
         }
 
+        /* EMPTY STATE */
+        .empty {
+            padding: 35px 15px;
+            color: #64748b;
+            text-align: center;
+        }
 
         /* SIDEBAR */
-
         .sidebar {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .sidebar-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #ddd;
+            width: 100%;
         }
 
         .status-link {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-
-            padding: 12px;
-            margin-bottom: 8px;
-
-            border-radius: 6px;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 48px;
+            padding: 12px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #ffffff;
+            color: #374151;
             text-decoration: none;
-            color: #333;
+        }
+
+        .status-link:last-child {
+            border-bottom: none;
         }
 
         .status-link:hover {
             background: #f3f4f6;
+        }
+
+        .status-link.selected {
+            background: #eef2ff;
+            color: #1d4ed8;
+            font-weight: 700;
         }
 
         .status-left {
@@ -188,222 +257,233 @@
             gap: 9px;
         }
 
-        .active-dot {
-            width: 10px;
-            height: 10px;
-            background: #22c55e;
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            flex-shrink: 0;
             border-radius: 50%;
+        }
+
+        .active-dot {
+            background: #16a34a;
         }
 
         .inactive-dot {
-            width: 10px;
-            height: 10px;
             background: #9ca3af;
-            border-radius: 50%;
         }
 
         .count {
-            background: #f1f5f9;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-
-        /* EMPTY */
-
-        .empty {
-            background: white;
-            padding: 30px;
+            min-width: 25px;
+            padding: 2px 7px;
+            border: 1px solid #d1d5db;
+            background: #f3f4f6;
+            color: #111827;
             text-align: center;
-            border-radius: 10px;
-            color: #777;
+            font-size: 11px;
+            font-weight: 700;
         }
-
 
         /* MOBILE */
-
         @media (max-width: 800px) {
-
-            .main-layout {
-                grid-template-columns: 1fr;
+            body {
+                padding: 12px;
             }
 
-            .sidebar {
-                order: -1;
+            .page-header {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .heading {
+                text-align: left;
             }
 
             .header-actions {
                 justify-content: flex-start;
             }
 
-            .tenant-card {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
+            .main-layout {
+                grid-template-columns: minmax(0, 1fr);
             }
 
+            .sidebar {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+            }
+
+            .tenant-card {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .tenant-actions {
+                width: 100%;
+            }
+
+            .view-btn {
+                width: 100%;
+            }
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .header-actions,
+            .tenant-actions {
+                display: none;
+            }
+
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
         }
     </style>
 </head>
 
-
 <body>
-
     <div class="container">
 
+        <!-- PAGE HEADER -->
+        <header class="page-header">
 
-        <!-- HEADER -->
+            <div class="heading">
+                <h1>TENANT MASTER</h1>
+                <p>Tenant Details &amp; Occupancy Report</p>
+            </div>
 
-        <div class="header-actions">
+            <div class="header-actions">
 
-            {% if request.user.is_superuser %}
-            <a href="{% url 'dashboard' %}" class="btn">
-                🏠 Dashboard
-            </a>
+                {% if request.user.is_superuser %}
+                    <a href="{% url 'dashboard' %}" class="btn">
+                        Home
+                    </a>
 
-            <a href="{% url 'tenant_report' %}" class="btn">
-                📊 Tenant Report
-            </a>
-            {% endif %}
+                    <a href="{% url 'tenant_report' %}"
+                       class="btn btn-report">
+                        Tenant Report
+                    </a>
+                {% endif %}
 
-            <a href="{% url 'tenant_add' %}" class="add-tenant">
-                + Add Tenant
-            </a>
+                <a href="{% url 'tenant_add' %}"
+                   class="btn btn-primary">
+                    + Add Tenant
+                </a>
 
-
-        </div>
-
+            </div>
+        </header>
 
         <!-- MAIN CONTENT -->
-
         <div class="main-layout">
 
-
             <!-- TENANT LIST -->
+            <section class="tenant-panel">
 
-            <div class="tenant-list">
+                <div class="panel-heading">
+                    <h2>Tenant Records</h2>
+                    <span class="tenant-total">
+                        Total: {{ total_count }}
+                    </span>
+                </div>
 
-                {% for tenant in tenants %}
+                <div class="tenant-list">
 
-                <div class="tenant-card">
+                    {% for tenant in tenants %}
 
-                    <div>
+                        <article class="tenant-card">
 
-                        <div class="tenant-name">
-                            {{ tenant.full_name }}
+                            <div class="tenant-info">
+                                <div class="tenant-name">
+                                    {{ tenant.full_name }}
+                                </div>
+
+                                <div class="tenant-email">
+                                    {% if tenant.email %}
+                                        {{ tenant.email }}
+                                    {% else %}
+                                        No email provided
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="tenant-actions">
+                                <a href="{% url 'tenant_detail' tenant.pk %}"
+                                   class="view-btn">
+                                    View Details
+                                </a>
+                            </div>
+
+                        </article>
+
+                    {% empty %}
+
+                        <div class="empty">
+                            No tenants found for this selection.
                         </div>
 
-                        <div class="tenant-email">
-
-                            {% if tenant.email %}
-                            {{ tenant.email }}
-                            {% else %}
-                            No email provided
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <div>
-
-                        <a href="{% url 'tenant_detail' tenant.pk %}" class="view-btn">
-                            View Details
-                        </a>
-
-                    </div>
+                    {% endfor %}
 
                 </div>
+            </section>
 
-                {% empty %}
+            <!-- TENANT STATUS FILTERS -->
+            <aside class="sidebar">
 
-                <div class="empty">
-                    No tenants found.
+                <div class="panel-heading">
+                    <h2>Tenant Status</h2>
                 </div>
 
-                {% endfor %}
+                <a href="?status=active"
+                   class="status-link {% if request.GET.status == 'active' %}selected{% endif %}">
 
-            </div>
-
-
-            <!-- RIGHT SIDEBAR -->
-
-            <div class="sidebar">
-
-                <div class="sidebar-title">
-                    Tenant Status
-                </div>
-
-
-                <!-- ACTIVE -->
-
-                <a href="?status=active" class="status-link">
-
-                    <div class="status-left">
-
-                        <span class="active-dot"></span>
-
-                        <span>
-                            Active
-                        </span>
-
-                    </div>
-
-                    <span class="count">
-                        {{ active_count }}
+                    <span class="status-left">
+                        <span class="status-dot active-dot"></span>
+                        Active
                     </span>
 
+                    <span class="count">{{ active_count }}</span>
                 </a>
 
+                <a href="?status=inactive"
+                   class="status-link {% if request.GET.status == 'inactive' %}selected{% endif %}">
 
-                <!-- INACTIVE -->
-
-                <a href="?status=inactive" class="status-link">
-
-                    <div class="status-left">
-
-                        <span class="inactive-dot"></span>
-
-                        <span>
-                            Inactive
-                        </span>
-
-                    </div>
-
-                    <span class="count">
-                        {{ inactive_count }}
+                    <span class="status-left">
+                        <span class="status-dot inactive-dot"></span>
+                        Inactive
                     </span>
 
+                    <span class="count">{{ inactive_count }}</span>
                 </a>
 
+                <a href="{% url 'tenant_list' %}"
+                   class="status-link {% if not request.GET.status %}selected{% endif %}">
 
-                <!-- ALL TENANTS -->
-
-                <a href="{% url 'tenant_list' %}" class="status-link">
-
-                    <div class="status-left">
-
-                        <span>
-                            All Tenants
-                        </span>
-
-                    </div>
-
-                    <span class="count">
-                        {{ total_count }}
+                    <span class="status-left">
+                        All Tenants
                     </span>
 
+                    <span class="count">{{ total_count }}</span>
                 </a>
 
-            </div>
+            </aside>
 
         </div>
-
     </div>
-
 </body>
-
 </html>

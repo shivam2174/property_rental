@@ -4918,14 +4918,8 @@ def financial_report(request):
         today.isoformat(),
     )
 
-    start = parse_date(start_date)
-    end = parse_date(end_date)
-
-    if not start:
-        start = today.replace(day=1)
-
-    if not end:
-        end = today
+    start = parse_date(start_date) or today.replace(day=1)
+    end = parse_date(end_date) or today
 
     # =========================================================
     # INVOICES IN REPORT PERIOD
@@ -4959,11 +4953,7 @@ def financial_report(request):
     )
 
     # =========================================================
-    # PAYMENTS FOR THESE INVOICES
-    #
-    # IMPORTANT:
-    # Use invoice__in=invoices instead of
-    # invoice_id__in=invoice_numbers.
+    # PAYMENTS FOR REPORT INVOICES
     # =========================================================
 
     invoice_payments = Payment.objects.filter(
@@ -4978,17 +4968,24 @@ def financial_report(request):
     )
 
     # =========================================================
+    # TDS TOTAL
+    # =========================================================
+
+    total_tds_amount = (
+        TDSLedger.objects.aggregate(
+            total=Sum("tds_amount")
+        )["total"]
+        or ZERO
+    )
+
+    # =========================================================
     # OUTSTANDING
     # =========================================================
 
-    total_outstanding = max(
+    outstanding_amount = max(
         total_invoiced - total_collected,
         ZERO,
     )
-
-    # Keep old variable name also, in case another template
-    # or code is using it.
-    outstanding_amount = total_outstanding
 
     # =========================================================
     # INVOICE STATUS COUNTS
@@ -5030,31 +5027,20 @@ def financial_report(request):
             ZERO,
         )
 
-        tenant_outstanding.append(
-            {
-                "renter_name": invoice.tenant_name,
-                "tenant_name": invoice.tenant_name,
-
-                "invoice_number": invoice.invoice_number,
-
-                "property_name": invoice.property_name,
-
-                "unit_number": invoice.unit_number,
-
-                "invoice_amount": invoice.total_amount,
-
-                "paid_amount": invoice_paid,
-
-                "outstanding": invoice_balance,
-
-                "due_date": invoice.payment_due_date,
-            }
-        )
+        tenant_outstanding.append({
+            "renter_name": invoice.tenant_name,
+            "tenant_name": invoice.tenant_name,
+            "invoice_number": invoice.invoice_number,
+            "property_name": invoice.property_name,
+            "unit_number": invoice.unit_number,
+            "invoice_amount": invoice.total_amount,
+            "paid_amount": invoice_paid,
+            "outstanding": invoice_balance,
+            "due_date": invoice.payment_due_date,
+        })
 
     # =========================================================
     # PROPERTY-WISE COLLECTION
-    #
-    # Payments received during the selected report period.
     # =========================================================
 
     property_collection = (
@@ -5063,21 +5049,15 @@ def financial_report(request):
             payment_date__gte=start,
             payment_date__lte=end,
         )
-        .values(
-            "invoice__property_name"
-        )
+        .values("invoice__property_name")
         .annotate(
             total=Sum("amount")
         )
-        .order_by(
-            "-total"
-        )
+        .order_by("-total")
     )
 
     # =========================================================
     # PAYMENT HISTORY
-    #
-    # Payments received during selected period.
     # =========================================================
 
     recent_payments = (
@@ -5101,37 +5081,23 @@ def financial_report(request):
     # =========================================================
 
     context = {
-
         "start_date": start.isoformat(),
-
         "end_date": end.isoformat(),
 
-        # Financial summary
         "total_invoiced": total_invoiced,
-
         "total_collected": total_collected,
-
         "total_tds_amount": total_tds_amount,
-
-        # Compatibility
         "outstanding_amount": outstanding_amount,
 
-        # Invoice counts
         "total_invoices": total_invoices,
-
         "paid_invoices": paid_invoices,
-
         "pending_invoices": pending_invoices,
-
         "generated_invoices": generated_invoices,
 
-        # Tables
-        "total_tds_amount": total_tds_amount,
-
-        "total_tds_amount": total_tds_amount,
+        "tenant_outstanding": tenant_outstanding,
+        "renter_outstanding": tenant_outstanding,
 
         "property_collection": property_collection,
-
         "recent_payments": recent_payments,
     }
 
@@ -5140,170 +5106,7 @@ def financial_report(request):
         "core/financial_report.html",
         context,
     )
-
-    today = date.today()
-
-    start_date = request.GET.get(
-        "start_date",
-        today.replace(day=1).isoformat(),
-    )
-
-    end_date = request.GET.get(
-        "end_date",
-        today.isoformat(),
-    )
-
-    start = parse_date(
-        start_date,
-        today.replace(day=1),
-    )
-
-    end = parse_date(
-        end_date,
-        today,
-    )
-
-    # =========================================================
-    # INVOICES
-    # =========================================================
-
-    invoices = (
-        Invoice.objects
-        .select_related(
-            "tenant",
-            "lease_agreement",
-        )
-        .filter(
-            invoice_date__gte=start,
-            invoice_date__lte=end,
-        )
-        .order_by(
-            "-invoice_date",
-            "-invoice_number",
-        )
-    )
-
-    # =========================================================
-    # TOTAL INVOICED
-    # =========================================================
-
-    total_invoiced = (
-        invoices
-        .aggregate(
-            total=Sum("total_amount")
-        )["total"]
-        or ZERO
-    )
-
-    # =========================================================
-    # INVOICE IDs
-    # =========================================================
-
-    invoice_ids = invoices.values_list(
-        "invoice_number",
-        flat=True,
-    )
-
-    # =========================================================
-    # TOTAL COLLECTED
-    # =========================================================
-
-    total_collected = (
-        Payment.objects
-        .filter(
-            invoice_id__in=invoice_ids
-        )
-        .aggregate(
-            total=Sum("amount")
-        )["total"]
-        or ZERO
-    )
-
-    # =========================================================
-    # OUTSTANDING
-    # =========================================================
-
-    outstanding_amount = max(
-        total_invoiced - total_collected,
-        ZERO,
-    )
-
-    # =========================================================
-    # TENANT OUTSTANDING
-    # =========================================================
-
-    tenant_outstanding = []
-
-    for invoice in invoices:
-
-        invoice_paid = (
-            Payment.objects
-            .filter(
-                invoice=invoice
-            )
-            .aggregate(
-                total=Sum("amount")
-            )["total"]
-            or ZERO
-        )
-
-        invoice_balance = max(
-            invoice.total_amount - invoice_paid,
-            ZERO,
-        )
-
-        tenant_outstanding.append(
-            {
-                "tenant_name": invoice.tenant_name,
-
-                "invoice_number": invoice.invoice_number,
-
-                "invoice_amount": invoice.total_amount,
-
-                "paid_amount": invoice_paid,
-
-                "outstanding": invoice_balance,
-            }
-        )
-
-    # =========================================================
-    # CONTEXT
-    # =========================================================
-
-    context = {
-
-        "start_date":
-            start.isoformat(),
-
-        "end_date":
-            end.isoformat(),
-
-        "total_invoiced":
-            total_invoiced,
-
-        "total_collected":
-            total_collected,
-
-        "outstanding_amount":
-            outstanding_amount,
-
-        "total_invoices":
-            invoices.count(),
-
-        "tenant_outstanding":
-            tenant_outstanding,
-
-        # Compatibility with old template
-        "renter_outstanding":
-            tenant_outstanding,
-    }
-
-    return render(
-        request,
-        "core/financial_report.html",
-        context,
-    )
-
+    
 # =========================================================
 # RESET TEST DATA
 # =========================================================
@@ -5422,8 +5225,8 @@ def property_tax_edit(request, pk):
 
             # Admin: retain the existing Property Details redirect
             return redirect(
-                "property_detail",
-                pk=tax.property.pk,
+                "property_tax_report",
+                
             )
 
         else:

@@ -1,6 +1,6 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,178 +13,210 @@
 
         body {
             margin: 0;
-            padding: 30px;
-            background: #f4f6f8;
-            font-family: Arial, sans-serif;
-            color: #1f2937;
+            padding: 24px;
+            background: #fff;
+            color: #111827;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
         .container {
-            max-width: 700px;
-            margin: auto;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        .header {
+        /* Report-style heading */
+        .page-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
+            justify-content: space-between;
+            gap: 16px;
+            padding-bottom: 18px;
+            margin-bottom: 22px;
+            border-bottom: 1px solid #9ca3af;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 27px;
-        }
-
-        .subtitle {
-            margin-top: 6px;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .btn {
-            display: inline-block;
-            text-decoration: none;
-            padding: 11px 15px;
-            border-radius: 7px;
-            font-size: 13px;
-            font-weight: bold;
+        .header-content {
+            flex: 1;
             text-align: center;
         }
 
-        .back-btn,
+        .header-content h1 {
+            margin: 0;
+            color: #111827;
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin-top: 5px;
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: 8px 14px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .back-btn {
+            background: #1e293b;
+            border-color: #1e293b;
+            color: #fff;
+        }
+
+        .back-btn:hover {
+            background: #334155;
+        }
+
+        .save-btn {
+            background: #198754;
+            border-color: #198754;
+            color: #fff;
+        }
+
+        .save-btn:hover {
+            background: #157347;
+        }
+
         .cancel-btn {
-            background: #e5e7eb;
+            background: #fff;
+            border-color: #9ca3af;
             color: #374151;
         }
 
-        .back-btn:hover,
         .cancel-btn:hover {
-            background: #d1d5db;
+            background: #f3f4f6;
         }
 
+        /* Main form panel */
         .card {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.07);
-            overflow: hidden;
+            width: 100%;
+            border: 1px solid #9ca3af;
+            border-radius: 3px;
+            background: #fff;
         }
 
         .card-header {
-            padding: 18px 22px;
-            border-bottom: 1px solid #e5e7eb;
-            background: #f9fafb;
+            padding: 11px 14px;
+            border-bottom: 1px solid #9ca3af;
+            background: #ededed;
         }
 
         .card-header h2 {
             margin: 0;
-            font-size: 18px;
+            color: #111827;
+            font-size: 14px;
+            font-weight: 700;
         }
 
         .card-body {
-            padding: 22px;
+            padding: 20px 14px;
         }
 
+        /* Property information */
         .property-box {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 14px;
             margin-bottom: 22px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            background: #f8fafc;
         }
 
         .property-label {
-            color: #6b7280;
-            font-size: 12px;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
+            color: #64748b;
+            font-size: 11px;
         }
 
         .property-name {
-            font-size: 16px;
-            font-weight: bold;
+            color: #111827;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* Two-column form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px 22px;
         }
 
         .form-group {
-            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
         }
 
-        label {
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group > label:not(.noc-checkbox) {
             display: block;
-            margin-bottom: 7px;
-            font-size: 13px;
-            font-weight: bold;
-            color: #374151;
+            margin-bottom: 5px;
+            color: #1f2937;
+            font-size: 12px;
+            font-weight: 700;
         }
 
-        input,
-        select,
-        textarea {
+        .form-group input:not([type="checkbox"]):not([type="radio"]),
+        .form-group select,
+        .form-group textarea {
             display: block;
             width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            font-size: 14px;
-            font-family: Arial, sans-serif;
+            min-width: 0;
+            min-height: 36px;
+            padding: 8px 10px;
+            border: 1px solid #9ca3af;
+            border-radius: 3px;
+            background: #fff;
+            color: #111827;
+            font-family: inherit;
+            font-size: 13px;
         }
 
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #0d6efd;
-        }
-
-        textarea {
+        .form-group textarea {
+            min-height: 75px;
             resize: vertical;
         }
 
-        .errorlist {
-            margin: 6px 0 0;
-            padding-left: 20px;
-            color: #dc3545;
-            font-size: 13px;
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #2563eb;
         }
 
-        .form-errors {
-            margin-bottom: 20px;
-            padding: 12px 15px;
-            background: #fff1f1;
-            border: 1px solid #f1caca;
-            border-radius: 7px;
-            color: #a52828;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 25px;
-        }
-
-        .save-btn {
-            background: #f59e0b;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        .save-btn:hover {
-            background: #d97706;
-        }
-
-        .noc-field {
-            margin-top: 15px;
-        }
-
+        /* NOC checkbox */
         .noc-checkbox {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-top: 8px;
-            font-weight: normal;
+            margin-top: 5px;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 400;
             cursor: pointer;
         }
 
@@ -192,30 +224,95 @@
             width: 16px;
             height: 16px;
             margin: 0;
+            accent-color: #198754;
             cursor: pointer;
         }
 
-        @media (max-width: 700px) {
+        /* Validation errors */
+        .errorlist {
+            margin: 5px 0 0;
+            padding-left: 18px;
+            color: #b91c1c;
+            font-size: 12px;
+        }
+
+        .form-errors {
+            margin-bottom: 20px;
+            padding: 12px 14px;
+            border: 1px solid #f1b7b7;
+            background: #fff1f1;
+            color: #991b1b;
+        }
+
+        .form-errors p {
+            margin: 8px 0 0;
+        }
+
+        /* Bottom actions */
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 24px;
+            padding-top: 17px;
+            border-top: 1px solid #d1d5db;
+        }
+
+        @media (max-width: 650px) {
             body {
-                padding: 15px;
+                padding: 12px;
             }
 
-            .header {
+            .page-header {
+                align-items: stretch;
                 flex-direction: column;
-                align-items: flex-start;
             }
 
-            .header .btn {
-                width: 100%;
+            .header-content {
+                text-align: left;
+            }
+
+            .header-actions {
+                justify-content: flex-start;
+            }
+
+            .form-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .form-group.full-width {
+                grid-column: auto;
             }
 
             .actions {
-                flex-direction: column;
+                flex-direction: column-reverse;
+                align-items: stretch;
             }
 
-            .actions .btn,
-            .actions button {
+            .actions .btn {
                 width: 100%;
+            }
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .header-actions,
+            .actions {
+                display: none !important;
+            }
+
+            .card {
+                border-color: #777;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                border-color: #aaa;
             }
         }
     </style>
@@ -224,15 +321,16 @@
 <body>
     <div class="container">
 
-        <div class="header">
-            <div>
-                <h1>Edit Property Tax</h1>
-                <div class="subtitle">{{ property.name }}</div>
+        <header class="page-header">
+            <div class="header-content">
+                <h1>PROPERTY TAX EDIT</h1>
+                <div class="subtitle">
+                    Property Tax Details — {{ property.name }}
+                </div>
             </div>
+        </header>
 
-        </div>
-
-        <div class="card">
+        <section class="card">
             <div class="card-header">
                 <h2>Property Tax Details</h2>
             </div>
@@ -241,107 +339,120 @@
 
                 <div class="property-box">
                     <div class="property-label">Property</div>
-                    <div class="property-name">{{ property.name }}</div>
+                    <div class="property-name">
+                        {{ property.name }}
+                    </div>
                 </div>
 
-                <form method="post" action="{% url 'property_tax_edit' tax.pk %}">
+                <form method="post"
+                      action="{% url 'property_tax_edit' tax.pk %}">
                     {% csrf_token %}
 
                     {% if form.errors %}
-                    <div class="form-errors">
-                        <strong>Please correct the following errors:</strong>
-                        {{ form.non_field_errors }}
+                        <div class="form-errors">
+                            <strong>Please correct the following errors:</strong>
 
-                        {% for field in form %}
-                        {% if field.errors %}
-                        <p>
-                            <strong>{{ field.label }}:</strong>
-                            {{ field.errors }}
-                        </p>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
+                            {{ form.non_field_errors }}
+
+                            {% for field in form %}
+                                {% if field.errors %}
+                                    <p>
+                                        <strong>{{ field.label }}:</strong>
+                                        {{ field.errors }}
+                                    </p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
                     {% endif %}
 
-                    <div class="form-group">
-                        <label for="{{ form.tax_year.id_for_label }}">
-                            Tax Year
-                        </label>
-                        {{ form.tax_year }}
-                        {{ form.tax_year.errors }}
-                    </div>
+                    <div class="form-grid">
 
-                    <div class="form-group">
-                        <label for="{{ form.tax_amount.id_for_label }}">
-                            Tax Amount
-                        </label>
-                        {{ form.tax_amount }}
-                        {{ form.tax_amount.errors }}
-                    </div>
+                        <div class="form-group">
+                            <label for="{{ form.tax_year.id_for_label }}">
+                                Tax Year
+                            </label>
+                            {{ form.tax_year }}
+                            {{ form.tax_year.errors }}
+                        </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.status.id_for_label }}">
-                            Status
-                        </label>
-                        {{ form.status }}
-                        {{ form.status.errors }}
-                    </div>
+                        <div class="form-group">
+                            <label for="{{ form.tax_amount.id_for_label }}">
+                                Tax Amount (₹)
+                            </label>
+                            {{ form.tax_amount }}
+                            {{ form.tax_amount.errors }}
+                        </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.paid_on.id_for_label }}">
-                            Paid On
-                        </label>
-                        {{ form.paid_on }}
-                        {{ form.paid_on.errors }}
-                    </div>
+                        <div class="form-group">
+                            <label for="{{ form.status.id_for_label }}">
+                                Status
+                            </label>
+                            {{ form.status }}
+                            {{ form.status.errors }}
+                        </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.paid_by.id_for_label }}">
-                            Paid By
-                        </label>
-                        {{ form.paid_by }}
-                        {{ form.paid_by.errors }}
-                    </div>
+                        <div class="form-group">
+                            <label for="{{ form.paid_on.id_for_label }}">
+                                Paid On
+                            </label>
+                            {{ form.paid_on }}
+                            {{ form.paid_on.errors }}
+                        </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.notes.id_for_label }}">
-                            Notes
-                        </label>
-                        {{ form.notes }}
-                        {{ form.notes.errors }}
-                    </div>
-                    <div class="form-group noc-field">
-                        <label for="{{ form.noc_received.id_for_label }}">
-                            NOC Received
-                        </label>
+                        <div class="form-group">
+                            <label for="{{ form.paid_by.id_for_label }}">
+                                Paid By
+                            </label>
+                            {{ form.paid_by }}
+                            {{ form.paid_by.errors }}
+                        </div>
 
-                        <label class="noc-checkbox">
-                            {{ form.noc_received }}
-                            <span>Yes, NOC received</span>
-                        </label>
+                        <div class="form-group">
+                            <label for="{{ form.noc_received.id_for_label }}">
+                                NOC Received
+                            </label>
 
-                        {{ form.noc_received.errors }}
+                            <label class="noc-checkbox">
+                                {{ form.noc_received }}
+                                <span>Yes, NOC received</span>
+                            </label>
+
+                            {{ form.noc_received.errors }}
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="{{ form.notes.id_for_label }}">
+                                Notes
+                            </label>
+                            {{ form.notes }}
+                            {{ form.notes.errors }}
+                        </div>
+
                     </div>
 
                     <div class="actions">
-                        
+
                         {% if request.user.is_staff and not request.user.is_superuser %}
-                        <a href="{% url 'property_tax_master' %}">Cancel</a>
+                            <a href="{% url 'property_tax_master' %}"
+                               class="btn cancel-btn">
+                                Cancel
+                            </a>
                         {% else %}
-                        <a href="{% url 'property_detail' pk=property.pk %}">Cancel</a>
+                            <a href="{% url 'property_detail' pk=property.pk %}"
+                               class="btn cancel-btn">
+                                Cancel
+                            </a>
                         {% endif %}
-                        
 
                         <button type="submit" class="btn save-btn">
                             Update Property Tax
                         </button>
-                    </div>
 
+                    </div>
                 </form>
 
             </div>
-        </div>
+        </section>
     </div>
 </body>
-
 </html>
