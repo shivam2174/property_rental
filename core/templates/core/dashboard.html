@@ -103,6 +103,54 @@
             border-color: #fecaca;
         }
 
+
+        /* Recent Payments and Recent Invoices containers */
+        .recent-section {
+            height: 540px;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .recent-section h3,
+        .recent-section h2 {
+            flex-shrink: 0;
+        }
+
+        .recent-section .table-container {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        /* Keep table headings visible while scrolling */
+        .recent-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .recent-section thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f7f9fc;
+        }
+
+        /* Optional: subtle scrollbar */
+        .recent-section .table-container {
+            scrollbar-width: thin;
+        }
+
+        /* Mobile layout */
+        @media (max-width: 768px) {
+            .recent-section {
+                height: 420px;
+            }
+        }
+
+
         /* ================= SECTION ================= */
 
         .section-title {

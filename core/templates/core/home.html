@@ -25,7 +25,7 @@
                 linear-gradient(115deg, #edf5ff 0%, #e4edff 55%, #f8faff 100%);
             box-shadow: 0 5px 18px rgba(30, 64, 120, 0.07);
         }
-        
+
 
         .welcome-copy {
             position: relative;
@@ -682,6 +682,53 @@
             font-weight: 600;
         }
 
+        /* Recent Payments and Recent Invoices containers */
+        .recent-section {
+            height: 540px;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .recent-section h3,
+        .recent-section h2 {
+            flex-shrink: 0;
+        }
+
+        .recent-section .table-container {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        /* Keep table headings visible while scrolling */
+        .recent-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .recent-section thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f7f9fc;
+        }
+
+        /* Optional: subtle scrollbar */
+        .recent-section .table-container {
+            scrollbar-width: thin;
+        }
+
+        /* Mobile layout */
+        @media (max-width: 768px) {
+            .recent-section {
+                height: 420px;
+            }
+        }
+
+
         @media (max-width: 600px) {
             .top-header {
                 padding: 12px;
@@ -817,7 +864,7 @@
         <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="logo">
-                Property 
+                Property
                 <span>Management System</span>
             </div>
 
@@ -844,7 +891,7 @@
                 <li>
                     <a href="{% url 'tenant_list' %}">Tenants</a>
                 </li>
-                
+
                 {% if request.user.is_superuser %}
                 <li>
                     <a href="{% url 'agreement_list' %}">Lease Agreements</a>
@@ -856,13 +903,6 @@
 
                 <li>
                     <a href="{% url 'payment_list' %}">Payments</a>
-                </li>
-
-                <li>
-                    <a href="{% url 'tds_ledger_report' %}">TDS Ledger</a>
-                </li>
-                <li>
-                    <a href="{% url 'gst_ledger_report' %}">GST Ledger Report</a>
                 </li>
 
                 <li>
@@ -958,6 +998,7 @@
                                     <th>Property</th>
                                     <th>Monthly Rent</th>
                                     <th>Lease End Date</th>
+                                    <th>Lock-in End Date</th>
                                     <th>Days Remaining</th>
                                     <th>Reminder Status</th>
                                     <th>Action</th>
@@ -1169,7 +1210,109 @@
                     </a>
                 </div>
 
-                <!-- RECENT PAYMENTS AND INVOICES -->
+
+
+                <style>
+                    /* Recent Payments + Recent Invoices layout */
+                    .tables {
+                        display: grid;
+                        grid-template-columns: repeat(2, minmax(0, 1fr));
+                        gap: 20px;
+                        align-items: stretch;
+                        width: 100%;
+                    }
+
+                    .tables .table-card {
+                        background: #ffffff;
+                        border-radius: 12px;
+                        padding: 20px;
+                        height: 540px;
+                        min-height: 0;
+                        min-width: 0;
+                        display: flex;
+                        flex-direction: column;
+                        overflow: hidden;
+                        box-shadow: 0 3px 12px rgba(16, 24, 40, 0.08);
+                    }
+
+                    .tables .table-card h3 {
+                        margin: 0 0 16px;
+                        font-size: 17px;
+                        font-weight: 600;
+                        flex-shrink: 0;
+                    }
+
+                    /* This area scrolls, not the entire dashboard card */
+                    .tables .table-scroll {
+                        flex: 1 1 auto;
+                        min-height: 0;
+                        width: 100%;
+                        overflow-y: auto;
+                        overflow-x: auto;
+                        scrollbar-width: thin;
+                        scrollbar-color: #c5ccd5 transparent;
+                    }
+
+                    .tables .table-card table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin: 0;
+                    }
+
+                    .tables .table-card thead th {
+                        position: sticky;
+                        top: 0;
+                        z-index: 2;
+                        background: #f7f9fc;
+                        color: #475467;
+                        text-align: left;
+                        font-weight: 500;
+                        padding: 11px 10px;
+                        border-bottom: 1px solid #dfe4eb;
+                    }
+
+                    .tables .table-card tbody td {
+                        padding: 11px 10px;
+                        border-bottom: 1px solid #e1e6ed;
+                        font-size: 13px;
+                        vertical-align: middle;
+                    }
+
+                    .tables .table-card tbody tr:last-child td {
+                        border-bottom: none;
+                    }
+
+                    .tables .table-card th,
+                    .tables .table-card td {
+                        white-space: nowrap;
+                    }
+
+                    .tables .table-card .empty {
+                        padding: 20px 10px;
+                        text-align: center;
+                        color: #667085;
+                    }
+
+                    /* Responsive layout */
+                    @media (max-width: 900px) {
+                        .tables {
+                            grid-template-columns: minmax(0, 1fr);
+                        }
+
+                        .tables .table-card {
+                            height: 420px;
+                        }
+                    }
+
+                    @media (max-width: 480px) {
+                        .tables .table-card {
+                            height: 380px;
+                            padding: 14px;
+                        }
+                    }
+                </style>
+
+                <!-- RECENT PAYMENTS AND RECENT INVOICES -->
                 <div class="tables">
 
                     <!-- RECENT PAYMENTS -->
@@ -1177,34 +1320,30 @@
                         <h3>Recent Payments</h3>
 
                         {% if recent_payments %}
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Tenant</th>
-                                    <th>Amount</th>
-                                    <th>Method</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in recent_payments %}
-                                <tr>
-                                    <td>
-                                        {{ payment.payment_date|date:"d M Y" }}
-                                    </td>
-                                    <td>
-                                        {{ payment.invoice.tenant.full_name }}
-                                    </td>
-                                    <td>
-                                        ₹{{ payment.amount|floatformat:2 }}
-                                    </td>
-                                    <td>
-                                        {{ payment.get_payment_method_display }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Tenant</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in recent_payments %}
+                                    <tr>
+                                        <td>{{ payment.payment_date|date:"d M Y" }}</td>
+                                        <td>
+                                            {{ payment.invoice.tenant_name|default:payment.invoice.tenant }}
+                                        </td>
+                                        <td>₹{{ payment.amount|floatformat:2 }}</td>
+                                        <td>{{ payment.get_payment_method_display }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                         {% else %}
                         <div class="empty">No payments found.</div>
                         {% endif %}
@@ -1215,44 +1354,47 @@
                         <h3>Recent Invoices</h3>
 
                         {% if recent_invoices %}
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Invoice</th>
-                                    <th>Tenant</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for invoice in recent_invoices %}
-                                <tr>
-                                    <td>#{{ invoice.invoice_number }}</td>
-                                    <td>{{ invoice.tenant.full_name }}</td>
-                                    <td>
-                                        ₹{{ invoice.total_amount|floatformat:2 }}
-                                    </td>
-                                    <td>
-                                        {% if invoice.status == "paid" %}
-                                        <span class="status paid">Paid</span>
-                                        {% elif invoice.status == "pending" %}
-                                        <span class="status pending">Pending</span>
-                                        {% elif invoice.status == "cancelled" %}
-                                        <span class="status cancelled">Cancelled</span>
-                                        {% else %}
-                                        <span class="status generated">Generated</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Invoice</th>
+                                        <th>Tenant</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in recent_invoices %}
+                                    <tr>
+                                        <td>#{{ invoice.invoice_number }}</td>
+                                        <td>
+                                            {{ invoice.tenant_name|default:invoice.tenant }}
+                                        </td>
+                                        <td>₹{{ invoice.total_amount|floatformat:2 }}</td>
+                                        <td>
+                                            {% if invoice.status == "paid" %}
+                                            <span class="status paid">Paid</span>
+                                            {% elif invoice.status == "pending" or invoice.status == "generated" %}
+                                            <span class="status pending">Pending</span>
+                                            {% elif invoice.status == "cancelled" %}
+                                            <span class="status cancelled">Cancelled</span>
+                                            {% else %}
+                                            <span class="status">{{ invoice.status|title }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                         {% else %}
                         <div class="empty">No invoices found.</div>
                         {% endif %}
                     </div>
 
                 </div>
+
             </div>
         </main>
     </div>

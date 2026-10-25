@@ -1,5 +1,4 @@
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, ROUND_DOWN
-from datetime import date
 from calendar import monthrange
 from django.db import transaction
 
@@ -10,6 +9,7 @@ from django.db.models.deletion import ProtectedError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from datetime import date, timedelta
+from datetime import datetime
 from django.utils.dateparse import parse_date as django_parse_date
 from django.views.decorators.http import require_POST
 from dateutil.relativedelta import relativedelta
@@ -23,6 +23,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
+from calendar import month_name
+from decimal import Decimal, ROUND_HALF_UP
+from types import SimpleNamespace
+
+from django.db import models, transaction
+from django.shortcuts import render
 User = get_user_model()
 
 
@@ -155,13 +161,29 @@ def get_invoice_rent_amount(invoice):
     )
 
 
+
 def get_invoice_tds_amount(invoice):
-    """Calculate TDS at 10% of rent before GST."""
+    """Calculate TDS at 10% of rent plus parking, before GST."""
+
     rent_amount = get_invoice_rent_amount(invoice)
 
+    parking_amount = (
+        invoice.items
+        .filter(item_type="parking")
+        .aggregate(total=Sum("amount"))["total"]
+        or Decimal("0.00")
+    )
+
+    tds_base_amount = rent_amount + parking_amount
+
     return (
-        rent_amount * Decimal("10.00") / Decimal("100")
-    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        tds_base_amount * Decimal("10.00") / Decimal("100")
+    ).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
+
+
 
 
 def get_invoice_tds_credited(invoice):
@@ -1814,13 +1836,7 @@ def agreement_list(request):
 
 
 def monthly_gst_report(request):
-    from calendar import month_name
-    from datetime import date, timedelta
-    from decimal import Decimal, ROUND_HALF_UP
-    from types import SimpleNamespace
-
-    from django.db import models, transaction
-    from django.shortcuts import render
+    
 
     today = date.today()
     ZERO = Decimal("0.00")
@@ -2600,6 +2616,12 @@ def agreement_add(request):
                     start_date=start_date,
                     end_date=end_date,
                     monthly_rent=monthly_rent,
+                    free_parking_spaces=int(
+                    request.POST.get("free_parking_spaces") or 0
+                    ),
+                    paid_parking_spaces=int(
+                    request.POST.get("paid_parking_spaces") or 0
+                    ),
                     
                     # Lease Extension 1
                     extension_1_start_date=extension_1_start_date,
@@ -3408,7 +3430,6 @@ def apply_rent_increase(
 # =========================================================
 
 def generate_invoice(request, agreement_id):
-
     agreement = get_object_or_404(
         LeaseAgreement.objects.select_related(
             "tenant",
@@ -3427,12 +3448,8 @@ def generate_invoice(request, agreement_id):
 
     today = date.today()
 
-    # =========================================================
-    # GET REQUEST
-    # =========================================================
-
+    # GET: display invoice generation form
     if request.method == "GET":
-
         return render(
             request,
             "core/invoice_generate.html",
@@ -3442,22 +3459,13 @@ def generate_invoice(request, agreement_id):
             },
         )
 
-    # =========================================================
     # BILLING MONTH
-    # =========================================================
-
     billing_month_input = request.POST.get(
-        "billing_month",
-        "",
+        "billing_month", ""
     ).strip()
 
     if not billing_month_input:
-
-        messages.error(
-            request,
-            "Please select a billing month.",
-        )
-
+        messages.error(request, "Please select a billing month.")
         return render(
             request,
             "core/invoice_generate.html",
@@ -3468,34 +3476,22 @@ def generate_invoice(request, agreement_id):
         )
 
     try:
-
         billing_year, billing_month = map(
-            int,
-            billing_month_input.split("-"),
+            int, billing_month_input.split("-")
         )
 
         billing_from = date(
-            billing_year,
-            billing_month,
-            1,
+            billing_year, billing_month, 1
         )
 
         billing_to = date(
             billing_year,
             billing_month,
-            monthrange(
-                billing_year,
-                billing_month,
-            )[1],
+            monthrange(billing_year, billing_month)[1],
         )
 
     except (ValueError, TypeError):
-
-        messages.error(
-            request,
-            "Invalid billing month selected.",
-        )
-
+        messages.error(request, "Invalid billing month selected.")
         return render(
             request,
             "core/invoice_generate.html",
@@ -3505,17 +3501,12 @@ def generate_invoice(request, agreement_id):
             },
         )
 
-    # =========================================================
     # AGREEMENT DATE VALIDATION
-    # =========================================================
-
     if billing_to < agreement.start_date:
-
         messages.error(
             request,
             "The selected billing month is before the rental agreement started.",
         )
-
         return render(
             request,
             "core/invoice_generate.html",
@@ -3526,12 +3517,10 @@ def generate_invoice(request, agreement_id):
         )
 
     if agreement.end_date and billing_from > agreement.end_date:
-
         messages.error(
             request,
             "The selected billing month is after the rental agreement ended.",
         )
-
         return render(
             request,
             "core/invoice_generate.html",
@@ -3541,31 +3530,23 @@ def generate_invoice(request, agreement_id):
             },
         )
 
-    # =========================================================
     # ACTUAL BILLABLE PERIOD
-    # =========================================================
-
     actual_billing_from = max(
-        billing_from,
-        agreement.start_date,
+        billing_from, agreement.start_date
     )
 
     actual_billing_to = billing_to
 
     if agreement.end_date:
-
         actual_billing_to = min(
-            billing_to,
-            agreement.end_date,
+            billing_to, agreement.end_date
         )
 
     if actual_billing_from > actual_billing_to:
-
         messages.error(
             request,
             "There are no billable days in the selected month.",
         )
-
         return render(
             request,
             "core/invoice_generate.html",
@@ -3580,14 +3561,10 @@ def generate_invoice(request, agreement_id):
     ).days + 1
 
     days_in_month = monthrange(
-        billing_year,
-        billing_month,
+        billing_year, billing_month
     )[1]
 
-    # =========================================================
-    # EXISTING INVOICE CHECK
-    # =========================================================
-
+    # PREVENT DUPLICATE INVOICES
     existing_invoice = Invoice.objects.filter(
         lease_agreement=agreement,
         billing_from=actual_billing_from,
@@ -3595,30 +3572,22 @@ def generate_invoice(request, agreement_id):
     ).first()
 
     if existing_invoice:
-
         messages.warning(
             request,
             "Invoice for this billing period already exists.",
         )
-
         return redirect(
             "invoice_detail",
             pk=existing_invoice.invoice_number,
         )
 
-    # =========================================================
     # TERM CALCULATION
-    # =========================================================
-
     current_term = agreement.get_current_term(
         actual_billing_from
     )
 
-    # New rent according to the current term
     proposed_rent = parse_decimal(
-        agreement.get_term_rent(
-            current_term
-        )
+        agreement.get_term_rent(current_term)
     )
 
     increase_percent = parse_decimal(
@@ -3626,72 +3595,46 @@ def generate_invoice(request, agreement_id):
             actual_billing_from
         )
     )
-    rental_area = parse_decimal(agreement.rental_area)
-    rental_rate = parse_decimal(agreement.rental_rate_per_sqft)
 
-    monthly_rent = (
-    rental_area * rental_rate
-    ).quantize(
-    Decimal("0.01"),
-    rounding=ROUND_HALF_UP,
-    )
+    # Resolve the effective start date for the current term.
+    if current_term == 1:
+        term_start_date = agreement.start_date
+    else:
+        term_start_date = (
+            getattr(
+                agreement,
+                f"term{current_term}_start_date",
+                None,
+            )
+            or agreement.start_date
+        )
 
-    # =========================================================
-    # CHECK WHETHER THIS TERM'S INCREASE IS ALREADY ACCEPTED
-    # =========================================================
-
+    # RENT INCREASE HISTORY
     accepted_history = RentHistory.objects.filter(
         lease_agreement=agreement,
         effective_from=term_start_date,
         increase_accepted=True,
     ).order_by("-created_at").first()
 
-    increase_already_accepted = bool(
-        accepted_history
-    )
+    increase_already_accepted = bool(accepted_history)
 
-    # =========================================================
-    # FIND PREVIOUS TERM RENT
-    # =========================================================
-    #
-    # This is the rent that will be used if the user selects NO.
-    #
-
+    # PREVIOUS TERM RENT
     if current_term == 1:
-
         previous_rent = parse_decimal(
             agreement.monthly_rent
         )
-
     else:
-
         previous_rent = parse_decimal(
-            agreement.get_term_rent(
-                current_term - 1
-            )
+            agreement.get_term_rent(current_term - 1)
         )
 
-    # =========================================================
     # RENT INCREASE CONFIRMATION
-    # =========================================================
-    #
-    # If the current term has not been accepted yet,
-    # show Yes / No confirmation.
-    #
-
     rent_decision = request.POST.get(
-        "rent_increase_decision",
-        "",
+        "rent_increase_decision", ""
     ).strip().lower()
 
     if not increase_already_accepted:
-
-        # -----------------------------------------------------
-        # First request: show confirmation
-        # -----------------------------------------------------
-
         if rent_decision not in {"yes", "no"}:
-
             return render(
                 request,
                 "core/invoice_rent_confirmation.html",
@@ -3711,48 +3654,21 @@ def generate_invoice(request, agreement_id):
                 },
             )
 
-        # -----------------------------------------------------
-        # YES
-        # -----------------------------------------------------
-
         if rent_decision == "yes":
-
             monthly_rent = proposed_rent
-
             accept_increase = True
-
-        # -----------------------------------------------------
-        # NO
-        # -----------------------------------------------------
-
         else:
-
             monthly_rent = previous_rent
-
             accept_increase = False
 
     else:
-
-        # -----------------------------------------------------
-        # Increase was already accepted previously.
-        # Do NOT ask again.
-        # -----------------------------------------------------
-
         monthly_rent = proposed_rent
-
         accept_increase = False
 
-    monthly_rent = parse_decimal(
-        monthly_rent
-    )
+    monthly_rent = parse_decimal(monthly_rent)
 
-    # =========================================================
-    # SAVE RENT HISTORY ONLY WHEN YES
-    # =========================================================
-
+    # SAVE RENT HISTORY WHEN INCREASE IS ACCEPTED
     if accept_increase:
-
-        # Close any previous open history for this agreement.
         RentHistory.objects.filter(
             lease_agreement=agreement,
             effective_to__isnull=True,
@@ -3761,36 +3677,29 @@ def generate_invoice(request, agreement_id):
             effective_to=term_start_date - date.resolution
         )
 
-        # Find next term date.
         if current_term < 5:
-
-            if current_term == 1:
-                next_term_date = agreement.term2_start_date
-
-            elif current_term == 2:
-                next_term_date = agreement.term3_start_date
-
-            elif current_term == 3:
-                next_term_date = agreement.term4_start_date
-
-            else:
-                next_term_date = agreement.term5_start_date
-
-            effective_to = (
-                next_term_date - date.resolution
+            next_term_date = getattr(
+                agreement,
+                f"term{current_term + 1}_start_date",
+                None,
             )
 
-            if (
-                agreement.end_date
-                and effective_to > agreement.end_date
-            ):
+            if next_term_date:
+                effective_to = (
+                    next_term_date - date.resolution
+                )
+            else:
                 effective_to = agreement.end_date
-
         else:
-
             effective_to = agreement.end_date
 
-        # Prevent duplicate history for same term.
+        if (
+            agreement.end_date
+            and effective_to
+            and effective_to > agreement.end_date
+        ):
+            effective_to = agreement.end_date
+
         RentHistory.objects.update_or_create(
             lease_agreement=agreement,
             effective_from=term_start_date,
@@ -3803,26 +3712,35 @@ def generate_invoice(request, agreement_id):
         )
 
     # =========================================================
-    # PARKING
+    # PARKING CALCULATION
     # =========================================================
+    free_parking_slots = int(
+        agreement.free_parking_spaces or 0
+    )
 
-    parking_amount = parse_decimal(
+    paid_parking_slots = int(
+        agreement.paid_parking_spaces or 0
+    )
+
+    # parking_charge must be the price of ONE paid slot.
+    parking_rate = parse_decimal(
         agreement.parking_charge
     )
 
-    # =========================================================
-    # PRORATED RENT
-    # =========================================================
+    parking_amount = (
+        parking_rate * Decimal(paid_parking_slots)
+    ).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP,
+    )
 
+    # PRORATED RENT
     if (
         actual_billing_from == billing_from
         and actual_billing_to == billing_to
     ):
-
         rent_amount = monthly_rent
-
     else:
-
         rent_amount = (
             monthly_rent
             * Decimal(bill_days)
@@ -3832,67 +3750,43 @@ def generate_invoice(request, agreement_id):
             rounding=ROUND_HALF_UP,
         )
 
-    # =========================================================
     # TAXABLE AMOUNT
-    # =========================================================
-
     taxable_amount = (
-        rent_amount +
-        parking_amount
+        rent_amount + parking_amount
     ).quantize(
         Decimal("0.01"),
         rounding=ROUND_HALF_UP,
     )
 
-    # =========================================================
     # GST
-    # =========================================================
-
-    cgst_rate = parse_decimal(
-        agreement.cgst_rate
-    )
-
-    sgst_rate = parse_decimal(
-        agreement.sgst_rate
-    )
+    cgst_rate = parse_decimal(agreement.cgst_rate)
+    sgst_rate = parse_decimal(agreement.sgst_rate)
 
     cgst_amount = (
-        taxable_amount
-        * cgst_rate
-        / ONE_HUNDRED
+        taxable_amount * cgst_rate / ONE_HUNDRED
     ).quantize(
         Decimal("0.01"),
         rounding=ROUND_HALF_UP,
     )
 
     sgst_amount = (
-        taxable_amount
-        * sgst_rate
-        / ONE_HUNDRED
+        taxable_amount * sgst_rate / ONE_HUNDRED
     ).quantize(
         Decimal("0.01"),
         rounding=ROUND_HALF_UP,
     )
 
     total_amount = (
-        taxable_amount
-        + cgst_amount
-        + sgst_amount
+        taxable_amount + cgst_amount + sgst_amount
     ).quantize(
         Decimal("0.01"),
         rounding=ROUND_HALF_UP,
     )
 
-    # =========================================================
     # PAYMENT DUE DATE
-    # =========================================================
-
     payment_due_day = min(
         agreement.rent_due_day,
-        monthrange(
-            billing_year,
-            billing_month,
-        )[1],
+        days_in_month,
     )
 
     payment_due_date = date(
@@ -3901,276 +3795,141 @@ def generate_invoice(request, agreement_id):
         payment_due_day,
     )
 
-    # =========================================================
-    # OWNER GST
-    # =========================================================
-
+    # OWNER AND PROPERTY DETAILS
     owner = agreement.property.owner
+    tenant = agreement.tenant
+    property_obj = agreement.property
 
     owner_gst = ""
-
     if owner:
-
         owner_gst = (
-            getattr(
-                owner,
-                "gst_haryana",
-                "",
-            )
-            or getattr(
-                owner,
-                "gst_delhi",
-                "",
-            )
+            getattr(owner, "gst_haryana", "")
+            or getattr(owner, "gst_delhi", "")
             or ""
         )
 
-    # =========================================================
-    # TENANT / PROPERTY
-    # =========================================================
-
-    tenant = agreement.tenant
-
-    property_obj = agreement.property
-
-    # =========================================================
-    # CREATE INVOICE
-    # =========================================================
-
+    # CREATE INVOICE AND ITEMS ATOMICALLY
     with transaction.atomic():
-
         invoice = Invoice.objects.create(
-
             lease_agreement=agreement,
-
             tenant=tenant,
-
             invoice_date=today,
-
             billing_from=actual_billing_from,
-
             billing_to=actual_billing_to,
-
             payment_due_date=payment_due_date,
-
             taxable_amount=taxable_amount,
-
             cgst_rate=cgst_rate,
-
             cgst_amount=cgst_amount,
-
             sgst_rate=sgst_rate,
-
             sgst_amount=sgst_amount,
-
             total_amount=total_amount,
-
             status="pending",
 
-            # -------------------------------------------------
-            # TENANT SNAPSHOT
-            # -------------------------------------------------
-
+            # Tenant snapshot
             tenant_name=tenant.full_name,
-
             tenant_gst="",
-
             tenant_pan="",
-
             tenant_mobile=tenant.mobile,
-
             tenant_email=tenant.email,
-
             billing_address=tenant.permanent_address,
 
-            # -------------------------------------------------
-            # PROPERTY SNAPSHOT
-            # -------------------------------------------------
-
+            # Property snapshot
             property_name=property_obj.name,
-
             property_address=property_obj.address,
-
             unit_number=getattr(
-                property_obj,
-                "unit_no",
-                "",
+                property_obj, "unit_no", ""
             ),
 
-            # -------------------------------------------------
-            # OWNER SNAPSHOT
-            # -------------------------------------------------
-
-            owner_name=(
-                owner.name
-                if owner
-                else ""
-            ),
-
+            # Owner snapshot
+            owner_name=owner.name if owner else "",
             owner_company_name="",
-
-            owner_address=(
-                owner.address
-                if owner
-                else ""
-            ),
-
-            owner_city=(
-                owner.city
-                if owner
-                else ""
-            ),
-
-            owner_state=(
-                owner.state
-                if owner
-                else ""
-            ),
-
-            owner_pincode=(
-                owner.pincode
-                if owner
-                else ""
-            ),
-
-            owner_mobile=(
-                owner.mobile
-                if owner
-                else ""
-            ),
-
-            owner_email=(
-                owner.email
-                if owner
-                else ""
-            ),
-
+            owner_address=owner.address if owner else "",
+            owner_city=owner.city if owner else "",
+            owner_state=owner.state if owner else "",
+            owner_pincode=owner.pincode if owner else "",
+            owner_mobile=owner.mobile if owner else "",
+            owner_email=owner.email if owner else "",
             owner_gstin=owner_gst,
-
-            owner_pan=(
-                owner.pan
-                if owner
-                else ""
-            ),
+            owner_pan=owner.pan if owner else "",
         )
 
-        # =====================================================
-        # RENT INVOICE ITEM
-        # =====================================================
-
+        # RENT ITEM
         if (
             actual_billing_from == billing_from
             and actual_billing_to == billing_to
         ):
-
             rent_description = (
                 f"Monthly Rent - Term {current_term}"
             )
-
         else:
-
             rent_description = (
                 f"Rent - Term {current_term} "
-                f"({actual_billing_from.strftime('%d %b %Y')}"
-                f" - "
+                f"({actual_billing_from.strftime('%d %b %Y')} - "
                 f"{actual_billing_to.strftime('%d %b %Y')})"
             )
 
         InvoiceItem.objects.create(
-
             invoice=invoice,
-
             item_type="rent",
-
             description=rent_description,
-
             unit_number=getattr(
-                property_obj,
-                "unit_no",
-                "",
+                property_obj, "unit_no", ""
             ),
-
             area=ZERO,
-
             rate=monthly_rent,
-
             slots=1,
-
             bill_days=bill_days,
-
             available_days=bill_days,
-
             amount=rent_amount,
         )
 
-        # =====================================================
-        # PARKING
-        # =====================================================
-
-        if parking_amount > ZERO:
+        # PARKING ITEM
+        if paid_parking_slots > 0 and parking_amount > ZERO:
+            parking_description = (
+                f"Parking Charges - {paid_parking_slots} Paid Slots "
+                f"x ₹{parking_rate:.2f} per slot; "
+                f"{free_parking_slots} Free Slots"
+            )
 
             InvoiceItem.objects.create(
-
                 invoice=invoice,
-
                 item_type="parking",
-
-                description="Parking Charges",
-
+                description=parking_description,
                 unit_number=getattr(
-                    property_obj,
-                    "unit_no",
-                    "",
+                    property_obj, "unit_no", ""
                 ),
-
                 area=ZERO,
-
-                rate=parking_amount,
-
-                slots=1,
-
+                rate=parking_rate,
+                slots=paid_parking_slots,
                 bill_days=bill_days,
-
                 available_days=bill_days,
-
                 amount=parking_amount,
             )
 
-    # =========================================================
     # SUCCESS MESSAGE
-    # =========================================================
-
     if accept_increase:
-
         success_text = (
             f"Invoice #{invoice.invoice_number} generated successfully. "
             f"Term {current_term} rent increase accepted. "
             f"Rent: ₹{monthly_rent:.2f}"
         )
-
     elif (
         not increase_already_accepted
         and rent_decision == "no"
     ):
-
         success_text = (
             f"Invoice #{invoice.invoice_number} generated successfully. "
-            f"Rent increase was not applied for this month. "
+            "Rent increase was not applied for this month. "
             f"Rent: ₹{monthly_rent:.2f}. "
-            f"You will be asked again next month."
+            "You will be asked again next month."
         )
-
     else:
-
         success_text = (
             f"Invoice #{invoice.invoice_number} generated successfully. "
             f"Term {current_term} rent: ₹{monthly_rent:.2f}"
         )
 
-    messages.success(
-        request,
-        success_text,
-    )
+    messages.success(request, success_text)
 
     return redirect(
         "invoice_detail",
@@ -4178,13 +3937,13 @@ def generate_invoice(request, agreement_id):
     )
 
 
+
 # =========================================================
 # INVOICES
 # =========================================================
 
 def invoice_list(request):
-
-    invoices = (
+    base_invoices = (
         Invoice.objects
         .select_related(
             "tenant",
@@ -4192,33 +3951,126 @@ def invoice_list(request):
             "lease_agreement__property",
         )
         .all()
-        .order_by(
-            "-invoice_date",
-            "-invoice_number",
-        )
+        .order_by("-invoice_date", "-invoice_number")
     )
 
-    for invoice in invoices:
+    # Build month options from existing invoice billing dates.
+    month_options = []
+    seen_months = set()
 
-        invoice.total_paid = (
-            get_invoice_total_paid(
-                invoice
+    for billing_date in base_invoices.values_list(
+        "billing_from", flat=True
+    ).order_by("-billing_from"):
+        month_value = billing_date.strftime("%Y-%m")
+
+        if month_value not in seen_months:
+            seen_months.add(month_value)
+            month_options.append({
+                "value": month_value,
+                "label": billing_date.strftime("%B %Y"),
+            })
+
+    # Owner names are stored as snapshots on Invoice.
+    owner_options = list(
+        base_invoices
+        .exclude(owner_name="")
+        .exclude(owner_name__isnull=True)
+        .values_list("owner_name", flat=True)
+        .distinct()
+        .order_by("owner_name")
+    )
+
+    # Default: pending/unpaid invoices.
+    selected_status = request.GET.get("status", "pending").lower()
+    selected_month = request.GET.get("month", "").strip()
+    selected_owner = request.GET.get("owner", "").strip()
+    if "month" in request.GET:
+        selected_month = request.GET.get("month", "").strip()
+    else:
+        selected_month = timezone.localdate().strftime("%Y-%m")
+
+    if selected_status not in ("all", "pending", "paid"):
+        selected_status = "pending"
+
+    invoices = base_invoices
+
+    # Filter by billing month.
+    if selected_month:
+        try:
+            month_date = datetime.strptime(
+                selected_month, "%Y-%m"
+            ).date()
+
+            invoices = invoices.filter(
+                billing_from__year=month_date.year,
+                billing_from__month=month_date.month,
             )
-        )
+        except ValueError:
+            selected_month = ""
 
+    # Filter by owner.
+    if selected_owner in owner_options:
+        invoices = invoices.filter(owner_name=selected_owner)
+    else:
+        selected_owner = ""
+
+    # Filter by payment status.
+    if selected_status == "pending":
+        invoices = (
+            invoices
+            .exclude(status__iexact="paid")
+            .exclude(status__iexact="cancelled")
+        )
+    elif selected_status == "paid":
+        invoices = invoices.filter(status__iexact="paid")
+
+    # Calculate paid amount and outstanding balance for each invoice.
+    for invoice in invoices:
+        invoice.total_paid = get_invoice_total_paid(invoice)
         invoice.balance = max(
-            invoice.total_amount
-            - invoice.total_paid,
+            invoice.total_amount - invoice.total_paid,
             ZERO,
         )
+
+    # Summary cards reflect the selected filters.
+    total_invoices = invoices.count()
+
+    paid_count = invoices.filter(
+        status__iexact="paid"
+    ).count()
+
+    pending_count = (
+        invoices
+        .exclude(status__iexact="paid")
+        .exclude(status__iexact="cancelled")
+        .count()
+    )
+
+    total_invoiced = (
+        invoices
+        .exclude(status__iexact="cancelled")
+        .aggregate(total=Sum("total_amount"))["total"]
+        or Decimal("0.00")
+    )
 
     return render(
         request,
         "core/invoice_list.html",
         {
             "invoices": invoices,
+            "total_invoices": total_invoices,
+            "paid_count": paid_count,
+            "pending_count": pending_count,
+            "total_invoiced": total_invoiced,
+            "month_options": month_options,
+            "owner_options": owner_options,
+            "selected_month": selected_month,
+            "selected_owner": selected_owner,
+            "selected_status": selected_status,
         },
     )
+
+
 
 
 def invoice_detail(request, pk):
@@ -4357,8 +4209,6 @@ def payment_list(request):
 
 
 
-
-
 def record_payment(request, invoice_id):
     invoice = get_object_or_404(
         Invoice,
@@ -4375,13 +4225,43 @@ def record_payment(request, invoice_id):
             pk=invoice.invoice_number,
         )
 
-    # Display the payment form.
+    # -----------------------------------------------------
+    # RENT + PARKING BREAKDOWN (BEFORE GST)
+    # -----------------------------------------------------
+    items = invoice.items.all()
+
+    rent_amount = (
+        items.filter(item_type="rent")
+        .aggregate(total=Sum("amount"))["total"]
+        or ZERO
+    )
+
+    parking_amount = (
+        items.filter(item_type="parking")
+        .aggregate(total=Sum("amount"))["total"]
+        or ZERO
+    )
+
+    tds_base_amount = rent_amount + parking_amount
+
+    # -----------------------------------------------------
+    # DISPLAY PAYMENT FORM
+    # -----------------------------------------------------
     if request.method == "GET":
         total_paid = get_invoice_total_paid(invoice)
-        tds_amount = get_invoice_tds_amount(invoice)
-        net_payable = get_invoice_net_payable(invoice)
 
-        balance = max(net_payable - total_paid, ZERO)
+        # This helper must use rent + parking before GST.
+        tds_amount = get_invoice_tds_amount(invoice)
+
+        net_payable = max(
+            invoice.total_amount - tds_amount,
+            ZERO,
+        )
+
+        balance = max(
+            net_payable - total_paid,
+            ZERO,
+        )
 
         if balance <= ZERO:
             messages.warning(
@@ -4402,11 +4282,16 @@ def record_payment(request, invoice_id):
                 "total_paid": total_paid,
                 "tds_amount": tds_amount,
                 "net_payable": net_payable,
+                "rent_amount": rent_amount,
+                "parking_amount": parking_amount,
+                "tds_base_amount": tds_base_amount,
                 "today": date.today(),
             },
         )
 
-    # Read submitted payment details.
+    # -----------------------------------------------------
+    # READ SUBMITTED PAYMENT DETAILS
+    # -----------------------------------------------------
     payment_amount = parse_decimal(
         request.POST.get("amount")
     )
@@ -4435,6 +4320,9 @@ def record_payment(request, invoice_id):
             invoice_id=invoice.invoice_number,
         )
 
+    # -----------------------------------------------------
+    # VALIDATE AND SAVE PAYMENT ATOMICALLY
+    # -----------------------------------------------------
     with transaction.atomic():
         locked_invoice = (
             Invoice.objects
@@ -4452,7 +4340,6 @@ def record_payment(request, invoice_id):
                 pk=locked_invoice.invoice_number,
             )
 
-        # Calculate existing tenant payments.
         locked_total_paid = (
             Payment.objects
             .filter(invoice=locked_invoice)
@@ -4461,12 +4348,13 @@ def record_payment(request, invoice_id):
             or ZERO
         )
 
-        # TDS is calculated on rent before GST.
+        # IMPORTANT:
+        # get_invoice_tds_amount() must calculate 10% of
+        # rent + parking before GST.
         locked_tds_amount = get_invoice_tds_amount(
             locked_invoice
         )
 
-        # Tenant pays invoice total minus TDS.
         locked_net_payable = max(
             locked_invoice.total_amount - locked_tds_amount,
             ZERO,
@@ -4500,7 +4388,6 @@ def record_payment(request, invoice_id):
                 invoice_id=locked_invoice.invoice_number,
             )
 
-        # Save the tenant's payment.
         Payment.objects.create(
             invoice=locked_invoice,
             payment_date=payment_date,
@@ -4512,8 +4399,6 @@ def record_payment(request, invoice_id):
 
         new_total_paid = locked_total_paid + payment_amount
 
-        # Invoice status depends on the NET payable amount.
-        # TDS credit is tracked separately.
         remaining_net_payable = max(
             locked_net_payable - new_total_paid,
             ZERO,
@@ -4539,6 +4424,9 @@ def record_payment(request, invoice_id):
         "invoice_detail",
         pk=invoice.invoice_number,
     )
+
+
+
 
 
 
@@ -4636,10 +4524,13 @@ def invoice_payment_history(request, invoice_id):
 # =========================================================
 # DASHBOARD
 # =========================================================
+
 @login_required
 def dashboard(request):
 
-    # STAFF DASHBOARD — show only permitted information
+    # =====================================================
+    # STAFF DASHBOARD
+    # =====================================================
     if not request.user.is_superuser:
         unpaid_property_taxes = (
             PropertyTax.objects
@@ -4656,92 +4547,99 @@ def dashboard(request):
             },
         )
 
-    # ADMINISTRATOR DASHBOARD — existing code continues below
+    # =====================================================
+    # ADMIN DASHBOARD
+    # =====================================================
     today = date.today()
-    total_properties = (
-        Property.objects.count()
-    )
+    renewal_cutoff = today + relativedelta(months=6)
+
+    total_properties = Property.objects.count()
 
     occupied_properties = (
         LeaseAgreement.objects
-        .filter(
-            status="active"
-        )
+        .filter(status="active")
         .values("property")
         .distinct()
         .count()
     )
 
     vacant_properties = max(
-        total_properties
-        - occupied_properties,
+        total_properties - occupied_properties,
         0,
     )
 
-    total_tenants = (
-        Tenant.objects.count()
-    )
-
-    total_invoices = (
-        Invoice.objects.count()
-    )
+    total_tenants = Tenant.objects.count()
+    total_invoices = Invoice.objects.count()
 
     total_invoiced = (
-        Invoice.objects
-        .aggregate(
+        Invoice.objects.aggregate(
             total=Sum("total_amount")
-        )["total"]
-        or ZERO
+        )["total"] or ZERO
     )
 
     total_collected = (
-        Payment.objects
-        .aggregate(
+        Payment.objects.aggregate(
             total=Sum("amount")
-        )["total"]
-        or ZERO
+        )["total"] or ZERO
     )
 
     total_tds_amount = (
-    TDSLedger.objects
-    .aggregate(total=Sum("tds_amount"))["total"]
-    or ZERO
+        TDSLedger.objects.aggregate(
+            total=Sum("tds_amount")
+        )["total"] or ZERO
     )
 
     recent_payments = (
         Payment.objects
-        .select_related(
-            "invoice",
-            "invoice__tenant",
-        )
-        .order_by(
-            "-payment_date",
-            "-id",
-        )[:10]
+        .select_related("invoice", "invoice__tenant")
+        .order_by("-payment_date", "-id")[:10]
     )
 
     recent_invoices = (
         Invoice.objects
-        .select_related(
-            "tenant",
-        )
-        .order_by(
-            "-invoice_date",
-            "-invoice_number",
-        )[:10]
+        .select_related("tenant")
+        .order_by("-invoice_date", "-invoice_number")[:10]
     )
-    
-    
+
     # =====================================================
     # UPCOMING LEASE RENEWALS — NEXT 6 MONTHS
+    # Check the current lease end date.
+    # Do not use the latest extension date here.
     # =====================================================
+    upcoming_renewals = []
 
-    
+    agreements_for_renewal = (
+        LeaseAgreement.objects
+        .select_related(
+            "tenant",
+            "property",
+            "property__owner",
+        )
+        .filter(status="active")
+        .filter(termination_date__isnull=True)
+        .filter(end_date__isnull=False)
+        .filter(
+            end_date__gte=today,
+            end_date__lte=renewal_cutoff,
+        )
+        .order_by("end_date")
+    )
+
+    for agreement in agreements_for_renewal:
+        upcoming_renewals.append({
+            "agreement": agreement,
+            "tenant": agreement.tenant,
+            "property": agreement.property,
+            "end_date": agreement.end_date,
+            "monthly_rent": agreement.monthly_rent,
+            "days_remaining": (
+                agreement.end_date - today
+            ).days,
+        })
+
     # =====================================================
     # OVERDUE PAYMENT ALERTS
-    # Uses the existing TDS-adjusted balance helper.
     # =====================================================
-
     overdue_payment_alerts = []
 
     overdue_invoices = (
@@ -4755,7 +4653,6 @@ def dashboard(request):
     for invoice in overdue_invoices:
         balance = get_invoice_cash_balance(invoice)
 
-        # Do not show invoices with no remaining net payable balance.
         if balance <= ZERO:
             continue
 
@@ -4772,72 +4669,9 @@ def dashboard(request):
             "balance": balance,
         })
 
-
-    today = date.today()
-    renewal_cutoff = today + relativedelta(months=6)
-
-    upcoming_renewals = []
-
-    agreements_for_renewal = (
-        LeaseAgreement.objects
-        .select_related(
-            "tenant",
-            "property",
-            "property__owner",
-        )
-        .exclude(status="terminated")
-        .filter(termination_date__isnull=True)
-    )
-
-    for agreement in agreements_for_renewal:
-        lease_end_dates = [
-            agreement.end_date,
-            agreement.extension_1_end_date,
-            agreement.extension_2_end_date,
-        ]
-
-        valid_end_dates = [
-            end_date
-            for end_date in lease_end_dates
-            if end_date is not None
-        ]
-
-        if not valid_end_dates:
-            continue
-
-        # Use the latest lease end date, including extensions.
-        effective_end_date = max(valid_end_dates)
-
-        # Show only leases ending between today and 6 months from today.
-        if today <= effective_end_date <= renewal_cutoff:
-            upcoming_renewals.append({
-                "agreement": agreement,
-                "tenant": agreement.tenant,
-                "property": agreement.property,
-                "end_date": effective_end_date,
-                "monthly_rent": (
-                    agreement.extension_2_monthly_rent
-                    if agreement.extension_2_end_date == effective_end_date
-                    and agreement.extension_2_monthly_rent > 0
-                    else agreement.extension_1_monthly_rent
-                    if agreement.extension_1_end_date == effective_end_date
-                    and agreement.extension_1_monthly_rent > 0
-                    else agreement.monthly_rent
-                ),
-                "days_remaining": (
-                    effective_end_date - today
-                ).days,
-            })
-
-    upcoming_renewals.sort(
-        key=lambda item: item["end_date"]
-    )
-
-
     # =====================================================
-    # IN-APP NOTIFICATIONS
+    # EXISTING IN-APP NOTIFICATIONS
     # =====================================================
-
     unread_notifications = (
         LeaseNotification.objects
         .filter(is_read=False)
@@ -4854,38 +4688,20 @@ def dashboard(request):
         .count()
     )
 
-
+    # =====================================================
+    # DASHBOARD CONTEXT
+    # =====================================================
     context = {
-
-        "total_properties":
-            total_properties,
-
-        "occupied_properties":
-            occupied_properties,
-
-        "vacant_properties":
-            vacant_properties,
-
-        "total_tenants":
-            total_tenants,
-
-        "total_invoices":
-            total_invoices,
-
-        "total_invoiced":
-            total_invoiced,
-
-        "total_collected":
-            total_collected,
-
+        "total_properties": total_properties,
+        "occupied_properties": occupied_properties,
+        "vacant_properties": vacant_properties,
+        "total_tenants": total_tenants,
+        "total_invoices": total_invoices,
+        "total_invoiced": total_invoiced,
+        "total_collected": total_collected,
         "total_tds_amount": total_tds_amount,
-
-        "recent_payments":
-            recent_payments,
-
-        "recent_invoices":
-            recent_invoices,
-
+        "recent_payments": recent_payments,
+        "recent_invoices": recent_invoices,
         "upcoming_renewals": upcoming_renewals,
         "unread_notifications": unread_notifications,
         "unread_notification_count": unread_notification_count,
@@ -4899,206 +4715,189 @@ def dashboard(request):
         context,
     )
 
-
 # =========================================================
 # FINANCIAL REPORT
 # =========================================================
 
-def financial_report(request):
 
+ZERO = Decimal("0.00")
+
+
+def get_financial_report_filters(request):
+    """Return the selected month, owner, and property filters."""
     today = date.today()
+    default_month = today.strftime("%Y-%m")
 
-    start_date = request.GET.get(
-        "start_date",
-        today.replace(day=1).isoformat(),
+    selected_month = request.GET.get("month", default_month)
+
+    try:
+        year, month_number = map(
+            int,
+            selected_month.split("-"),
+        )
+        if not 1 <= month_number <= 12 or year < 1:
+            raise ValueError
+        month_start = date(year, month_number, 1)
+    except (ValueError, TypeError):
+        selected_month = default_month
+        month_start = today.replace(day=1)
+
+    last_day = monthrange(
+        month_start.year,
+        month_start.month,
+    )[1]
+
+    month_end = month_start.replace(day=last_day)
+
+    owner_name = request.GET.get("owner", "").strip()
+    property_name = request.GET.get("property", "").strip()
+
+    # Snapshot fields are used intentionally so historical invoices
+    # retain the owner and property names saved when they were created.
+    owner_options = list(
+        Invoice.objects.exclude(owner_name="")
+        .values_list("owner_name", flat=True)
+        .distinct()
+        .order_by("owner_name")
     )
 
-    end_date = request.GET.get(
-        "end_date",
-        today.isoformat(),
+    property_options = list(
+        Invoice.objects.exclude(property_name="")
+        .values_list("property_name", flat=True)
+        .distinct()
+        .order_by("property_name")
     )
 
-    start = parse_date(start_date) or today.replace(day=1)
-    end = parse_date(end_date) or today
+    invoices = Invoice.objects.filter(
+        invoice_date__gte=month_start,
+        invoice_date__lte=month_end,
+    )
 
-    # =========================================================
-    # INVOICES IN REPORT PERIOD
-    # =========================================================
+    if owner_name:
+        invoices = invoices.filter(owner_name=owner_name)
 
-    invoices = (
-        Invoice.objects
-        .select_related(
-            "tenant",
-            "lease_agreement",
+    if property_name:
+        invoices = invoices.filter(property_name=property_name)
+
+    payments = Payment.objects.filter(
+        payment_date__gte=month_start,
+        payment_date__lte=month_end,
+        invoice__invoice_date__gte=month_start,
+        invoice__invoice_date__lte=month_end,
+    )
+
+    if owner_name:
+        payments = payments.filter(invoice__owner_name=owner_name)
+
+    if property_name:
+        payments = payments.filter(invoice__property_name=property_name)
+
+    tds_entries = TDSLedger.objects.filter(
+        invoice__invoice_date__gte=month_start,
+        invoice__invoice_date__lte=month_end,
+    )
+
+    if owner_name:
+        tds_entries = tds_entries.filter(
+            invoice__owner_name=owner_name
         )
-        .filter(
-            invoice_date__gte=start,
-            invoice_date__lte=end,
+
+    if property_name:
+        tds_entries = tds_entries.filter(
+            invoice__property_name=property_name
         )
-        .order_by(
+
+    return {
+        "month": selected_month,
+        "month_start": month_start,
+        "month_end": month_end,
+        "owner": owner_name,
+        "property": property_name,
+        "owner_options": owner_options,
+        "property_options": property_options,
+        "invoices": invoices.order_by(
             "-invoice_date",
             "-invoice_number",
-        )
-    )
+        ),
+        "payments": payments,
+        "tds_entries": tds_entries,
+    }
 
-    # =========================================================
-    # TOTAL INVOICED
-    # =========================================================
 
-    total_invoiced = (
-        invoices.aggregate(
-            total=Sum("total_amount")
-        )["total"]
+def get_invoice_paid_amount(invoice):
+    """Return all payments recorded against one invoice."""
+    return (
+        Payment.objects.filter(invoice=invoice)
+        .aggregate(total=Sum("amount"))["total"]
         or ZERO
     )
 
-    # =========================================================
-    # PAYMENTS FOR REPORT INVOICES
-    # =========================================================
 
-    invoice_payments = Payment.objects.filter(
-        invoice__in=invoices
+
+def financial_report(request):
+    from decimal import Decimal
+    from django.db.models import Sum
+    from django.shortcuts import render
+
+    today = date.today()
+    month = request.GET.get("month", today.strftime("%Y-%m"))
+
+    try:
+        year, month_number = map(int, month.split("-"))
+        if not 1 <= month_number <= 12:
+            raise ValueError
+        month_start = date(year, month_number, 1)
+    except (ValueError, TypeError):
+        month = today.strftime("%Y-%m")
+        month_start = today.replace(day=1)
+
+    month_end = month_start.replace(
+        day=monthrange(
+            month_start.year,
+            month_start.month,
+        )[1]
+    )
+
+    invoices = Invoice.objects.filter(
+        invoice_date__gte=month_start,
+        invoice_date__lte=month_end,
+    )
+
+    total_invoiced = (
+        invoices.aggregate(total=Sum("total_amount"))["total"]
+        or Decimal("0.00")
+    )
+
+    # Collections received during the selected calendar month.
+    payments = Payment.objects.filter(
+        payment_date__gte=month_start,
+        payment_date__lte=month_end,
     )
 
     total_collected = (
-        invoice_payments.aggregate(
-            total=Sum("amount")
-        )["total"]
-        or ZERO
+        payments.aggregate(total=Sum("amount"))["total"]
+        or Decimal("0.00")
     )
 
-    # =========================================================
-    # TDS TOTAL
-    # =========================================================
-
-    total_tds_amount = (
-        TDSLedger.objects.aggregate(
-            total=Sum("tds_amount")
-        )["total"]
-        or ZERO
-    )
-
-    # =========================================================
-    # OUTSTANDING
-    # =========================================================
-
-    outstanding_amount = max(
-        total_invoiced - total_collected,
-        ZERO,
-    )
-
-    # =========================================================
-    # INVOICE STATUS COUNTS
-    # =========================================================
-
-    total_invoices = invoices.count()
-
-    paid_invoices = invoices.filter(
-        status="paid"
-    ).count()
-
-    pending_invoices = invoices.filter(
-        status="pending"
-    ).count()
-
-    generated_invoices = invoices.filter(
-        status="generated"
-    ).count()
-
-    # =========================================================
-    # TENANT-WISE OUTSTANDING
-    # =========================================================
-
-    tenant_outstanding = []
+    # Outstanding balances on invoices issued in the selected month.
+    outstanding_amount = Decimal("0.00")
 
     for invoice in invoices:
-
-        invoice_paid = (
-            Payment.objects
-            .filter(invoice=invoice)
-            .aggregate(
-                total=Sum("amount")
-            )["total"]
-            or ZERO
+        paid = (
+            Payment.objects.filter(invoice=invoice)
+            .aggregate(total=Sum("amount"))["total"]
+            or Decimal("0.00")
         )
-
-        invoice_balance = max(
-            invoice.total_amount - invoice_paid,
-            ZERO,
+        outstanding_amount += max(
+            invoice.total_amount - paid,
+            Decimal("0.00"),
         )
-
-        tenant_outstanding.append({
-            "renter_name": invoice.tenant_name,
-            "tenant_name": invoice.tenant_name,
-            "invoice_number": invoice.invoice_number,
-            "property_name": invoice.property_name,
-            "unit_number": invoice.unit_number,
-            "invoice_amount": invoice.total_amount,
-            "paid_amount": invoice_paid,
-            "outstanding": invoice_balance,
-            "due_date": invoice.payment_due_date,
-        })
-
-    # =========================================================
-    # PROPERTY-WISE COLLECTION
-    # =========================================================
-
-    property_collection = (
-        Payment.objects
-        .filter(
-            payment_date__gte=start,
-            payment_date__lte=end,
-        )
-        .values("invoice__property_name")
-        .annotate(
-            total=Sum("amount")
-        )
-        .order_by("-total")
-    )
-
-    # =========================================================
-    # PAYMENT HISTORY
-    # =========================================================
-
-    recent_payments = (
-        Payment.objects
-        .select_related(
-            "invoice",
-            "invoice__tenant",
-        )
-        .filter(
-            payment_date__gte=start,
-            payment_date__lte=end,
-        )
-        .order_by(
-            "-payment_date",
-            "-id",
-        )
-    )
-
-    # =========================================================
-    # CONTEXT
-    # =========================================================
 
     context = {
-        "start_date": start.isoformat(),
-        "end_date": end.isoformat(),
-
+        "month": month,
         "total_invoiced": total_invoiced,
         "total_collected": total_collected,
-        "total_tds_amount": total_tds_amount,
         "outstanding_amount": outstanding_amount,
-
-        "total_invoices": total_invoices,
-        "paid_invoices": paid_invoices,
-        "pending_invoices": pending_invoices,
-        "generated_invoices": generated_invoices,
-
-        "tenant_outstanding": tenant_outstanding,
-        "renter_outstanding": tenant_outstanding,
-
-        "property_collection": property_collection,
-        "recent_payments": recent_payments,
     }
 
     return render(
@@ -5106,7 +4905,128 @@ def financial_report(request):
         "core/financial_report.html",
         context,
     )
-    
+
+
+def tenant_wise_outstanding_report(request):
+    """Detailed invoice balances for the selected month and filters."""
+    filters = get_financial_report_filters(request)
+    rows = []
+    total_outstanding = ZERO
+
+    for invoice in filters["invoices"]:
+        paid_amount = get_invoice_paid_amount(invoice)
+        outstanding = max(invoice.total_amount - paid_amount, ZERO)
+
+        rows.append({
+            "invoice": invoice,
+            "tenant_name": invoice.tenant_name,
+            "invoice_number": invoice.invoice_number,
+            "property_name": invoice.property_name,
+            "unit_number": invoice.unit_number,
+            "invoice_amount": invoice.total_amount,
+            "paid_amount": paid_amount,
+            "outstanding": outstanding,
+            "due_date": invoice.payment_due_date,
+        })
+        total_outstanding += outstanding
+
+    context = {
+        **filters,
+        "report_type": "outstanding",
+        "report_title": "Tenant-wise Outstanding",
+        "rows": rows,
+        "total_outstanding": total_outstanding,
+    }
+
+    return render(
+        request,
+        "core/financial_detail_report.html",
+        context,
+    )
+
+
+def property_wise_collection_report(request):
+    """Group payments received during the selected month by property."""
+    filters = get_financial_report_filters(request)
+
+    property_collection = (
+        filters["payments"]
+        .values("invoice__property_name")
+        .annotate(total=Sum("amount"))
+        .order_by("-total", "invoice__property_name")
+    )
+
+    total_collected = (
+        filters["payments"]
+        .aggregate(total=Sum("amount"))["total"]
+        or ZERO
+    )
+
+    context = {
+        **filters,
+        "report_type": "collection",
+        "report_title": "Property-wise Collection",
+        "property_collection": property_collection,
+        "total_collected": total_collected,
+    }
+
+    return render(
+        request,
+        "core/financial_detail_report.html",
+        context,
+    )
+
+
+def financial_report_summary(request):
+    """Detailed financial totals and invoice status counts."""
+    filters = get_financial_report_filters(request)
+    invoices = filters["invoices"]
+    payments = filters["payments"]
+
+    total_invoiced = (
+        invoices.aggregate(total=Sum("total_amount"))["total"]
+        or ZERO
+    )
+    total_collected = (
+        payments.aggregate(total=Sum("amount"))["total"]
+        or ZERO
+    )
+    total_tds_amount = (
+        filters["tds_entries"]
+        .aggregate(total=Sum("tds_amount"))["total"]
+        or ZERO
+    )
+
+    outstanding_amount = ZERO
+
+    for invoice in invoices:
+        paid_amount = get_invoice_paid_amount(invoice)
+        outstanding_amount += max(
+            invoice.total_amount - paid_amount,
+            ZERO,
+        )
+
+    context = {
+        **filters,
+        "report_type": "summary",
+        "report_title": "Report Summary",
+        "total_invoiced": total_invoiced,
+        "total_collected": total_collected,
+        "total_tds_amount": total_tds_amount,
+        "outstanding_amount": outstanding_amount,
+        "total_invoices": invoices.count(),
+        "paid_invoices": invoices.filter(status="paid").count(),
+        "pending_invoices": invoices.filter(status="pending").count(),
+        "generated_invoices": invoices.filter(status="generated").count(),
+    }
+
+    return render(
+        request,
+        "core/financial_detail_report.html",
+        context,
+    )
+
+
 # =========================================================
 # RESET TEST DATA
 # =========================================================
@@ -5814,7 +5734,7 @@ def staff_account_edit(request, user_id):
 @login_required
 def gst_ledger_report(request):
     from decimal import Decimal
-    from django.db.models import Sum
+    
 
     if not request.user.is_superuser:
         return HttpResponseForbidden(
@@ -5877,5 +5797,121 @@ def gst_ledger_report(request):
     return render(
         request,
         "core/gst_ledger_report.html",
+        context,
+    )
+
+
+def month_wise_financial_report(request):
+    from calendar import monthrange
+    from datetime import date
+    from decimal import Decimal
+
+    from django.db.models import Sum
+    from django.shortcuts import render
+
+    today = date.today()
+    month = request.GET.get("month", today.strftime("%Y-%m"))
+    owner = request.GET.get("owner", "").strip()
+    property_name = request.GET.get("property", "").strip()
+    invoice_status = request.GET.get("status", "all").strip().lower()
+
+    try:
+        year, month_number = map(int, month.split("-"))
+        if not 1 <= month_number <= 12:
+            raise ValueError
+        month_start = date(year, month_number, 1)
+    except (ValueError, TypeError):
+        month = today.strftime("%Y-%m")
+        month_start = today.replace(day=1)
+
+    month_end = month_start.replace(
+        day=monthrange(month_start.year, month_start.month)[1]
+    )
+
+    invoices = Invoice.objects.filter(
+        invoice_date__gte=month_start,
+        invoice_date__lte=month_end,
+    )
+
+    if owner:
+        invoices = invoices.filter(owner_name=owner)
+
+    if property_name:
+        invoices = invoices.filter(property_name=property_name)
+
+    rows = []
+    total_invoiced = Decimal("0.00")
+    total_collected = Decimal("0.00")
+    total_outstanding = Decimal("0.00")
+
+    for invoice in invoices.order_by("-invoice_date", "-invoice_number"):
+        paid = (
+            Payment.objects.filter(invoice=invoice)
+            .aggregate(total=Sum("amount"))["total"]
+            or Decimal("0.00")
+        )
+        outstanding = max(
+            invoice.total_amount - paid,
+            Decimal("0.00"),
+        )
+
+        # Generated invoices are presented as Pending.
+        display_status = (
+            "Pending"
+            if invoice.status in ("generated", "pending")
+            else invoice.status.title()
+        )
+
+        # Status filter:
+        # Paid = invoice status is paid.
+        # Unpaid = invoice has a remaining balance.
+        # Pending = invoice status is pending or generated.
+        if invoice_status == "paid" and invoice.status != "paid":
+            continue
+        if invoice_status == "unpaid" and outstanding <= 0:
+            continue
+        if invoice_status == "pending" and invoice.status not in (
+            "generated", "pending"
+        ):
+            continue
+
+        rows.append({
+            "invoice_number": invoice.invoice_number,
+            "invoice_date": invoice.invoice_date,
+            "tenant_name": invoice.tenant_name,
+            "owner_name": invoice.owner_name,
+            "property_name": invoice.property_name,
+            "unit_number": invoice.unit_number,
+            "invoice_amount": invoice.total_amount,
+            "paid_amount": paid,
+            "outstanding": outstanding,
+            "status": display_status,
+        })
+
+        total_invoiced += invoice.total_amount
+        total_collected += paid
+        total_outstanding += outstanding
+
+    context = {
+        "month": month,
+        "month_start": month_start,
+        "owner": owner,
+        "property": property_name,
+        "status": invoice_status,
+        "owner_options": Invoice.objects.exclude(
+            owner_name=""
+        ).values_list("owner_name", flat=True).distinct().order_by("owner_name"),
+        "property_options": Invoice.objects.exclude(
+            property_name=""
+        ).values_list("property_name", flat=True).distinct().order_by("property_name"),
+        "rows": rows,
+        "total_invoiced": total_invoiced,
+        "total_collected": total_collected,
+        "total_outstanding": total_outstanding,
+    }
+
+    return render(
+        request,
+        "core/month_wise_financial_report.html",
         context,
     )

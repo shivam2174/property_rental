@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report_title }}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 24px;
+            background: #f4f6f9;
+            color: #263238;
+            font-family: Arial, sans-serif;
+        }
+        .container { max-width: 1250px; margin: auto; }
+        .header, .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        h1 { margin: 0; font-size: 26px; }
+        h2 { font-size: 18px; }
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px #0000000c;
+        }
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 12px;
+        }
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 13px; font-weight: bold; }
+        input, select {
+            min-width: 160px;
+            padding: 10px;
+            border: 1px solid #cbd2d9;
+            border-radius: 6px;
+            background: white;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            border: 0;
+            border-radius: 6px;
+            background: #175cd3;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .secondary { background: #475467; }
+        .light { background: #e9eef5; color: #263238; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 11px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            white-space: nowrap;
+        }
+        th { background: #f1f4f8; font-size: 13px; }
+        td { font-size: 14px; }
+        .number { text-align: right; }
+        tfoot td { font-weight: bold; background: #f8fafc; }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .metric {
+            border: 1px solid #e3e8ef;
+            padding: 18px;
+            border-radius: 8px;
+            background: white;
+        }
+        .metric span { display: block; color: #667085; font-size: 13px; }
+        .metric strong { display: block; margin-top: 10px; font-size: 22px; }
+        .muted { color: #667085; font-size: 13px; }
+        .empty { text-align: center; color: #667085; padding: 24px; }
+        @media (max-width: 800px) {
+            body { padding: 12px; }
+            .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            input, select { min-width: 0; width: 100%; }
+            .field { width: 100%; }
+        }
+        @media print {
+            body { padding: 0; background: white; }
+            .no-print { display: none !important; }
+            .container { max-width: none; }
+            .panel, .metric { box-shadow: none; }
+            .panel { border: 1px solid #ddd; break-inside: avoid; }
+            table { font-size: 11px; }
+            th, td { padding: 6px; }
+            .table-wrap { overflow: visible; }
+            h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>{{ report_title }}</h1>
+            <p class="muted">
+                Reporting month: {{ month_start|date:"F Y" }}
+            </p>
+        </div>
+        <div class="actions no-print">
+            <a class="btn light" href="{% url 'financial_report' %}?month={{ month|urlencode }}&owner={{ owner|urlencode }}&property={{ property|urlencode }}">Financial Report</a>
+            <button class="btn secondary" type="button"
+                    onclick="window.print()">Print Report</button>
+        </div>
+    </div>
+
+    <div class="panel no-print">
+        <form method="get" class="filters">
+            <div class="field">
+                <label for="month">Month and Year</label>
+                <input type="month" id="month" name="month"
+                       value="{{ month }}">
+            </div>
+            <div class="field">
+                <label for="owner">Owner</label>
+                <select id="owner" name="owner">
+                    <option value="">All Owners</option>
+                    {% for name in owner_options %}
+                    <option value="{{ name }}"
+                        {% if owner == name %}selected{% endif %}>
+                        {{ name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="property">Property</label>
+                <select id="property" name="property">
+                    <option value="">All Properties</option>
+                    {% for name in property_options %}
+                    <option value="{{ name }}"
+                        {% if property == name %}selected{% endif %}>
+                        {{ name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn" type="submit">Apply Filters</button>
+            {% if report_type == "outstanding" %}
+                <a class="btn light" href="{% url 'tenant_wise_outstanding_report' %}">Reset</a>
+            {% elif report_type == "collection" %}
+                <a class="btn light" href="{% url 'property_wise_collection_report' %}">Reset</a>
+            {% else %}
+                <a class="btn light" href="{% url 'financial_report_summary' %}">Reset</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if report_type == "outstanding" %}
+    <div class="panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Invoice No.</th>
+                        <th>Tenant</th>
+                        <th>Property</th>
+                        <th>Unit</th>
+                        <th>Due Date</th>
+                        <th class="number">Invoice Amount (₹)</th>
+                        <th class="number">Paid (₹)</th>
+                        <th class="number">Outstanding (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td>{{ row.invoice_number }}</td>
+                        <td>{{ row.tenant_name|default:"—" }}</td>
+                        <td>{{ row.property_name|default:"—" }}</td>
+                        <td>{{ row.unit_number|default:"—" }}</td>
+                        <td>{{ row.due_date|date:"d-m-Y"|default:"—" }}</td>
+                        <td class="number">{{ row.invoice_amount|floatformat:2 }}</td>
+                        <td class="number">{{ row.paid_amount|floatformat:2 }}</td>
+                        <td class="number">{{ row.outstanding|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="empty">No invoices found for these filters.</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="7">Total Outstanding</td>
+                        <td class="number">₹{{ total_outstanding|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    {% elif report_type == "collection" %}
+    <div class="panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Property</th>
+                        <th class="number">Amount Collected (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in property_collection %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.invoice__property_name|default:"Unspecified property" }}</td>
+                        <td class="number">{{ item.total|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="empty">No payments received during this month for these filters.</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2">Total Collected</td>
+                        <td class="number">₹{{ total_collected|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    {% elif report_type == "summary" %}
+    <div class="panel">
+        <div class="summary-grid">
+            <div class="metric">
+                <span>Total Invoiced</span>
+                <strong>₹{{ total_invoiced|floatformat:2 }}</strong>
+            </div>
+            <div class="metric">
+                <span>Collected During Month</span>
+                <strong>₹{{ total_collected|floatformat:2 }}</strong>
+            </div>
+            <div class="metric">
+                <span>Outstanding on Selected Month's Invoices</span>
+                <strong>₹{{ outstanding_amount|floatformat:2 }}</strong>
+            </div>
+            <div class="metric">
+                <span>TDS for Selected Month</span>
+                <strong>₹{{ total_tds_amount|floatformat:2 }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Invoice Status</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Status</th><th class="number">Invoice Count</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Total Invoices</td><td class="number">{{ total_invoices }}</td></tr>
+                    <tr><td>Paid</td><td class="number">{{ paid_invoices }}</td></tr>
+                    <tr><td>Pending</td><td class="number">{{ pending_invoices }}</td></tr>
+                    <tr><td>Generated</td><td class="number">{{ generated_invoices }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>

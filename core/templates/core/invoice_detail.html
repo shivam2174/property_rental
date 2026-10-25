@@ -1,18 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>
-        Tax Invoice #{{ invoice.invoice_number }}
-    </title>
+    <title>Tax Invoice</title>
 
     <style>
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
 
         * {
             box-sizing: border-box;
@@ -20,1255 +18,789 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            background: #f2f2f2;
+            font-size: 9px;
+            color: #111;
             margin: 0;
-            padding: 30px;
-            color: #222;
+            padding: 0;
         }
 
-        .invoice-container {
-            max-width: 900px;
-            margin: auto;
-            background: #ffffff;
-            padding: 40px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-        }
-
-        /* ==============================
-           HEADER
-        ============================== */
-
-        .invoice-header {
-            text-align: center;
-            border-bottom: 2px solid #222;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
-        }
-
-        .invoice-header h1 {
-            margin: 0 0 10px 0;
-            font-size: 30px;
-        }
-
-        .invoice-header p {
-            margin: 5px 0;
-        }
-
-        .property-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 10px !important;
-        }
-
-        /* ==============================
-           TABLES
-        ============================== */
-
-        .header-details {
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 25px;
+            table-layout: fixed;
         }
 
-        .header-details td {
-            padding: 8px;
+        .header {
+            width: 100%;
+            border: 1px solid #333;
+            padding: 8px 6px;
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9px;
+            line-height: 1.3;
+            box-sizing: border-box;
+        }
+
+        .header h2 {
+            margin: 0 0 5px;
+            padding: 0;
+            border: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .header p {
+            margin: 2px 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+        }
+
+        .details td {
+            border: 1px solid #333;
+            padding: 4px 5px;
+            vertical-align: top;
+            line-height: 1.35;
+            overflow-wrap: break-word;
+        }
+
+        .details .invoice-number {
+            width: 50%;
+        }
+
+        .details .date {
+            width: 50%;
+        }
+
+        .details .customer {
+            width: 50%;
+            line-height: 1.4;
+        }
+
+        .details .label {
+            width: 18%;
+            font-weight: bold;
+        }
+
+        .details .value {
+            width: 32%;
+        }
+
+        .items th,
+        .items td {
+            border: 1px solid #333;
+            padding: 5px 4px;
+            vertical-align: top;
+            overflow-wrap: break-word;
+        }
+
+        .items th {
+            text-align: center;
+            font-weight: bold;
+            vertical-align: middle;
+            padding: 6px 3px;
+        }
+
+        .items .serial {
+            width: 7%;
+        }
+
+        .items .description-col {
+            width: 43%;
+        }
+
+        .items .unit-col {
+            width: 12%;
+        }
+
+        .items .area-col {
+            width: 12%;
+        }
+
+        .items .rate-col {
+            width: 13%;
+        }
+
+        .items .amount-col {
+            width: 13%;
+        }
+
+        .items td.serial,
+        .items td.unit,
+        .items td.area {
+            text-align: center;
+        }
+
+        .items td.rate,
+        .items td.amount {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .description {
+            line-height: 1.45;
+        }
+
+        .description .item-title {
+            font-weight: normal;
+        }
+
+        .description .period {
+            display: block;
+            margin-top: 2px;
+        }
+
+        .category {
+            border: 1px solid #333;
+            border-top: none;
+            padding: 5px;
+            line-height: 1.4;
+        }
+
+        .totals {
+            width: 48%;
+            margin-left: auto;
+            table-layout: fixed;
+        }
+
+        .totals td {
+            border: 1px solid #333;
+            padding: 4px 6px;
+        }
+
+        .totals .label {
+            text-align: right;
+            width: 65%;
+        }
+
+        .totals .amount {
+            text-align: right;
+            width: 35%;
+            white-space: nowrap;
+        }
+
+        .grand-total td {
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .amount-words {
+            border: 1px solid #333;
+            padding: 5px;
+            font-size: 9px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .footer {
+            table-layout: fixed;
+        }
+
+        .footer td {
+            border: 1px solid #333;
+            padding: 5px;
             vertical-align: top;
         }
 
-        .section-title {
-            background: #eeeeee;
-            padding: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 25px;
-            margin-bottom: 10px;
+        .terms {
+            line-height: 1.55;
         }
 
-        .details-table {
+        .terms-title {
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 3px;
+        }
+
+        .signature {
+            text-align: center;
+            vertical-align: bottom !important;
+            font-weight: bold;
+            height: 85px;
+        }
+
+        .signature-space {
+            height: 43px;
+        }
+
+        .bank {
+            border: 1px solid #333;
+            padding: 5px;
+            line-height: 1.55;
+        }
+
+        .bank-title {
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 2px;
+        }
+
+        .no-wrap {
+            white-space: nowrap;
+        }
+
+        /* =========================================
+   IMPROVED VIEW INVOICE PAGE
+   ========================================= */
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #1f2937;
+            background: #f8fafc;
+            margin: 0;
+            padding: 30px 20px;
+        }
+
+        /* Center the invoice like a document */
+        .invoice-container {
+            width: 100%;
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 35px;
+            background: #fff;
+            box-shadow: 0 3px 18px rgba(0, 0, 0, 0.12);
+            border: 1px solid #ffffff;
+        }
+
+        /* Invoice heading */
+        .header,
+        .invoice-header {
+            text-align: center;
+            padding: 20px 12px;
+            margin-bottom: 22px;
+            border: none;
+            border-bottom: 2px solid #222;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .header h2,
+        .invoice-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 12px;
+        }
+
+        /* Section headings */
+        .section-title {
+            background: #f3f8ff;
+            padding: 12px 14px;
+            margin: 24px 0 12px;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        /* Tables */
+        .details,
+        .details-table,
+        .header-details,
+        .items,
+        .items-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
 
-        .details-table td {
-            padding: 9px;
-            border: 1px solid #ddd;
+        .details td,
+        .details-table td,
+        .header-details td,
+        .items th,
+        .items td,
+        .items-table th,
+        .items-table td {
+            border: 1px solid #d7e0ea;
+            padding: 10px 12px;
+            font-size: 13px;
+            line-height: 1.5;
             vertical-align: top;
         }
 
-        .details-table td:first-child {
-            font-weight: normal;
-        }
-
-        /* ==============================
-           INVOICE ITEMS
-        ============================== */
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        .items-table th,
-        .items-table td {
-            border: 1px solid #333;
-            padding: 10px;
-        }
-
+        /* Table headers */
+        .items th,
         .items-table th {
-            text-align: center;
-            background: #eeeeee;
-        }
-
-        .text-center {
+            background: #eaf3ff;
+            font-weight: 700;
             text-align: center;
         }
 
-        .text-right {
-            text-align: right;
-        }
-
-        /* ==============================
-           AMOUNT SUMMARY
-        ============================== */
-
+        /* Invoice totals */
+        .totals,
         .amount-section {
-            width: 45%;
-            margin-left: auto;
-            margin-top: 20px;
+            width: 48%;
+            margin: 20px 0 24px auto;
             border-collapse: collapse;
         }
 
+        .totals td,
         .amount-section td {
-            border: 1px solid #333;
-            padding: 10px;
-        }
-
-        .total-row {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        /* ==============================
-           PAYMENT
-        ============================== */
-
-        .payment-section {
-            margin-top: 30px;
-        }
-
-        .payment-summary {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        .payment-summary td {
-            border: 1px solid #333;
-            padding: 12px;
-        }
-
-        .payment-summary .label {
-            font-weight: bold;
-        }
-
-        .payment-summary .amount {
-            text-align: right;
-            font-weight: bold;
-        }
-
-        .balance-row td {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        /* ==============================
-           STATUS
-        ============================== */
-
-        .status-paid {
-            color: #198754;
-            font-weight: bold;
-        }
-
-        .status-pending {
-            color: #d97706;
-            font-weight: bold;
-        }
-
-        .status-cancelled {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        .status-generated {
-            color: #0d6efd;
-            font-weight: bold;
-        }
-
-        /* ==============================
-           PAYMENT HISTORY
-        ============================== */
-
-        .payment-history-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .payment-history-table th,
-        .payment-history-table td {
-            border: 1px solid #333;
-            padding: 9px;
-        }
-
-        .payment-history-table th {
-            background: #eeeeee;
-            text-align: center;
-        }
-
-        /* ==============================
-           TERMS
-        ============================== */
-
-        .terms {
-            margin-top: 40px;
-            border-top: 1px solid #999;
-            padding-top: 15px;
-        }
-
-        .terms h3 {
-            margin-bottom: 8px;
-        }
-
-        .terms li {
-            margin-bottom: 6px;
-        }
-
-        /* ==============================
-           BUTTONS
-        ============================== */
-
-        .buttons {
-            text-align: center;
-            margin-top: 30px;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
-        }
-
-        .buttons button,
-        .buttons a {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 5px;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
+            border: 1px solid #d7e0ea;
+            padding: 11px 13px;
             font-size: 14px;
-            border-radius: 4px;
         }
 
-        .pdf-button {
-            background: #555;
-            color: white;
+        .totals .label,
+        .amount-section .text-right {
+            text-align: right;
         }
 
-        .payment-button {
-            background: #198754;
-            color: white;
+        .grand-total td,
+        .total-row td {
+            font-size: 16px;
+            font-weight: 700;
+            background: #f1f7ff;
         }
 
-        .history-button {
-            background: #0d6efd;
-            color: white;
-        }
-
-        .back-button {
-            background: #ddd;
-            color: #222;
-        }
-
-        .buttons a:hover,
-        .buttons button:hover {
-            opacity: 0.85;
-        }
-
-        /* ==============================
-           CANCELLED MESSAGE
-        ============================== */
-
-        .cancelled-message {
-            margin-top: 15px;
+        /* Service category */
+        .category {
+            border: 1px solid #d7e0ea;
             padding: 12px;
-            background: #f8d7da;
-            color: #842029;
-            border: 1px solid #f5c2c7;
-            border-radius: 4px;
-            text-align: center;
-            font-weight: bold;
+            margin-top: 12px;
+            font-size: 13px;
+            line-height: 1.6;
         }
 
-        /* ==============================
-           MOBILE
-        ============================== */
+        /* Terms and bank details */
+        .footer {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
 
-        @media (max-width: 700px) {
+        .footer td {
+            border: 1px solid #d7e0ea;
+            padding: 14px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
 
+        .bank {
+            border: 1px solid #d7e0ea;
+            padding: 14px;
+            margin-top: 12px;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        /* Action buttons below invoice */
+        .buttons {
+            max-width: 1050px;
+            margin: 25px auto 0;
+            text-align: center;
+        }
+
+        .buttons a,
+        .buttons button {
+            display: inline-block;
+            padding: 11px 18px;
+            margin: 5px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* Responsive layout for phones and tablets */
+        @media (max-width: 768px) {
             body {
-                padding: 10px;
+                padding: 8px;
+                font-size: 13px;
+                background: #f8fafc;
             }
 
             .invoice-container {
-                padding: 20px;
+                width: 100%;
+                max-width: 100%;
+                padding: 12px;
+                overflow-x: auto;
+                box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
             }
 
-            .header-details,
+            .header,
+            .invoice-header {
+                padding: 14px 8px;
+                margin-bottom: 14px;
+                font-size: 12px;
+                overflow-wrap: anywhere;
+            }
+
+            .header h2,
+            .invoice-header h1 {
+                font-size: 22px;
+            }
+
+            /* Swipe horizontally on narrow screens if a table needs more width. */
+            .details,
             .details-table,
+            .header-details,
+            .items,
             .items-table,
-            .payment-summary {
+            .footer {
+                display: block;
+                width: 100%;
+                max-width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .details td,
+            .details-table td,
+            .header-details td,
+            .items th,
+            .items td,
+            .items-table th,
+            .items-table td,
+            .footer td {
+                padding: 7px 8px;
+                font-size: 12px;
+                overflow-wrap: anywhere;
+            }
+
+            .items {
+                min-width: 620px;
+            }
+
+            .totals,
+            .amount-section {
+                width: 100%;
+                margin: 14px 0 18px;
+            }
+
+            .totals td,
+            .amount-section td {
+                padding: 8px;
                 font-size: 13px;
             }
 
-            .amount-section {
+            .category,
+            .amount-words,
+            .bank {
+                padding: 9px;
+                font-size: 12px;
+                overflow-wrap: anywhere;
+            }
+
+            .buttons {
                 width: 100%;
+                margin-top: 16px;
             }
 
-            .items-table {
-                display: block;
-                overflow-x: auto;
-            }
-
+            .buttons a,
             .buttons button,
-            .buttons a {
+            .page-actions a {
+                display: block;
                 width: 100%;
-                box-sizing: border-box;
-                margin: 5px 0;
+                margin: 8px 0;
+                padding: 11px 12px;
+                text-align: center;
             }
-
         }
 
-       
+        @media (max-width: 420px) {
+            .invoice-container {
+                padding: 8px;
+            }
 
+            .header h2,
+            .invoice-header h1 {
+                font-size: 19px;
+            }
+
+            .section-title {
+                padding: 9px;
+                font-size: 15px;
+            }
+        }
     </style>
-
 </head>
-
 
 <body>
 
+    <!-- OWNER HEADER -->
+    <div class="header">
+        <h2>TAX INVOICE</h2>
 
-<div class="invoice-container">
-
-
-    <!-- ================================================= -->
-    <!-- INVOICE HEADER -->
-    <!-- ================================================= -->
-
-    <div class="invoice-header">
-
-        <h1>
-            TAX INVOICE
-        </h1>
-
-        {% if invoice.property_name %}
-
-            <p class="property-name">
-                {{ invoice.property_name }}
-            </p>
-
+        {% if invoice.owner_company_name %}
+        <p><strong>{{ invoice.owner_company_name }}</strong></p>
         {% endif %}
 
+        <p><strong>{{ invoice.owner_name }}</strong></p>
 
-        {% if invoice.property_address %}
-
-            <p>
-                {{ invoice.property_address }}
-            </p>
-
-        {% endif %}
-
-    </div>
-
-
-    <!-- ================================================= -->
-    <!-- OWNER DETAILS -->
-    <!-- ================================================= -->
-
-    <div class="section-title">
-        Owner Details
-    </div>
-
-
-    <table class="details-table">
-
-        {% if invoice.owner_name %}
-
-        <tr>
-
-            <td width="40%">
-                <strong>Owner Name</strong>
-            </td>
-
-            <td>
-                {{ invoice.owner_name }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-
-        {% if invoice.owner_address %}
-
-        <tr>
-
-            <td>
-                <strong>Address</strong>
-            </td>
-
-            <td>
-
-                {{ invoice.owner_address }}
-
-                {% if invoice.owner_city %}
-                    , {{ invoice.owner_city }}
-                {% endif %}
-
-                {% if invoice.owner_state %}
-                    , {{ invoice.owner_state }}
-                {% endif %}
-
-                {% if invoice.owner_pincode %}
-                    - {{ invoice.owner_pincode }}
-                {% endif %}
-
-            </td>
-
-        </tr>
-
-        {% endif %}
-
+        <p>
+            {{ invoice.owner_address }}
+            {% if invoice.owner_city %}, {{ invoice.owner_city }}{% endif %}
+            {% if invoice.owner_state %}, {{ invoice.owner_state }}{% endif %}
+            {% if invoice.owner_pincode %} - {{ invoice.owner_pincode }}{% endif %}
+        </p>
 
         {% if invoice.owner_mobile %}
-
-        <tr>
-
-            <td>
-                <strong>Mobile</strong>
-            </td>
-
-            <td>
-                {{ invoice.owner_mobile }}
-            </td>
-
-        </tr>
-
+        <p>Tel: {{ invoice.owner_mobile }}</p>
         {% endif %}
-
 
         {% if invoice.owner_email %}
-
-        <tr>
-
-            <td>
-                <strong>Email</strong>
-            </td>
-
-            <td>
-                {{ invoice.owner_email }}
-            </td>
-
-        </tr>
-
+        <p>Email: {{ invoice.owner_email }}</p>
         {% endif %}
+    </div>
 
-
-        {% if invoice.owner_pan %}
+    <!-- INVOICE DETAILS -->
+    <table class="details">
+        <colgroup>
+            <col style="width:25%;">
+            <col style="width:25%;">
+            <col style="width:18%;">
+            <col style="width:32%;">
+        </colgroup>
 
         <tr>
-
-            <td>
-                <strong>PAN</strong>
+            <td colspan="2" class="invoice-number">
+                <strong>INVOICE NO.</strong>
+                {{ invoice.invoice_number }}
             </td>
 
-            <td>
-                {{ invoice.owner_pan }}
+            <td colspan="2" class="date">
+                <strong>Dated:</strong>
+                {{ invoice.invoice_date|date:"d-M-y" }}
             </td>
-
         </tr>
 
-        {% endif %}
-
-
-        {% if invoice.owner_gstin %}
-
         <tr>
+            <td colspan="2" rowspan="3" class="customer">
+                <strong>Billed to:</strong><br>
 
-            <td>
-                <strong>GSTIN</strong>
-            </td>
+                <strong>{{ invoice.tenant_name }}</strong><br>
 
-            <td>
-                {{ invoice.owner_gstin }}
-            </td>
+                {{ invoice.billing_address }}<br>
 
-        </tr>
-
-        {% endif %}
-
-    </table>
-
-
-    <!-- ================================================= -->
-    <!-- INVOICE INFORMATION -->
-    <!-- ================================================= -->
-
-    <table class="header-details">
-
-        <tr>
-
-            <td>
-
-                <strong>Invoice No:</strong>
-
-                #{{ invoice.invoice_number }}
-
-            </td>
-
-
-            <td>
-
-                <strong>Invoice Date:</strong>
-
-                {{ invoice.invoice_date }}
-
-            </td>
-
-        </tr>
-
-
-        <tr>
-
-            <td>
-
-                <strong>Billing From:</strong>
-
-                {{ invoice.billing_from }}
-
-            </td>
-
-
-            <td>
-
-                <strong>Billing To:</strong>
-
-                {{ invoice.billing_to }}
-
-            </td>
-
-        </tr>
-
-
-        <tr>
-
-            <td>
-
-                <strong>Payment Due Date:</strong>
-
-                {{ invoice.payment_due_date }}
-
-            </td>
-
-
-            <td>
-
-                <strong>Status:</strong>
-
-
-                {% if invoice.status == "paid" %}
-
-                    <span class="status-paid">
-                        {{ invoice.get_status_display }}
-                    </span>
-
-                {% elif invoice.status == "cancelled" %}
-
-                    <span class="status-cancelled">
-                        {{ invoice.get_status_display }}
-                    </span>
-
-                {% elif invoice.status == "pending" %}
-
-                    <span class="status-pending">
-                        {{ invoice.get_status_display }}
-                    </span>
-
-                {% else %}
-
-                    <span class="status-generated">
-                        {{ invoice.get_status_display }}
-                    </span>
-
+                {% if invoice.owner_state %}
+                State - {{ invoice.owner_state }}<br>
                 {% endif %}
 
+                {% if invoice.tenant_pan %}
+                PAN No. {{ invoice.tenant_pan }}<br>
+                {% endif %}
+
+                {% if invoice.tenant_gst %}
+                GST No. {{ invoice.tenant_gst }}<br>
+                {% endif %}
             </td>
 
+            <td class="label">Billing Period</td>
+            <td class="value">
+                {{ invoice.billing_from|date:"d-M-Y" }} to
+                {{ invoice.billing_to|date:"d-M-Y" }}
+            </td>
         </tr>
 
+        <tr>
+            <td class="label">GST Number</td>
+            <td class="value">{{ invoice.owner_gstin|default:"-" }}</td>
+        </tr>
+
+        <tr>
+            <td class="label">PAN No.</td>
+            <td class="value">{{ invoice.owner_pan|default:"-" }}</td>
+        </tr>
     </table>
 
-
-    <!-- ================================================= -->
-    <!-- TENANT DETAILS -->
-    <!-- ================================================= -->
-
-    <div class="section-title">
-        Billed To
-    </div>
-
-
-    <table class="details-table">
-
-        <tr>
-
-            <td width="40%">
-                <strong>Tenant Name</strong>
-            </td>
-
-            <td>
-                {{ invoice.tenant_name }}
-            </td>
-
-        </tr>
-
-
-        {% if invoice.billing_address %}
-
-        <tr>
-
-            <td>
-                <strong>Billing Address</strong>
-            </td>
-
-            <td>
-                {{ invoice.billing_address }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-
-        {% if invoice.tenant_mobile %}
-
-        <tr>
-
-            <td>
-                <strong>Mobile</strong>
-            </td>
-
-            <td>
-                {{ invoice.tenant_mobile }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-
-        {% if invoice.tenant_email %}
-
-        <tr>
-
-            <td>
-                <strong>Email</strong>
-            </td>
-
-            <td>
-                {{ invoice.tenant_email }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-
-        {% if invoice.tenant_pan %}
-
-        <tr>
-
-            <td>
-                <strong>PAN</strong>
-            </td>
-
-            <td>
-                {{ invoice.tenant_pan }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-
-        {% if invoice.tenant_gst %}
-
-        <tr>
-
-            <td>
-                <strong>GSTIN</strong>
-            </td>
-
-            <td>
-                {{ invoice.tenant_gst }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-    </table>
-
-
-    <!-- ================================================= -->
-    <!-- PROPERTY DETAILS -->
-    <!-- ================================================= -->
-
-    <div class="section-title">
-        Property Details
-    </div>
-
-
-    <table class="details-table">
-
-        <tr>
-
-            <td width="40%">
-                <strong>Property</strong>
-            </td>
-
-            <td>
-                {{ invoice.property_name }}
-            </td>
-
-        </tr>
-
-
-        {% if invoice.property_address %}
-
-        <tr>
-
-            <td>
-                <strong>Property Address</strong>
-            </td>
-
-            <td>
-                {{ invoice.property_address }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-
-        {% if invoice.unit_number %}
-
-        <tr>
-
-            <td>
-                <strong>Unit Number</strong>
-            </td>
-
-            <td>
-                {{ invoice.unit_number }}
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-    </table>
-
-
-    <!-- ================================================= -->
-    <!-- INVOICE ITEMS -->
-    <!-- ================================================= -->
-
-    <div class="section-title">
-        Invoice Details
-    </div>
-
-
-    <table class="items-table">
+    <!-- ITEM DETAILS -->
+    <table class="items">
+        <colgroup>
+            <col class="serial">
+            <col class="description-col">
+            <col class="unit-col">
+            <col class="area-col">
+            <col class="rate-col">
+            <col class="amount-col">
+        </colgroup>
 
         <thead>
-
             <tr>
-
-                <th width="8%">
-                    S.No.
-                </th>
-
-                <th>
-                    Description
-                </th>
-
-                <th width="15%">
-                    Unit
-                </th>
-
-                <th width="18%">
-                    Rate
-                </th>
-
-                <th width="18%">
-                    Amount
-                </th>
-
+                <th>S.No.</th>
+                <th>Description</th>
+                <th>Unit No.</th>
+                <th>Area</th>
+                <th>Rate</th>
+                <th>Amount</th>
             </tr>
-
         </thead>
 
-
         <tbody>
-
             {% for item in invoice.items.all %}
-
             <tr>
+                <td class="serial">{{ forloop.counter }}</td>
 
-                <td class="text-center">
-                    {{ forloop.counter }}
-                </td>
+                <td class="description">
+                    {% if item.item_type == "rent" %}
+                    <span class="item-title">
+                        Rent of Immovable Property at
+                        {{ invoice.property_name }}
+                    </span><br>
 
+                    {{ invoice.property_address }}<br>
 
-                <td>
-                    {{ item.description }}
-                </td>
+                    For the period:
+                    {{ invoice.billing_from|date:"d-M-Y" }} to
+                    {{ invoice.billing_to|date:"d-M-Y" }}
 
+                    {% elif item.item_type == "parking" %}
+                    <span class="item-title">
+                        Parking Rent
+                    </span><br>
 
-                <td class="text-center">
+                    For the period:
+                    {{ invoice.billing_from|date:"d-M-Y" }} to
+                    {{ invoice.billing_to|date:"d-M-Y" }}
 
-                    {% if item.unit_number %}
-                        {{ item.unit_number }}
                     {% else %}
-                        -
+                    <span class="item-title">
+                        {{ item.description }}
+                    </span><br>
+
+                    For the period:
+                    {{ invoice.billing_from|date:"d-M-Y" }} to
+                    {{ invoice.billing_to|date:"d-M-Y" }}
                     {% endif %}
-
                 </td>
 
-
-                <td class="text-right">
-                    ₹{{ item.rate }}
+                <td class="unit">
+                    {{ item.unit_number|default:"-" }}
                 </td>
 
-
-                <td class="text-right">
-                    ₹{{ item.amount }}
+                <td class="area">
+                    {% if item.item_type == "rent" %}
+                    {{ item.area|floatformat:2 }}<br>
+                    Sq.ft.
+                    {% elif item.item_type == "parking" %}
+                    1
+                    {% else %}
+                    -
+                    {% endif %}
                 </td>
 
+                <td class="rate">
+                    {% if item.item_type == "rent" %}
+                    {{ item.rate|floatformat:2 }}<br>
+                    <span>Per Sq.ft.</span>
+                    {% else %}
+                    {{ item.rate|floatformat:2 }}
+                    {% endif %}
+                </td>
+
+                <td class="amount">
+                    {{ item.amount|floatformat:2 }}
+                </td>
             </tr>
-
-
             {% empty %}
-
             <tr>
-
-                <td colspan="5" class="text-center">
+                <td colspan="6" style="text-align:center;">
                     No invoice items found.
                 </td>
-
             </tr>
-
             {% endfor %}
-
         </tbody>
-
     </table>
 
+    <!-- SERVICE CATEGORY -->
+    <div class="category">
+        <strong>Category of service:</strong><br>
+        Renting of Immovable Property Service.<br>
+        Category: SAC Code 997212
+    </div>
 
-    <!-- ================================================= -->
-    <!-- AMOUNT SUMMARY -->
-    <!-- ================================================= -->
-
-    <table class="amount-section">
-
+    <!-- TOTALS -->
+    <table class="totals">
         <tr>
-
-            <td>
-                Taxable Amount
+            <td class="label"><strong>Sub Total</strong></td>
+            <td class="amount">
+                {{ invoice.taxable_amount|floatformat:2 }}
             </td>
-
-            <td class="text-right">
-                ₹{{ invoice.taxable_amount }}
-            </td>
-
         </tr>
 
-
         <tr>
-
-            <td>
+            <td class="label">
                 CGST ({{ invoice.cgst_rate }}%)
             </td>
-
-            <td class="text-right">
-                ₹{{ invoice.cgst_amount }}
+            <td class="amount">
+                {{ invoice.cgst_amount|floatformat:2 }}
             </td>
-
         </tr>
-
 
         <tr>
-
-            <td>
+            <td class="label">
                 SGST ({{ invoice.sgst_rate }}%)
             </td>
-
-            <td class="text-right">
-                ₹{{ invoice.sgst_amount }}
+            <td class="amount">
+                {{ invoice.sgst_amount|floatformat:2 }}
             </td>
-
         </tr>
 
-
-        <tr class="total-row">
-
-            <td>
-                TOTAL
+        <tr class="grand-total">
+            <td class="label">Grand Total</td>
+            <td class="amount">
+                {{ invoice.total_amount|floatformat:2 }}
             </td>
-
-            <td class="text-right">
-                ₹{{ invoice.total_amount }}
-            </td>
-
         </tr>
-
     </table>
 
+    <!-- AMOUNT IN WORDS -->
+    <div class="amount-words">
+        {{ invoice.amount_in_words|default:"" }}
+    </div>
 
-    <!-- ================================================= -->
-    <!-- PAYMENT INFORMATION -->
-    <!-- ================================================= -->
+    <!-- TERMS AND SIGNATURE -->
+    <table class="footer">
+        <colgroup>
+            <col style="width:72%;">
+            <col style="width:28%;">
+        </colgroup>
 
-    <div class="payment-section">
+        <tr>
+            <td>
+                <div class="terms">
+                    <div class="terms-title">Term &amp; Condition:</div>
+                    Subject to applicable jurisdiction.<br>
+                    E. &amp; O. E.<br>
+                    Please issue TDS details with payment and TDS
+                    certificate within stipulated period.
+                </div>
+            </td>
 
-        <div class="section-title">
-            Payment Information
-        </div>
+            <td class="signature">
+                For {{ invoice.owner_company_name|default:invoice.owner_name }}
 
+                <div class="signature-space"></div>
 
-        <table class="payment-summary">
+                Authorised Signatory
+            </td>
+        </tr>
+    </table>
 
-            <tr>
+    <!-- BANK DETAILS -->
+    <div class="bank">
+        <div class="bank-title">Our Bank Details:</div>
 
-                <td class="label">
-                    Invoice Total
-                </td>
-
-                <td class="amount">
-                    ₹{{ invoice.total_amount }}
-                </td>
-
-            </tr>
-
-
-            <tr>
-
-                <td class="label">
-                    Total Paid
-                </td>
-
-                <td class="amount">
-                    ₹{{ total_paid }}
-                </td>
-
-            </tr>
-
-
-            <tr class="balance-row">
-
-                <td>
-                    Remaining Balance
-                </td>
-
-                <td class="amount">
-                    ₹{{ balance }}
-                </td>
-
-            </tr>
-
-
-            <tr>
-
-                <td class="label">
-                    Payment Status
-                </td>
-
-                <td>
-
-                    {% if invoice.status == "cancelled" %}
-
-                        <span class="status-cancelled">
-                            CANCELLED
-                        </span>
-
-                    {% elif balance > 0 %}
-
-                        <span class="status-pending">
-                            PAYMENT PENDING
-                        </span>
-
-                    {% else %}
-
-                        <span class="status-paid">
-                            PAID
-                        </span>
-
-                    {% endif %}
-
-                </td>
-
-            </tr>
-
-
-            {% if invoice.payment_date %}
-
-            <tr>
-
-                <td class="label">
-                    Last Payment Date
-                </td>
-
-                <td>
-                    {{ invoice.payment_date }}
-                </td>
-
-            </tr>
-
-            {% endif %}
-
-        </table>
-
+        Bank Name: {{ invoice.bank_name|default:"" }}<br>
+        Branch: {{ invoice.bank_branch|default:"" }}<br>
+        Account No.: {{ invoice.bank_account_number|default:"" }}<br>
+        IFSC Code: {{ invoice.bank_ifsc|default:"" }}
     </div>
 
 
-    <!-- ================================================= -->
-    <!-- PAYMENT HISTORY -->
-    <!-- ================================================= -->
 
-    {% if invoice.payments.exists %}
-
-    <div class="payment-section">
-
-        <div class="section-title">
-            Payment History
-        </div>
-
-
-        <table class="payment-history-table">
-
-            <thead>
-
-                <tr>
-
-                    <th width="8%">
-                        #
-                    </th>
-
-                    <th>
-                        Payment Date
-                    </th>
-
-                    <th>
-                        Amount
-                    </th>
-
-                    <th>
-                        Method
-                    </th>
-
-                    <th>
-                        Reference
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {% for payment in invoice.payments.all %}
-
-                <tr>
-
-                    <td class="text-center">
-                        {{ forloop.counter }}
-                    </td>
-
-
-                    <td class="text-center">
-                        {{ payment.payment_date }}
-                    </td>
-
-
-                    <td class="text-right">
-                        ₹{{ payment.amount }}
-                    </td>
-
-
-                    <td class="text-center">
-                        {{ payment.get_payment_method_display }}
-                    </td>
-
-
-                    <td>
-
-                        {% if payment.transaction_reference %}
-
-                            {{ payment.transaction_reference }}
-
-                        {% else %}
-
-                            -
-
-                        {% endif %}
-
-                    </td>
-
-                </tr>
-
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="5" class="text-center">
-                        No payments recorded yet.
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
+    <!-- VIEW INVOICE ACTIONS (outside the invoice layout) -->
+    <div class="page-actions"
+        style="margin-top:16px; text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:13px;">
+        <a href="{% url 'invoice_pdf' invoice.pk %}"
+            style="display:inline-block; margin:4px; padding:9px 14px; background:#555; color:#fff; text-decoration:none; border-radius:3px;">Download
+            PDF</a>
+        <a href="{% url 'payment_list' %}"
+            style="display:inline-block; margin:4px; padding:9px 14px; background:#0d6efd; color:#fff; text-decoration:none; border-radius:3px;">Payment
+            History</a>
+        <a href="{% url 'invoice_list' %}"
+            style="display:inline-block; margin:4px; padding:9px 14px; background:#ddd; color:#222; text-decoration:none; border-radius:3px;">Back
+            to Invoices</a>
     </div>
-
-    {% endif %}
-
-
-    <!-- ================================================= -->
-    <!-- TERMS & CONDITIONS -->
-    <!-- ================================================= -->
-
-    <div class="terms">
-
-        <h3>
-            Terms &amp; Conditions
-        </h3>
-
-
-        <ol>
-
-            <li>
-                Payment should be made on or before the due date.
-            </li>
-
-            <li>
-                Late payment charges, if applicable, will be
-                charged according to the rental agreement.
-            </li>
-
-            <li>
-                This invoice is generated electronically.
-            </li>
-
-            <li>
-                Please retain this invoice for your records.
-            </li>
-
-        </ol>
-
-    </div>
-
-
-    <!-- ================================================= -->
-    <!-- BUTTONS -->
-    <!-- ================================================= -->
-
-    <div class="buttons">
-
-
-        <!-- PDF -->
-
-        <a
-            class="pdf-button"
-            href="{% url 'invoice_pdf' invoice.pk %}"
-        >
-            Download PDF
-        </a>
-
-
-        <!-- RECORD PAYMENT -->
-
-        {% if invoice.status != "cancelled" and balance > 0 %}
-
-        <a
-            href="{% url 'record_payment' invoice_id=invoice.pk %}"
-            class="payment-button"
-        >
-            💳 Record Payment
-        </a>
-
-        {% endif %}
-
-
-        <!-- PAYMENT LIST -->
-
-        <a
-            class="history-button"
-            href="{% url 'payment_list' %}"
-        >
-            Payment History
-        </a>
-
-
-        <!-- BACK -->
-
-        <a
-            class="back-button"
-            href="{% url 'invoice_list' %}"
-        >
-            Back to Invoices
-        </a>
-
-
-    </div>
-
-
-    <!-- ================================================= -->
-    <!-- CANCELLED MESSAGE -->
-    <!-- ================================================= -->
-
-    {% if invoice.status == "cancelled" %}
-
-    <div class="cancelled-message">
-
-        This invoice is cancelled.
-        No further payment can be recorded.
-
-    </div>
-
-    {% endif %}
-
-
-</div>
-
 
 </body>
 
 </html>
-

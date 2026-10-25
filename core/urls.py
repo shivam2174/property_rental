@@ -275,6 +275,33 @@ urlpatterns = [
         views.financial_report,
         name="financial_report",
     ),
+    path(
+    "financial-report/",
+    views.financial_report,
+    name="financial_report",
+    ),
+    path(
+    "reports/tenant-wise-outstanding/",
+    views.tenant_wise_outstanding_report,
+    name="tenant_wise_outstanding_report",
+    ),
+    path(
+    "reports/property-wise-collection/",
+    views.property_wise_collection_report,
+    name="property_wise_collection_report",
+    ),
+    path(
+    "reports/financial-summary/",
+    views.financial_report_summary,
+    name="financial_report_summary",
+    ),
+    path(
+    "reports/month-wise-financial/",
+    views.month_wise_financial_report,
+    name="month_wise_financial_report",
+    ),
+
+
 
     # =====================================================
     # OWNERS

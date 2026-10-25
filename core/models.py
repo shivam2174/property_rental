@@ -879,6 +879,7 @@ class LeaseAgreement(models.Model):
         )
 
 
+
 @property
 def rent_free_end_date(self):
     if not self.start_date:

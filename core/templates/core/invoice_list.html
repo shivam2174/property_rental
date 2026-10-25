@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -320,6 +321,144 @@
             margin-top: 20px;
         }
 
+        .invoice-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 6px;
+            min-width: 115px;
+        }
+
+        .invoice-actions .view-btn,
+        .invoice-actions .payment-btn {
+            display: inline-block;
+            padding: 8px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .invoice-actions .view-btn {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .invoice-actions .payment-btn {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .invoice-actions .view-btn:hover {
+            background: #bfdbfe;
+        }
+
+        .invoice-actions .payment-btn:hover {
+            background: #bbf7d0;
+        }
+
+
+        .invoice-filters {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(150px, 1fr)) auto;
+            align-items: end;
+            gap: 14px;
+            margin: 18px 0 24px;
+            padding: 18px;
+            background: #ffffff;
+            border: 1px solid #dfe4ea;
+            border-radius: 9px;
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .filter-field label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .filter-field select {
+            width: 100%;
+            min-height: 40px;
+            padding: 8px 10px;
+            background: #ffffff;
+            color: #1f2937;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn,
+        .reset-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 9px 14px;
+            border: 0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .filter-btn {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .reset-btn {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        @media (max-width: 900px) {
+            .invoice-filters {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .filter-actions {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .invoice-filters {
+                grid-template-columns: 1fr;
+                padding: 14px;
+            }
+
+            .filter-actions {
+                grid-column: auto;
+            }
+
+            .filter-actions>* {
+                flex: 1;
+            }
+        }
+
+
+        @media (max-width: 600px) {
+            .invoice-actions {
+                min-width: 110px;
+            }
+        }
+
         /* PRINT */
         @media print {
             body {
@@ -417,19 +556,61 @@
                 <p>Manage and track all rental invoices</p>
             </div>
 
+            <!-- INVOICE FILTERS -->
+            <form method="get" class="invoice-filters">
+                <div class="filter-field">
+                    <label for="month">Billing Month</label>
+                    <select name="month" id="month">
+                        <option value="">All Months</option>
+                        {% for option in month_options %}
+                        <option value="{{ option.value }}" {% if selected_month == option.value %}selected{% endif %}>
+                            {{ option.label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label for="status">Payment Status</label>
+                    <select name="status" id="status">
+                        <option value="pending" {% if selected_status == "pending" %}selected{% endif %}>
+                            Pending / Unpaid
+                        </option>
+                        <option value="paid" {% if selected_status == "paid" %}selected{% endif %}>
+                            Paid
+                        </option>
+                        <option value="all" {% if selected_status == "all" %}selected{% endif %}>
+                            All Statuses
+                        </option>
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label for="owner">Owner</label>
+                    <select name="owner" id="owner">
+                        <option value="">All Owners</option>
+                        {% for owner in owner_options %}
+                        <option value="{{ owner }}" {% if selected_owner == owner %}selected{% endif %}>
+                            {{ owner }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="filter-btn">Apply Filters</button>
+                </div>
+            </form>
+
+
+
+
             <div class="header-actions">
                 <a href="{% url 'dashboard' %}" class="btn btn-dashboard">
                     Home
                 </a>
             </div>
         </header>
-
-        <!-- PAGE INTRO -->
-        <h2 class="section-heading">Invoice Management</h2>
-        <p class="section-description">
-            View, monitor and manage rental invoices.
-        </p>
-
         <!-- SUMMARY CARDS -->
         <section class="summary-grid">
             <div class="summary-card summary-blue">
@@ -549,13 +730,13 @@
 
                             <td>
                                 {% if invoice.status == "paid" %}
-                                    <span class="status status-paid">Paid</span>
+                                <span class="status status-paid">Paid</span>
                                 {% elif invoice.status == "pending" %}
-                                    <span class="status status-pending">Pending</span>
+                                <span class="status status-pending">Pending</span>
                                 {% elif invoice.status == "cancelled" %}
-                                    <span class="status status-cancelled">Cancelled</span>
+                                <span class="status status-cancelled">Cancelled</span>
                                 {% else %}
-                                    <span class="status status-generated">Generated</span>
+                                <span class="status status-generated">Generated</span>
                                 {% endif %}
                             </td>
 
@@ -564,6 +745,17 @@
                                     View Invoice
                                 </a>
                             </td>
+
+                            <td>
+                                <div class="invoice-actions">
+                                    {% if invoice.status != "cancelled" and invoice.balance > 0 %}
+                                    <a href="{% url 'record_payment' invoice_id=invoice.pk %}" class="payment-btn">
+                                        Record Payment
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -583,8 +775,9 @@
             {% endif %}
         </section>
 
-    
+
 
     </div>
 </body>
+
 </html>
