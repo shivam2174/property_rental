@@ -23,11 +23,12 @@ class TenantForm(forms.ModelForm):
         model = Tenant
         fields = [
             "full_name",
-            "father_name",
+            "authorised_person",
             "mobile",
             "email",
             "permanent_address",
             "gst_number",
+            "pan",
             "status",
         ]
 
@@ -38,9 +39,9 @@ class TenantForm(forms.ModelForm):
                 }
             ),
 
-            "father_name": forms.TextInput(
+            "authorised_person": forms.TextInput(
                 attrs={
-                    "placeholder": "Enter father name",
+                    "placeholder": "Enter Authorised Person",
                 }
             ),
 
@@ -66,6 +67,14 @@ class TenantForm(forms.ModelForm):
             "gst_number": forms.TextInput(
                 attrs={
                     "placeholder": "Enter GST number",
+                }
+            ),
+
+            "pan": forms.TextInput(
+                attrs={
+                    "placeholder": "Enter PAN number",
+                    "maxlength": "10",
+                    "style": "text-transform: uppercase;",
                 }
             ),
 

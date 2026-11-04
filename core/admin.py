@@ -144,16 +144,16 @@ class TenantAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "full_name",
-        "father_name",
+        "authorised_person",
         "mobile",
         "email",
         "status",
-        "security_deposit",
+
     )
 
     search_fields = (
         "full_name",
-        "father_name",
+        "authorised_person",
         "mobile",
         "email",
         "id_number_1",

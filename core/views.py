@@ -324,6 +324,26 @@ def owner_add(request):
             "gst_delhi",
             "",
         ).strip()
+        
+        bank_name = request.POST.get(
+            "bank_name",
+            "",
+        ).strip()
+
+        branch = request.POST.get(
+            "branch",
+            "",
+        ).strip()
+
+        account_no = request.POST.get(
+            "account_no",
+            "",
+        ).strip()
+
+        ifsc_code = request.POST.get(
+            "ifsc_code",
+            "",
+        ).strip()
 
         if not name:
 
@@ -351,6 +371,10 @@ def owner_add(request):
                 pan=pan,
                 gst_haryana=gst_haryana,
                 gst_delhi=gst_delhi,
+                bank_name=bank_name,
+                branch=branch,
+                account_no=account_no,
+                ifsc_code=ifsc_code,
             )
 
             messages.success(
@@ -457,6 +481,26 @@ def owner_edit(request, pk):
 
         owner.gst_delhi = request.POST.get(
             "gst_delhi",
+            "",
+        ).strip()
+
+        owner.bank_name = request.POST.get(
+            "bank_name",
+            "",
+        ).strip()
+
+        owner.branch = request.POST.get(
+            "branch",
+            "",
+        ).strip()
+
+        owner.account_no = request.POST.get(
+            "account_no",
+            "",
+        ).strip()
+
+        owner.ifsc_code = request.POST.get(
+            "ifsc_code",
             "",
         ).strip()
 

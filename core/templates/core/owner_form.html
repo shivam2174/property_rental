@@ -311,6 +311,46 @@
 
             </div>
 
+            <!-- ============================================== -->
+            <!-- BANK DETAILS -->
+            <!-- ============================================== -->
+
+            <div class="section-title">
+                Bank Details
+            </div>
+
+            <div class="form-grid">
+
+                <div>
+                    <label>Bank Name</label>
+
+                    <input type="text" name="bank_name" value="{{ owner.bank_name|default:'' }}"
+                        placeholder="Enter bank name">
+                </div>
+
+                <div>
+                    <label>Branch</label>
+
+                    <input type="text" name="branch" value="{{ owner.branch|default:'' }}"
+                        placeholder="Enter branch name">
+                </div>
+
+                <div>
+                    <label>Account No.</label>
+
+                    <input type="text" name="account_no" value="{{ owner.account_no|default:'' }}"
+                        placeholder="Enter account number">
+                </div>
+
+                <div>
+                    <label>IFSC Code</label>
+
+                    <input type="text" name="ifsc_code" value="{{ owner.ifsc_code|default:'' }}"
+                        placeholder="Enter IFSC code">
+                </div>
+
+            </div>
+
 
             <!-- ============================================== -->
             <!-- BUTTONS -->

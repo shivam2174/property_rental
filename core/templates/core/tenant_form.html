@@ -266,7 +266,7 @@
                 {% endif %}
             </h1>
 
-          
+
 
         </div>
 
@@ -304,15 +304,15 @@
 
 
                     <div class="form-group">
-                        <label for="{{ form.father_name.id_for_label }}">
-                            Father Name
+                        <label for="{{ form.authorised_person.id_for_label }}">
+                            Authorised Person
                         </label>
 
-                        {{ form.father_name }}
+                        {{ form.authorised_person }}
 
-                        {% if form.father_name.errors %}
+                        {% if form.authorised_person.errors %}
                         <div class="error-list">
-                            {{ form.father_name.errors }}
+                            {{ form.authorised_person.errors }}
                         </div>
                         {% endif %}
                     </div>
@@ -360,6 +360,13 @@
                             {{ form.gst_number.errors }}
                         </div>
                         {% endif %}
+                    </div>
+
+                    <div>
+                        <label>PAN Number</label>
+
+                        <input type="text" name="pan" value="{{ form.pan.value|default:'' }}"
+                            placeholder="Enter PAN number" maxlength="10" style="text-transform: uppercase;">
                     </div>
 
 

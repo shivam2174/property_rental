@@ -67,6 +67,26 @@ class Owner(models.Model):
         blank=True,
     )
 
+    bank_name = models.CharField(
+        max_length=150,
+        blank=True,
+    )
+
+    branch = models.CharField(
+        max_length=150,
+        blank=True,
+    )
+
+    account_no = models.CharField(
+        max_length=50,
+        blank=True,
+    )
+
+    ifsc_code = models.CharField(
+        max_length=20,
+        blank=True,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -392,7 +412,7 @@ class Tenant(models.Model):
         max_length=200,
     )
 
-    father_name = models.CharField(
+    authorised_person = models.CharField(
         max_length=200,
         blank=True,
     )
@@ -416,50 +436,10 @@ class Tenant(models.Model):
         blank=True,
     )
 
-    # Kept temporarily for compatibility
-    # with existing database records.
-    id_type = models.CharField(
-        max_length=30,
-        choices=ID_TYPE,
-        default="aadhaar",
-    )
-
-    id_type_1 = models.CharField(
-        max_length=50,
-        blank=True,
-    )
-
-    id_number_1 = models.CharField(
-        max_length=100,
-        blank=True,
-    )
-
-    id_type_2 = models.CharField(
-        max_length=50,
-        blank=True,
-    )
-
-    id_number_2 = models.CharField(
-        max_length=100,
-        blank=True,
-    )
-
-    id_type_3 = models.CharField(
-        max_length=50,
-        blank=True,
-    )
-
-    id_number_3 = models.CharField(
-        max_length=100,
-        blank=True,
-    )
-
-    # Kept temporarily for compatibility
-    # with existing database records.
-    security_deposit = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        default=0,
+    pan = models.CharField(
+    max_length=10,
+    blank=True,
+    verbose_name="PAN Number",
     )
 
     status = models.CharField(
@@ -481,6 +461,7 @@ class Tenant(models.Model):
 
     def __str__(self):
         return self.full_name
+
 
 class TenantContactPerson(models.Model):
 
@@ -1274,11 +1255,6 @@ class Invoice(models.Model):
 
 
 #TDS model 
-
-from decimal import Decimal, ROUND_HALF_UP
-
-from django.db import models
-
 
 class TDSLedger(models.Model):
     invoice = models.OneToOneField(
