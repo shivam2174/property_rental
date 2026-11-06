@@ -193,12 +193,21 @@ LOGIN_REDIRECT_URL = "role_redirect"
 LOGOUT_REDIRECT_URL = "/login/"
 
 
+# =========================================================
+# PRODUCTION SECURITY SETTINGS
+# =========================================================
 
-
-# Production security settings
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
+
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
+
+    # Enable HSTS after HTTPS is confirmed working.
+    SECURE_HSTS_SECONDS = 300
+
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
