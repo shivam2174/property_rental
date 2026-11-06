@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Add Parking Lease Agreement</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 16px;
+            background: #f1f4f9;
+            font-family: Arial, sans-serif;
+            color: #243247;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        h2 {
+            margin: 0;
+            color: #234b83;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            background: #64748b;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+        }
+
+        .property-box {
+            background: #edf4fc;
+            border: 1px solid #cbdcf0;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .property-box small {
+            display: block;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .property-box strong {
+            color: #234b83;
+            font-size: 17px;
+        }
+
+        .section-title {
+            color: #234b83;
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin: 25px 0 18px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #475569;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 14px;
+            background: white;
+            color: #243247;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #234b83;
+            box-shadow: 0 0 0 3px rgba(35, 75, 131, 0.1);
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .messages {
+            margin-bottom: 18px;
+        }
+
+        .message {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 7px;
+            background: #fee2e2;
+            color: #991b1b;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 22px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .cancel-btn {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .save-btn {
+            background: #234b83;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #18375f;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 18px 10px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: auto;
+            }
+
+            .actions .btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h2>Parking Lease Agreement</h2>
+
+        <a href="{% url 'parking_register' %}" class="back-btn">
+            ← Back to Parking Register
+        </a>
+    </div>
+
+    <div class="card">
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST"
+              action="{% url 'parking_agreement_add' property.id %}"
+              enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            <div class="property-box">
+                <small>Selected Property</small>
+                <strong>{{ property.name }}</strong>
+            </div>
+
+            <div class="section-title">Agreement Details</div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="agreement_number">Agreement Number *</label>
+                    <input
+                        type="text"
+                        id="agreement_number"
+                        name="agreement_number"
+                        value="{{ form_data.agreement_number|default:'' }}"
+                        placeholder="Example: PARK-001"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="agreement_date">Agreement Date *</label>
+                    <input
+                        type="date"
+                        id="agreement_date"
+                        name="agreement_date"
+                        value="{{ form_data.agreement_date|default:'' }}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="tenant">Tenant *</label>
+                    <select id="tenant" name="tenant" required>
+                        <option value="">Select Tenant</option>
+
+                        {% for tenant in tenants %}
+                            <option
+                                value="{{ tenant.id }}"
+                                {% if form_data.tenant|stringformat:"s" == tenant.id|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ tenant.full_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Agreement Status *</label>
+                    <select id="status" name="status" required>
+                        <option value="active"
+                            {% if not form_data.status or form_data.status == "active" %}selected{% endif %}>
+                            Active
+                        </option>
+
+                        <option value="expired"
+                            {% if form_data.status == "expired" %}selected{% endif %}>
+                            Expired
+                        </option>
+
+                        <option value="terminated"
+                            {% if form_data.status == "terminated" %}selected{% endif %}>
+                            Terminated
+                        </option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="section-title">Lease Period</div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="start_date">Start Date *</label>
+                    <input
+                        type="date"
+                        id="start_date"
+                        name="start_date"
+                        value="{{ form_data.start_date|default:'' }}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="end_date">End Date</label>
+                    <input
+                        type="date"
+                        id="end_date"
+                        name="end_date"
+                        value="{{ form_data.end_date|default:'' }}"
+                    >
+                </div>
+
+            </div>
+
+            <div class="section-title">Parking Allocation</div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="free_spaces">Free Parking Spaces</label>
+                    <input
+                        type="number"
+                        id="free_spaces"
+                        name="free_spaces"
+                        min="0"
+                        step="1"
+                        value="{{ form_data.free_spaces|default:'0' }}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="paid_spaces">Paid Parking Spaces</label>
+                    <input
+                        type="number"
+                        id="paid_spaces"
+                        name="paid_spaces"
+                        min="0"
+                        step="1"
+                        value="{{ form_data.paid_spaces|default:'0' }}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="monthly_rate_per_space">
+                        Monthly Rate Per Paid Space (₹)
+                    </label>
+                    <input
+                        type="number"
+                        id="monthly_rate_per_space"
+                        name="monthly_rate_per_space"
+                        min="0"
+                        step="0.01"
+                        value="{{ form_data.monthly_rate_per_space|default:'0' }}"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <div class="section-title">Additional Information</div>
+
+            <div class="form-grid">
+
+                <div class="form-group full-width">
+                    <label for="agreement_document">
+                        Upload Agreement Document
+                    </label>
+                    <input
+                        type="file"
+                        id="agreement_document"
+                        name="agreement_document"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                    >
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="notes">Notes</label>
+                    <textarea
+                        id="notes"
+                        name="notes"
+                        placeholder="Enter additional details..."
+                    >{{ form_data.notes|default:'' }}</textarea>
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <a href="{% url 'parking_register' %}"
+                   class="btn cancel-btn">
+                    Cancel
+                </a>
+
+                <button type="submit" class="btn save-btn">
+                    Save Parking Agreement
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

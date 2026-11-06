@@ -1,6 +1,6 @@
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, ROUND_DOWN
 from calendar import monthrange
-from django.db import transaction
+from django.core.exceptions import ValidationError
 
 from django.contrib import messages
 from django.db import models, transaction, IntegrityError, connection
@@ -42,10 +42,12 @@ from core.models import (
     Tenant,
     TenantContactPerson,
     LeaseAgreement,
+    ParkingLeaseAgreement,
     LeaseNotification,
     RentHistory,
     Invoice,
     TDSLedger,
+    TDSMaster,
     GSTLedger,
     InvoiceItem,
     Payment,
@@ -573,13 +575,16 @@ def owner_delete(request, pk):
 
 
 
+
 def property_list(request):
+
+    # Only administrators can access the property list
     if not request.user.is_superuser:
         return HttpResponseForbidden(
             "Access denied. Only Administrators can view the property list."
         )
 
-
+    # Get properties with their owners
     properties = (
         Property.objects
         .select_related("owner")
@@ -587,99 +592,67 @@ def property_list(request):
         .order_by("name")
     )
 
-    filter_type = request.GET.get(
-        "filter",
-        "all",
-    )
+    filter_type = request.GET.get("filter", "all")
+    owner_id = request.GET.get("owner")
 
-    owner_id = request.GET.get(
-        "owner"
-    )
-
+    # Filter by owner
     if owner_id:
         properties = properties.filter(
             owner_id=owner_id
         )
 
+    # Calculate occupancy information
     for property_obj in properties:
 
         # Current Property model uses unit_no
-        total_units = (
-            1
-            if property_obj.unit_no
-            else 0
-        )
+        total_units = 1 if property_obj.unit_no else 0
 
-        # Check active Lease Agreement directly
-        occupied = (
-            LeaseAgreement.objects
-            .filter(
-                property=property_obj,
-                status="active",
-            )
-            .exists()
-        )
+        # Check whether an active lease exists
+        occupied = LeaseAgreement.objects.filter(
+            property=property_obj,
+            status="active",
+        ).exists()
 
         occupied_units = (
-            1
-            if occupied and total_units > 0
-            else 0
+            1 if occupied and total_units > 0 else 0
         )
 
         vacant_units = max(
             total_units - occupied_units,
-            0,
+            0
         )
 
-        property_obj.total_units_count = (
-            total_units
-        )
+        property_obj.total_units_count = total_units
+        property_obj.occupied_units_count = occupied_units
+        property_obj.vacant_units_count = vacant_units
 
-        property_obj.occupied_units_count = (
-            occupied_units
-        )
-
-        property_obj.vacant_units_count = (
-            vacant_units
+        # Latest property tax record
+        property_obj.latest_tax = (
+            property_obj.property_taxes.first()
         )
 
         # Set occupancy status
         if total_units == 0:
-
-            property_obj.occupancy_status = (
-                "none"
-            )
+            property_obj.occupancy_status = "none"
 
         elif occupied_units == total_units:
-
-            property_obj.occupancy_status = (
-                "occupied"
-            )
+            property_obj.occupancy_status = "occupied"
 
         elif occupied_units > 0:
-
-            property_obj.occupancy_status = (
-                "partial"
-            )
+            property_obj.occupancy_status = "partial"
 
         else:
+            property_obj.occupancy_status = "free"
 
-            property_obj.occupancy_status = (
-                "free"
-            )
-
-    # Occupied properties
+    # Apply occupancy filters
     if filter_type == "occupied":
-
         properties = [
             property_obj
             for property_obj in properties
             if property_obj.occupancy_status == "occupied"
         ]
 
-    # Free properties
     elif filter_type == "free":
-
         properties = [
             property_obj
             for property_obj in properties
@@ -692,139 +665,152 @@ def property_list(request):
         {
             "properties": properties,
             "filter_type": filter_type,
-            "owners": Owner.objects.all().order_by(
-                "name"
-            ),
+            "current_filter": filter_type,
+            "owners": Owner.objects.all().order_by("name"),
             "selected_owner": owner_id,
         },
     )
 
 
 
+# =========================================================
+# PARKING REGISTER
+# =========================================================
+
+def parking_register(request):
+
+    if not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Access denied. Only Administrators can view the Parking Register."
+        )
+
     properties = (
         Property.objects
-        .select_related("owner")
         .all()
         .order_by("name")
     )
 
-    filter_type = request.GET.get(
-        "filter",
-        "all",
-    )
+    # -----------------------------------------------
+    # 1. Active allocations from Rental LeaseAgreement
+    # -----------------------------------------------
 
-    owner_id = request.GET.get(
-        "owner"
-    )
-
-    if owner_id:
-        properties = properties.filter(
-            owner_id=owner_id
+    rental_allocations = (
+        LeaseAgreement.objects
+        .filter(status="active")
+        .values("property_id")
+        .annotate(
+            total_free=Sum("free_parking_spaces"),
+            total_paid=Sum("paid_parking_spaces"),
         )
+    )
+
+    # -----------------------------------------------
+    # 2. Active allocations from ParkingLeaseAgreement
+    # -----------------------------------------------
+
+    parking_allocations = (
+        ParkingLeaseAgreement.objects
+        .filter(status="active")
+        .values("property_id")
+        .annotate(
+            total_free=Sum("free_spaces"),
+            total_paid=Sum("paid_spaces"),
+        )
+    )
+
+    # -----------------------------------------------
+    # 3. Prepare allocation lookup
+    # -----------------------------------------------
+
+    allocation_map = {}
+
+    for item in rental_allocations:
+
+        property_id = item["property_id"]
+
+        allocation_map.setdefault(
+            property_id,
+            {"free": 0, "paid": 0},
+        )
+
+        allocation_map[property_id]["free"] += (
+            item["total_free"] or 0
+        )
+
+        allocation_map[property_id]["paid"] += (
+            item["total_paid"] or 0
+        )
+
+    for item in parking_allocations:
+
+        property_id = item["property_id"]
+
+        allocation_map.setdefault(
+            property_id,
+            {"free": 0, "paid": 0},
+        )
+
+        allocation_map[property_id]["free"] += (
+            item["total_free"] or 0
+        )
+
+        allocation_map[property_id]["paid"] += (
+            item["total_paid"] or 0
+        )
+
+    # -----------------------------------------------
+    # 4. Calculate occupied and available spaces
+    # -----------------------------------------------
 
     for property_obj in properties:
 
-        # Latest Property Tax record
-        property_obj.latest_tax = (
-            property_obj.property_taxes.first()
-        )
-        # Your current Property model uses unit_no
-        total_units = (
-            1
-            if property_obj.unit_no
-            else 0
+        allocation = allocation_map.get(
+            property_obj.id,
+            {"free": 0, "paid": 0},
         )
 
-        # IMPORTANT:
-        # An ACTIVE Lease Agreement means
-        # the property is occupied.
-        occupied = (
-            LeaseAgreement.objects
-            .filter(
-                property=property_obj,
-                status="active",
-            )
-            .exists()
-        )
+        occupied_free = allocation["free"]
+        occupied_paid = allocation["paid"]
 
-        if occupied and total_units > 0:
-            occupied_units = 1
-        else:
-            occupied_units = 0
+        occupied = occupied_free + occupied_paid
 
-        vacant_units = max(
-            total_units - occupied_units,
-            0,
-        )
+        total = property_obj.total_parking_spaces
 
-        property_obj.total_units_count = (
-            total_units
-        )
+        available = max(total - occupied, 0)
 
-        property_obj.occupied_units_count = (
-            occupied_units
-        )
-
-        property_obj.vacant_units_count = (
-            vacant_units
-        )
-
-        # Set final property status
-        if total_units == 0:
-
-            property_obj.occupancy_status = (
-                "none"
-            )
-
-        elif occupied_units == total_units:
-
-            property_obj.occupancy_status = (
-                "occupied"
-            )
-
-        elif occupied_units > 0:
-
-            property_obj.occupancy_status = (
-                "partial"
-            )
-
-        else:
-
-            property_obj.occupancy_status = (
-                "free"
-            )
-
-    # Occupied filter
-    if filter_type == "occupied":
-
-        properties = [
-            property_obj
-            for property_obj in properties
-            if property_obj.occupancy_status == "occupied"
-        ]
-
-    # Free filter
-    elif filter_type == "free":
-
-        properties = [
-            property_obj
-            for property_obj in properties
-            if property_obj.occupancy_status == "free"
-        ]
+        property_obj.occupied_parking_spaces = occupied
+        property_obj.available_parking_spaces = available
 
     return render(
         request,
-        "core/property_list.html",
+        "core/parking_register.html",
         {
             "properties": properties,
-            "filter_type": filter_type,
-            "owners": Owner.objects.all().order_by(
-                "name"
-            ),
-            "selected_owner": owner_id,
         },
     )
 
+@login_required
+def parking_agreement_list(request):
+
+    if not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Access denied. Only Administrators can view Parking Lease Agreements."
+        )
+
+    agreements = (
+        ParkingLeaseAgreement.objects
+        .select_related("property", "tenant")
+        .all()
+        .order_by("-start_date", "-id")
+    )
+
+    return render(
+        request,
+        "core/parking_agreement_list.html",
+        {
+            "agreements": agreements,
+        },
+    )
 
 def property_detail(request, pk):
 
@@ -859,6 +845,7 @@ def property_detail(request, pk):
             "property_documents": property_documents,
         },
     )
+
 
 def property_add(request):
 
@@ -953,6 +940,38 @@ def property_add(request):
             "",
         ).strip()
 
+        # ==========================================
+        # TOTAL PARKING SPACES
+        # ==========================================
+
+        raw_total_parking_spaces = request.POST.get(
+            "total_parking_spaces",
+            "0",
+        ).strip()
+
+        try:
+            total_parking_spaces = int(
+                raw_total_parking_spaces or 0
+            )
+
+            if total_parking_spaces < 0:
+                raise ValueError
+
+        except ValueError:
+
+            messages.error(
+                request,
+                "Total Parking Spaces must be a valid non-negative whole number.",
+            )
+
+            return render(
+                request,
+                "core/property_form.html",
+                {
+                    "owners": owners,
+                },
+            )
+
         status = request.POST.get(
             "status",
             "active",
@@ -968,6 +987,7 @@ def property_add(request):
 
         # ==========================================
         # PROPERTY DOCUMENTS
+        # Maximum PDF size = 300 MB
         # ==========================================
 
         document_names = request.POST.getlist(
@@ -999,7 +1019,6 @@ def property_add(request):
 
         # ==========================================
         # DOCUMENT VALIDATION
-        # Maximum PDF size = 300 MB
         # ==========================================
 
         MAX_PROPERTY_DOCUMENT_SIZE = (
@@ -1008,7 +1027,6 @@ def property_add(request):
 
         for uploaded_document in uploaded_documents:
 
-            # Check file size
             if (
                 uploaded_document.size
                 > MAX_PROPERTY_DOCUMENT_SIZE
@@ -1029,7 +1047,6 @@ def property_add(request):
                     },
                 )
 
-            # Check PDF extension
             if not uploaded_document.name.lower().endswith(
                 ".pdf"
             ):
@@ -1132,6 +1149,10 @@ def property_add(request):
 
                     parking_slot=parking_slot,
 
+                    total_parking_spaces=(
+                        total_parking_spaces
+                    ),
+
                     status=status,
                 )
 
@@ -1225,6 +1246,7 @@ def property_add(request):
             "owners": owners,
         },
     )
+
 
 
 def property_edit(request, pk):
@@ -1377,10 +1399,51 @@ def property_edit(request, pk):
             "",
         ).strip()
 
+        # ==========================================
+        # TOTAL PARKING SPACES
+        # ==========================================
+
+        raw_total_parking_spaces = request.POST.get(
+            "total_parking_spaces",
+            "0",
+        ).strip()
+
+        try:
+            total_parking_spaces = int(
+                raw_total_parking_spaces or 0
+            )
+
+            if total_parking_spaces < 0:
+                raise ValueError
+
+        except ValueError:
+
+            messages.error(
+                request,
+                "Total Parking Spaces must be a valid non-negative whole number.",
+            )
+
+            return render(
+                request,
+                "core/property_form.html",
+                {
+                    "property": property_obj,
+                    "owners": owners,
+                },
+            )
+
+        property_obj.total_parking_spaces = (
+            total_parking_spaces
+        )
+
         property_obj.status = request.POST.get(
             "status",
             "active",
         )
+
+        # ==========================================
+        # AUTO CALCULATIONS
+        # ==========================================
 
         if (
             property_obj.total_area > ZERO
@@ -1398,6 +1461,10 @@ def property_edit(request, pk):
             property_obj.price
             + property_obj.stamp_duty
         )
+
+        # ==========================================
+        # SAVE PROPERTY
+        # ==========================================
 
         try:
 
@@ -1428,35 +1495,6 @@ def property_edit(request, pk):
         },
     )
 
-
-
-
-    property_obj = get_object_or_404(
-        Property,
-        pk=pk,
-    )
-
-    if request.method != "POST":
-
-        return redirect(
-            "property_list"
-        )
-
-    try:
-
-        property_obj.delete()
-
-        messages.success(
-            request,
-            "Property deleted successfully.",
-        )
-
-    except ProtectedError:
-
-        messages.error(
-            request,
-            "This property cannot be deleted because related rental records exist.",
-        )
 
         
 def property_delete(request, pk):
@@ -2249,10 +2287,64 @@ def monthly_gst_report(request):
     )
 
 
+def get_active_parking_allocation(
+    property_obj,
+    exclude_lease_agreement_id=None,
+    exclude_parking_agreement_id=None,
+):
+    rental_queryset = LeaseAgreement.objects.filter(
+        property=property_obj,
+        status="active",
+    )
+
+    parking_queryset = ParkingLeaseAgreement.objects.filter(
+        property=property_obj,
+        status="active",
+    )
+
+    if exclude_lease_agreement_id:
+        rental_queryset = rental_queryset.exclude(
+            pk=exclude_lease_agreement_id
+        )
+
+    if exclude_parking_agreement_id:
+        parking_queryset = parking_queryset.exclude(
+            pk=exclude_parking_agreement_id
+        )
+
+    rental_totals = rental_queryset.aggregate(
+        free=Sum("free_parking_spaces"),
+        paid=Sum("paid_parking_spaces"),
+    )
+
+    parking_totals = parking_queryset.aggregate(
+        free=Sum("free_spaces"),
+        paid=Sum("paid_spaces"),
+    )
+
+    occupied = (
+        (rental_totals["free"] or 0)
+        + (rental_totals["paid"] or 0)
+        + (parking_totals["free"] or 0)
+        + (parking_totals["paid"] or 0)
+    )
+
+    return occupied
+
 
 def agreement_add(request):
     tenants = Tenant.objects.all().order_by("full_name")
     properties = Property.objects.all().order_by("name")
+
+    def render_form():
+        return render(
+            request,
+            "core/agreement_add.html",
+            {
+                "tenants": tenants,
+                "properties": properties,
+            },
+        )
 
     if request.method == "POST":
 
@@ -2264,19 +2356,9 @@ def agreement_add(request):
 
         if not tenant_id:
             messages.error(request, "Please select a Tenant.")
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+            return render_form()
 
-        tenant = get_object_or_404(
-            Tenant,
-            pk=tenant_id,
-        )
+        tenant = get_object_or_404(Tenant, pk=tenant_id)
 
         # =====================================================
         # PROPERTY
@@ -2286,82 +2368,30 @@ def agreement_add(request):
 
         if not property_id:
             messages.error(request, "Please select a Property.")
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+            return render_form()
 
-        property_obj = get_object_or_404(
-            Property,
-            pk=property_id,
-        )
-
-        # =====================================================
-        # CHECK ACTIVE AGREEMENT
-        # =====================================================
-
-        existing_active = LeaseAgreement.objects.filter(
-            property=property_obj,
-            status="active",
-        ).exists()
-
-        if existing_active:
-            messages.error(
-                request,
-                "This property is already occupied by an active lease agreement.",
-            )
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+        property_obj = get_object_or_404(Property, pk=property_id)
 
         # =====================================================
         # DATES
         # =====================================================
 
-        start_date = parse_date(
-            request.POST.get("start_date")
-        )
-
-        end_date = parse_date(
-            request.POST.get("end_date")
-        )
+        start_date = parse_date(request.POST.get("start_date"))
+        end_date = parse_date(request.POST.get("end_date"))
 
         if not start_date:
             messages.error(
                 request,
                 "Agreement start date is required.",
             )
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+            return render_form()
 
         if end_date and end_date < start_date:
             messages.error(
                 request,
-                "Agreement end date cannot be before start date.",
+                "Agreement end date cannot be before agreement start date.",
             )
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+            return render_form()
 
         # =====================================================
         # MONTHLY RENT
@@ -2376,16 +2406,7 @@ def agreement_add(request):
                 request,
                 "Please enter a valid monthly rent.",
             )
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
-
-       
+            return render_form()
 
         # =====================================================
         # NEXT INCREASE DATE
@@ -2402,41 +2423,62 @@ def agreement_add(request):
                     request,
                     "Next increase date must be after agreement start date.",
                 )
-                return render(
-                    request,
-                    "core/agreement_add.html",
-                    {
-                        "tenants": tenants,
-                        "properties": properties,
-                    },
-                )
+                return render_form()
 
             if end_date and next_increase_date > end_date:
                 next_increase_date = None
 
+        # =====================================================
+        # RENTAL AREA
+        # =====================================================
+
         rental_area = parse_decimal(
-          request.POST.get("rental_area")
+            request.POST.get("rental_area")
         )
 
         if rental_area is None:
             rental_area = ZERO
 
         if rental_area < ZERO:
-           rental_area = ZERO
+            rental_area = ZERO
 
         # =====================================================
-        # PARKING
+        # PARKING CHARGE
         # =====================================================
 
         parking_charge = parse_decimal(
             request.POST.get("parking_charge")
         )
 
-        if parking_charge is None:
+        if parking_charge is None or parking_charge < ZERO:
             parking_charge = ZERO
 
-        if parking_charge < ZERO:
-            parking_charge = ZERO
+        # =====================================================
+        # PARKING SPACE INPUT VALIDATION
+        # =====================================================
+
+        try:
+            free_parking_spaces = int(
+                request.POST.get("free_parking_spaces") or 0
+            )
+
+            paid_parking_spaces = int(
+                request.POST.get("paid_parking_spaces") or 0
+            )
+
+        except (TypeError, ValueError):
+            messages.error(
+                request,
+                "Enter valid parking space quantities.",
+            )
+            return render_form()
+
+        if free_parking_spaces < 0 or paid_parking_spaces < 0:
+            messages.error(
+                request,
+                "Parking spaces cannot be negative.",
+            )
+            return render_form()
 
         # =====================================================
         # SECURITY DEPOSIT
@@ -2475,28 +2517,14 @@ def agreement_add(request):
                 request,
                 "CGST rate must be between 0 and 100.",
             )
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+            return render_form()
 
         if not valid_percentage(sgst_rate):
             messages.error(
                 request,
                 "SGST rate must be between 0 and 100.",
             )
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+            return render_form()
 
         # =====================================================
         # RENT DUE DAY
@@ -2504,10 +2532,7 @@ def agreement_add(request):
 
         try:
             rent_due_day = int(
-                request.POST.get(
-                    "rent_due_day",
-                    "5",
-                )
+                request.POST.get("rent_due_day") or 5
             )
         except (TypeError, ValueError):
             rent_due_day = 5
@@ -2517,23 +2542,13 @@ def agreement_add(request):
                 request,
                 "Rent due day must be between 1 and 28.",
             )
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+            return render_form()
 
         # =====================================================
         # STATUS
         # =====================================================
 
-        status = request.POST.get(
-            "status",
-            "active",
-        )
+        status = request.POST.get("status", "active")
 
         if status not in {
             "active",
@@ -2567,9 +2582,7 @@ def agreement_add(request):
             "notes",
             "",
         ).strip()
-        
-    
-        
+
         # =====================================================
         # LEASE EXTENSION 1
         # =====================================================
@@ -2610,7 +2623,78 @@ def agreement_add(request):
             request.POST.get("extension_2_security_deposit")
         )
 
-        # Validate extension dates
+        # =====================================================
+        # RENT INCREASE PERCENTAGES
+        # =====================================================
+
+        extension_1_rent_increase_percent = parse_decimal(
+            request.POST.get("extension_1_rent_increase_percent")
+        )
+
+        extension_2_rent_increase_percent = parse_decimal(
+            request.POST.get("extension_2_rent_increase_percent")
+        )
+
+        if extension_1_rent_increase_percent is None:
+            extension_1_rent_increase_percent = ZERO
+
+        if extension_2_rent_increase_percent is None:
+            extension_2_rent_increase_percent = ZERO
+
+        if (
+            not valid_percentage(extension_1_rent_increase_percent)
+            or not valid_percentage(extension_2_rent_increase_percent)
+        ):
+            messages.error(
+                request,
+                "Extension rent increase must be between 0 and 100.",
+            )
+            return render_form()
+
+        # =====================================================
+        # AUTOMATIC EXTENSION RENT AND SECURITY CALCULATION
+        # =====================================================
+
+        extension_1_monthly_rent = (
+            monthly_rent
+            * (100 + extension_1_rent_increase_percent)
+            / 100
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+        extension_1_security_deposit = (
+            security_deposit
+            * (100 + extension_1_rent_increase_percent)
+            / 100
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+        extension_2_monthly_rent = (
+            extension_1_monthly_rent
+            * (100 + extension_2_rent_increase_percent)
+            / 100
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+        extension_2_security_deposit = (
+            extension_1_security_deposit
+            * (100 + extension_2_rent_increase_percent)
+            / 100
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+        # =====================================================
+        # VALIDATE EXTENSION DATES
+        # =====================================================
+
         if (
             extension_1_start_date
             and extension_1_end_date
@@ -2618,16 +2702,9 @@ def agreement_add(request):
         ):
             messages.error(
                 request,
-                "Extension 1 end date cannot be before its start date."
+                "Extension 1 end date cannot be before its start date.",
             )
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+            return render_form()
 
         if (
             extension_2_start_date
@@ -2636,68 +2713,73 @@ def agreement_add(request):
         ):
             messages.error(
                 request,
-                "Extension 2 end date cannot be before its start date."
+                "Extension 2 end date cannot be before its start date.",
             )
-            return render(
-                request,
-                "core/agreement_add.html",
-                {
-                    "tenants": tenants,
-                    "properties": properties,
-                },
-            )
+            return render_form()
 
         # =====================================================
-        # CREATE AGREEMENT
+        # CREATE AGREEMENT AND CHECK PARKING CAPACITY
         # =====================================================
 
         try:
             with transaction.atomic():
 
+                # Lock the property before checking capacity.
+                locked_property = (
+                    Property.objects
+                    .select_for_update()
+                    .get(pk=property_obj.pk)
+                )
+
+                # Check whether this property already has an
+                # active lease agreement.
+                existing_active = LeaseAgreement.objects.filter(
+                    property=locked_property,
+                    status="active",
+                ).exists()
+
+                if existing_active:
+                    raise ValidationError(
+                        "This property is already occupied by an active lease agreement."
+                    )
+
+                # Check parking capacity for active agreements.
+                if status == "active":
+
+                    occupied = get_active_parking_allocation(
+                        locked_property
+                    )
+
+                    available_spaces = (
+                        locked_property.total_parking_spaces - occupied
+                    )
+
+                    requested_spaces = (
+                        free_parking_spaces + paid_parking_spaces
+                    )
+
+                    if requested_spaces > available_spaces:
+                        raise ValidationError(
+                            f"Only {max(available_spaces, 0)} parking "
+                            f"spaces are available. You requested "
+                            f"{requested_spaces}."
+                        )
+
+                # Create the agreement only once.
                 agreement = LeaseAgreement.objects.create(
                     tenant=tenant,
-                    property=property_obj,
+                    property=locked_property,
+
                     start_date=start_date,
                     end_date=end_date,
-                    monthly_rent=monthly_rent,
-                    free_parking_spaces=int(
-                    request.POST.get("free_parking_spaces") or 0
-                    ),
-                    paid_parking_spaces=int(
-                    request.POST.get("paid_parking_spaces") or 0
-                    ),
-                    
-                    # Lease Extension 1
-                    extension_1_start_date=extension_1_start_date,
-                    extension_1_end_date=extension_1_end_date,
-                    extension_1_monthly_rent=(
-                        extension_1_monthly_rent
-                        if extension_1_monthly_rent is not None
-                        else ZERO
-                    ),
-                    extension_1_security_deposit=(
-                        extension_1_security_deposit
-                        if extension_1_security_deposit is not None
-                        else ZERO
-                    ),
 
-                    # Lease Extension 2
-                    extension_2_start_date=extension_2_start_date,
-                    extension_2_end_date=extension_2_end_date,
-                    extension_2_monthly_rent=(
-                        extension_2_monthly_rent
-                        if extension_2_monthly_rent is not None
-                        else ZERO
-                    ),
-                    extension_2_security_deposit=(
-                        extension_2_security_deposit
-                        if extension_2_security_deposit is not None
-                        else ZERO
-                    ),
+                    monthly_rent=monthly_rent,
                     rental_area=rental_area,
 
-
+                    free_parking_spaces=free_parking_spaces,
+                    paid_parking_spaces=paid_parking_spaces,
                     parking_charge=parking_charge,
+
                     security_deposit=security_deposit,
 
                     cgst_rate=cgst_rate,
@@ -2707,22 +2789,41 @@ def agreement_add(request):
 
                     status=status,
 
-                    termination_date=(
-                        termination_date
-                    ),
-                    termination_reason=(
-                        termination_reason
-                    ),
+                    termination_date=termination_date,
+                    termination_reason=termination_reason,
 
                     notes=notes,
+
+                    lease_document=request.FILES.get("lease_document"),
+
+                    # Lease Extension 1
+                    extension_1_rent_increase_percent=(
+                        extension_1_rent_increase_percent
+                    ),
+                    extension_1_start_date=extension_1_start_date,
+                    extension_1_end_date=extension_1_end_date,
+                    extension_1_monthly_rent=(
+                        extension_1_monthly_rent
+                    ),
+                    extension_1_security_deposit=(
+                        extension_1_security_deposit
+                    ),
+
+                    # Lease Extension 2
+                    extension_2_rent_increase_percent=(
+                        extension_2_rent_increase_percent
+                    ),
+                    extension_2_start_date=extension_2_start_date,
+                    extension_2_end_date=extension_2_end_date,
+                    extension_2_monthly_rent=(
+                        extension_2_monthly_rent
+                    ),
+                    extension_2_security_deposit=(
+                        extension_2_security_deposit
+                    ),
                 )
 
-                lease_document=request.FILES.get("lease_document"),
-
-                # =================================================
-                # INITIAL RENT HISTORY
-                # =================================================
-
+                # Create initial rent history.
                 RentHistory.objects.create(
                     lease_agreement=agreement,
                     effective_from=start_date,
@@ -2739,41 +2840,24 @@ def agreement_add(request):
 
             return redirect("agreement_list")
 
-        except IntegrityError as e:
+        except ValidationError as exc:
             messages.error(
                 request,
-                f"Unable to create the Lease Agreement: {e}",
+                " ".join(exc.messages),
             )
 
-    # =========================================================
-    # GET REQUEST
-    # =========================================================
+        except IntegrityError as exc:
+            messages.error(
+                request,
+                f"Unable to create the Lease Agreement: {exc}",
+            )
 
-    return render(
-        request,
-        "core/agreement_add.html",
-        {
-            "tenants": tenants,
-            "properties": properties,
-        },
-    )
+    # =====================================================
+    # GET REQUEST / RETURN FORM
+    # =====================================================
 
+    return render_form()
 
-
-
-
-    # =========================================================
-    # GET
-    # =========================================================
-
-    return render(
-        request,
-        "core/agreement_add.html",
-        {
-            "tenants": tenants,
-            "properties": properties,
-        }
-    )
 
 def agreement_edit(request, pk):
 
@@ -2998,6 +3082,29 @@ def agreement_edit(request, pk):
                 "Extension 2 end date cannot be before start date.",
             )
 
+        extension_1_rent_increase_percent = parse_decimal(
+            request.POST.get("extension_1_rent_increase_percent")
+        )
+
+        extension_2_rent_increase_percent = parse_decimal(
+            request.POST.get("extension_2_rent_increase_percent")
+        )
+
+        if extension_1_rent_increase_percent is None:
+            extension_1_rent_increase_percent = ZERO
+
+        if extension_2_rent_increase_percent is None:
+            extension_2_rent_increase_percent = ZERO
+
+        if (
+            not valid_percentage(extension_1_rent_increase_percent)
+            or not valid_percentage(extension_2_rent_increase_percent)
+        ):
+            messages.error(
+                request,
+                "Extension rent increase must be between 0 and 100.",
+            )
+
         # =====================================================
         # PARKING
         # =====================================================
@@ -3057,6 +3164,59 @@ def agreement_edit(request, pk):
             messages.error(
                 request,
                 "Please enter a valid security deposit.",
+            )
+
+        # =====================================================
+        # AUTOMATIC EXTENSION RENT AND SECURITY CALCULATION
+        # =====================================================
+
+        if (
+            valid_percentage(extension_1_rent_increase_percent)
+            and valid_percentage(extension_2_rent_increase_percent)
+        ):
+
+            agreement.extension_1_rent_increase_percent = (
+                extension_1_rent_increase_percent
+            )
+
+            agreement.extension_2_rent_increase_percent = (
+                extension_2_rent_increase_percent
+            )
+
+            agreement.extension_1_monthly_rent = (
+                agreement.monthly_rent
+                * (100 + extension_1_rent_increase_percent)
+                / 100
+            ).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP,
+            )
+
+            agreement.extension_1_security_deposit = (
+                agreement.security_deposit
+                * (100 + extension_1_rent_increase_percent)
+                / 100
+            ).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP,
+            )
+
+            agreement.extension_2_monthly_rent = (
+                agreement.extension_1_monthly_rent
+                * (100 + extension_2_rent_increase_percent)
+                / 100
+            ).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP,
+            )
+
+            agreement.extension_2_security_deposit = (
+                agreement.extension_1_security_deposit
+                * (100 + extension_2_rent_increase_percent)
+                / 100
+            ).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP,
             )
 
         # =====================================================
@@ -3160,19 +3320,184 @@ def agreement_edit(request, pk):
                 pk=agreement.pk,
             )
 
-    # =========================================================
-    # GET / INVALID POST
-    # =========================================================
+        
+        # =====================================================
+        # VALIDATE PARKING SPACE INPUT
+        # =====================================================
+
+        try:
+            free_parking_spaces = int(
+                request.POST.get("free_parking_spaces") or 0
+            )
+
+            paid_parking_spaces = int(
+                request.POST.get("paid_parking_spaces") or 0
+            )
+
+        except (TypeError, ValueError):
+            messages.error(
+                request,
+                "Enter valid parking space quantities."
+            )
+
+            return render(
+                request,
+                "core/agreement_add.html",
+                {
+                    "tenants": tenants,
+                    "properties": properties,
+                },
+            )
+
+        if free_parking_spaces < 0 or paid_parking_spaces < 0:
+            messages.error(
+                request,
+                "Parking spaces cannot be negative."
+            )
+
+            return render(
+                request,
+                "core/agreement_add.html",
+                {
+                    "tenants": tenants,
+                    "properties": properties,
+                },
+            )
+
+        # =====================================================
+        # CREATE AGREEMENT
+        # =====================================================
+
+        try:
+            with transaction.atomic():
+
+                # Lock property before checking parking capacity.
+                locked_property = (
+                    Property.objects
+                    .select_for_update()
+                    .get(pk=property_obj.pk)
+                )
+
+                # Count allocations from both agreement types.
+                if status == "active":
+
+                    occupied = get_active_parking_allocation(
+                        locked_property
+                    )
+
+                    available_spaces = (
+                        locked_property.total_parking_spaces - occupied
+                    )
+
+                    requested_spaces = (
+                        free_parking_spaces + paid_parking_spaces
+                    )
+
+                    if requested_spaces > available_spaces:
+                        raise ValidationError(
+                            f"Only {max(available_spaces, 0)} parking "
+                            f"spaces are available. You requested "
+                            f"{requested_spaces}."
+                        )
+
+                agreement = LeaseAgreement.objects.create(
+                    tenant=tenant,
+                    property=locked_property,
+                    start_date=start_date,
+                    end_date=end_date,
+                    monthly_rent=monthly_rent,
+                    free_parking_spaces=free_parking_spaces,
+                    paid_parking_spaces=paid_parking_spaces,
+
+                    # Lease Extension 1
+                    extension_1_rent_increase_percent=(
+                        extension_1_rent_increase_percent
+                    ),
+                    extension_1_start_date=extension_1_start_date,
+                    extension_1_end_date=extension_1_end_date,
+                    extension_1_monthly_rent=(
+                        extension_1_monthly_rent
+                        if extension_1_monthly_rent is not None
+                        else ZERO
+                    ),
+                    extension_1_security_deposit=(
+                        extension_1_security_deposit
+                        if extension_1_security_deposit is not None
+                        else ZERO
+                    ),
+
+                    # Lease Extension 2
+                    extension_2_rent_increase_percent=(
+                        extension_2_rent_increase_percent
+                    ),
+                    extension_2_start_date=extension_2_start_date,
+                    extension_2_end_date=extension_2_end_date,
+                    extension_2_monthly_rent=(
+                        extension_2_monthly_rent
+                        if extension_2_monthly_rent is not None
+                        else ZERO
+                    ),
+                    extension_2_security_deposit=(
+                        extension_2_security_deposit
+                        if extension_2_security_deposit is not None
+                        else ZERO
+                    ),
+
+                    rental_area=rental_area,
+                    parking_charge=parking_charge,
+                    security_deposit=security_deposit,
+                    cgst_rate=cgst_rate,
+                    sgst_rate=sgst_rate,
+                    rent_due_day=rent_due_day,
+                    status=status,
+                    termination_date=termination_date,
+                    termination_reason=termination_reason,
+                    notes=notes,
+                    lease_document=request.FILES.get("lease_document"),
+                )
+
+                # Initial Rent History
+                RentHistory.objects.create(
+                    lease_agreement=agreement,
+                    effective_from=start_date,
+                    effective_to=None,
+                    monthly_rent=monthly_rent,
+                    increase_percent=ZERO,
+                    increase_accepted=True,
+                )
+
+            messages.success(
+                request,
+                "Lease Agreement created successfully."
+            )
+
+            return redirect("agreement_list")
+
+        except ValidationError as exc:
+            messages.error(
+                request,
+                " ".join(exc.messages)
+            )
+
+        except IntegrityError as exc:
+            messages.error(
+                request,
+                f"Unable to create the Lease Agreement: {exc}"
+            )
+
+    # =====================================================
+    # GET REQUEST / RETURN FORM
+    # =====================================================
 
     return render(
         request,
-        "core/agreement_edit.html",
+        "core/agreement_add.html",
         {
-            "agreement": agreement,
             "tenants": tenants,
             "properties": properties,
         },
     )
+
 
 def agreement_view(request, pk):
 
@@ -5309,6 +5634,48 @@ def mark_lease_notification_read(request, pk):
 
 
 def tds_ledger_report(request):
+        # =====================================================
+    # TDS MASTER - SAVE DEFAULT RATE
+    # =====================================================
+
+    tds_master, created = TDSMaster.objects.get_or_create(
+        pk=1,
+        defaults={
+            "tds_rate": Decimal("10.00"),
+        },
+    )
+
+    if request.method == "POST":
+
+        rate_value = request.POST.get("tds_rate", "").strip()
+
+        try:
+            new_rate = Decimal(rate_value)
+
+            if not new_rate.is_finite() or new_rate < 0 or new_rate > 100:
+                raise ValueError
+
+            tds_master.tds_rate = new_rate
+            tds_master.save(update_fields=["tds_rate", "updated_at"])
+
+            messages.success(
+                request,
+                f"TDS rate successfully updated to {new_rate}%."
+            )
+
+        except (ValueError, InvalidOperation):
+            messages.error(
+                request,
+                "Please enter a valid TDS rate between 0 and 100."
+            )
+
+        return redirect(
+            request.path + (
+                "?" + request.GET.urlencode()
+                if request.GET
+                else ""
+            )
+        )
     today = date.today()
 
     mode = request.GET.get("mode", "month")
@@ -5339,12 +5706,12 @@ def tds_ledger_report(request):
 
         rent_amount = rent_item.amount or Decimal("0.00")
 
-        TDSLedger.objects.get_or_create(
-            invoice=invoice,
-            defaults={
+    TDSLedger.objects.get_or_create(
+        invoice=invoice,
+        defaults={
                 "tenant": invoice.tenant,
                 "rent_amount": rent_amount,
-                "tds_rate": Decimal("10.00"),
+                "tds_rate": tds_master.tds_rate,
             },
         )
 
@@ -5420,6 +5787,7 @@ def tds_ledger_report(request):
         "to_date_value": to_date_value,
         "total_rent": totals["total_rent"] or Decimal("0.00"),
         "total_tds": totals["total_tds"] or Decimal("0.00"),
+        "tds_master": tds_master,
     }
 
     return render(
@@ -5958,4 +6326,257 @@ def month_wise_financial_report(request):
         request,
         "core/month_wise_financial_report.html",
         context,
+    )
+
+
+def get_active_parking_allocation(
+    property_obj,
+    exclude_lease_agreement_id=None,
+    exclude_parking_agreement_id=None,
+):
+    rental_queryset = LeaseAgreement.objects.filter(
+        property=property_obj,
+        status="active",
+    )
+
+    parking_queryset = ParkingLeaseAgreement.objects.filter(
+        property=property_obj,
+        status="active",
+    )
+
+    if exclude_lease_agreement_id:
+        rental_queryset = rental_queryset.exclude(
+            pk=exclude_lease_agreement_id
+        )
+
+    if exclude_parking_agreement_id:
+        parking_queryset = parking_queryset.exclude(
+            pk=exclude_parking_agreement_id
+        )
+
+    rental_totals = rental_queryset.aggregate(
+        free=Sum("free_parking_spaces"),
+        paid=Sum("paid_parking_spaces"),
+    )
+
+    parking_totals = parking_queryset.aggregate(
+        free=Sum("free_spaces"),
+        paid=Sum("paid_spaces"),
+    )
+
+    return (
+        (rental_totals["free"] or 0)
+        + (rental_totals["paid"] or 0)
+        + (parking_totals["free"] or 0)
+        + (parking_totals["paid"] or 0)
+    )
+
+@login_required
+def parking_agreement_add(request, property_id):
+
+    if not request.user.is_superuser:
+        return HttpResponseForbidden(
+            "Access denied. Only Administrators can add Parking Lease Agreements."
+        )
+
+    property_obj = get_object_or_404(Property, pk=property_id)
+    tenants = Tenant.objects.all().order_by("full_name")
+
+    if request.method == "POST":
+
+        agreement_number = request.POST.get(
+            "agreement_number", ""
+        ).strip()
+
+        agreement_date = parse_date(
+            request.POST.get("agreement_date", "")
+        )
+
+        start_date = parse_date(
+            request.POST.get("start_date", "")
+        )
+
+        end_date_value = request.POST.get(
+            "end_date", ""
+        ).strip()
+
+        end_date = (
+            parse_date(end_date_value)
+            if end_date_value else None
+        )
+
+        tenant_id = request.POST.get("tenant")
+        status = request.POST.get("status", "active")
+        notes = request.POST.get("notes", "").strip()
+
+        try:
+            free_spaces = int(
+                request.POST.get("free_spaces") or 0
+            )
+
+            paid_spaces = int(
+                request.POST.get("paid_spaces") or 0
+            )
+
+            monthly_rate = Decimal(
+                request.POST.get("monthly_rate_per_space") or "0"
+            )
+
+        except (ValueError, InvalidOperation):
+            messages.error(
+                request,
+                "Enter valid numbers for free spaces, paid spaces and monthly rate."
+            )
+
+            return render(
+                request,
+                "core/parking_agreement_add.html",
+                {
+                    "property": property_obj,
+                    "tenants": tenants,
+                    "form_data": request.POST,
+                },
+            )
+
+        tenant = Tenant.objects.filter(pk=tenant_id).first()
+
+        if not agreement_number:
+            messages.error(
+                request,
+                "Agreement number is required."
+            )
+
+        elif not agreement_date or not start_date:
+            messages.error(
+                request,
+                "Agreement date and start date are required."
+            )
+
+        elif end_date and end_date < start_date:
+            messages.error(
+                request,
+                "End date cannot be before start date."
+            )
+
+        elif not tenant:
+            messages.error(
+                request,
+                "Please select a valid tenant."
+            )
+
+        elif free_spaces < 0 or paid_spaces < 0:
+            messages.error(
+                request,
+                "Parking spaces cannot be negative."
+            )
+
+        elif free_spaces + paid_spaces <= 0:
+            messages.error(
+                request,
+                "Please allocate at least one parking space."
+            )
+
+        elif monthly_rate < 0:
+            messages.error(
+                request,
+                "Monthly rate cannot be negative."
+            )
+
+        elif status not in dict(
+            ParkingLeaseAgreement.AGREEMENT_STATUS
+        ):
+            messages.error(
+                request,
+                "Please select a valid agreement status."
+            )
+
+        else:
+            try:
+                with transaction.atomic():
+
+                    # Lock the property while checking its capacity.
+                    locked_property = (
+                        Property.objects
+                        .select_for_update()
+                        .get(pk=property_id)
+                    )
+
+                    # Create the agreement object.
+                    agreement = ParkingLeaseAgreement(
+                        agreement_number=agreement_number,
+                        agreement_date=agreement_date,
+                        property=locked_property,
+                        tenant=tenant,
+                        start_date=start_date,
+                        end_date=end_date,
+                        free_spaces=free_spaces,
+                        paid_spaces=paid_spaces,
+                        monthly_rate_per_space=monthly_rate,
+                        status=status,
+                        notes=notes,
+                        agreement_document=request.FILES.get(
+                            "agreement_document"
+                        ),
+                    )
+
+                    # Check combined allocations from both agreement types.
+                    if status == "active":
+
+                        already_allocated = (
+                            get_active_parking_allocation(
+                                locked_property
+                            )
+                        )
+
+                        available_spaces = (
+                            locked_property.total_parking_spaces
+                            - already_allocated
+                        )
+
+                        requested_spaces = (
+                            free_spaces + paid_spaces
+                        )
+
+                        if requested_spaces > available_spaces:
+                            raise ValidationError(
+                                f"Only {max(available_spaces, 0)} parking "
+                                f"spaces are available. You requested "
+                                f"{requested_spaces}."
+                            )
+
+                    # Run model validations before saving.
+                    agreement.full_clean()
+                    agreement.save()
+
+                messages.success(
+                    request,
+                    "Parking Lease Agreement created successfully."
+                )
+
+                return redirect("parking_agreement_list")
+
+            except ValidationError as exc:
+                messages.error(
+                    request,
+                    " ".join(exc.messages)
+                )
+
+            except IntegrityError:
+                messages.error(
+                    request,
+                    "This agreement number already exists. Please use a unique number."
+                )
+
+    return render(
+        request,
+        "core/parking_agreement_add.html",
+        {
+            "property": property_obj,
+            "tenants": tenants,
+            "form_data": (
+                request.POST
+                if request.method == "POST"
+                else {}
+            ),
+        },
     )

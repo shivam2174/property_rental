@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Parking Register | Property Management</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f3f6fb;
+            color: #1e293b;
+        }
+
+        .page {
+            max-width: 1250px;
+            margin: 35px auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            font-size: 27px;
+            color: #1e3a5f;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 11px 17px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #234b83;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 5px 20px rgba(15, 23, 42, 0.07);
+            overflow-x: auto;
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #1e3a5f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        thead {
+            background: #edf3fa;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px 13px;
+            font-size: 13px;
+            color: #334155;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px 13px;
+            border-bottom: 1px solid #e8edf4;
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .property-name {
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        .number {
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .available {
+            color: #15803d;
+        }
+
+        .occupied {
+            color: #c2410c;
+        }
+
+        .action-btn {
+            background: #234b83;
+            color: white;
+            padding: 9px 13px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            padding: 11px 14px;
+            border: 1px solid #d5deeb;
+            border-radius: 7px;
+            background: white;
+            color: #1e3a5f;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #234b83;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px;
+            color: #64748b;
+        }
+
+        @media(max-width: 650px) {
+            .page {
+                margin: 15px auto;
+                padding: 12px;
+            }
+
+            .page-header h1 {
+                font-size: 22px;
+            }
+
+            .table-card {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="page">
+
+        <div class="page-header">
+
+            <h1>Parking Register</h1>
+
+            <div class="header-actions">
+
+                <select id="parkingFilter" class="filter-select">
+                    <option value="available" selected>Available Parking</option>
+                    <option value="occupied">Occupied Parking</option>
+                    <option value="all">All Properties</option>
+                </select>
+
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                    Home
+                </a>
+
+                <a href="{% url 'parking_agreement_list' %}" class="btn btn-secondary">
+                    Parking Lease Agreement
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="table-card">
+
+            <div class="table-title">
+                Property Parking Availability
+            </div>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Total</th>
+                        <th>Occupied</th>
+                        <th>Available</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for property in properties %}
+
+                    <tr class="parking-row" data-total="{{ property.total_parking_spaces }}"
+                        data-occupied="{{ property.occupied_parking_spaces }}"
+                        data-available="{{ property.available_parking_spaces }}">
+
+                        <td class="property-name">
+                            {{ property.name }}
+                        </td>
+
+                        <td class="number">
+                            {{ property.total_parking_spaces }}
+                        </td>
+
+                        <td class="number occupied">
+                            {{ property.occupied_parking_spaces }}
+                        </td>
+
+                        <td class="number available">
+                            {{ property.available_parking_spaces }}
+                        </td>
+
+                        <td>
+                            <a href="{% url 'parking_agreement_add' property.id %}" class="action-btn">
+                                Add Parking Lease Agreement
+                            </a>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="5" class="empty">
+                            No properties found.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const filter = document.getElementById("parkingFilter");
+            const rows = document.querySelectorAll(".parking-row");
+
+            function filterParking() {
+
+                const selectedFilter = filter.value;
+
+                rows.forEach(function (row) {
+
+                    const occupied = Number(row.dataset.occupied || 0);
+                    const available = Number(row.dataset.available || 0);
+
+                    let show = false;
+
+                    if (selectedFilter === "available") {
+                        show = available > 0;
+                    }
+
+                    else if (selectedFilter === "occupied") {
+                        show = occupied > 0;
+                    }
+
+                    else if (selectedFilter === "all") {
+                        show = true;
+                    }
+
+                    row.style.display = show ? "" : "none";
+
+                });
+            }
+
+            filter.addEventListener("change", filterParking);
+
+            // Default: show only properties with available parking
+            filterParking();
+
+        });
+    </script>
+
+</body>
+
+</html>

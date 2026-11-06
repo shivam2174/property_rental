@@ -145,6 +145,24 @@ urlpatterns = [
     ),
 
     path(
+    "parking-register/",
+    views.parking_register,
+    name="parking_register",
+    ),
+
+    path(
+    "parking-agreements/",
+    views.parking_agreement_list,
+    name="parking_agreement_list",
+    ),
+
+    path(
+    "parking-agreements/add/<int:property_id>/",
+    views.parking_agreement_add,
+    name="parking_agreement_add",
+   ),
+
+    path(
         "property/add/",
         views.property_add,
         name="property_add",

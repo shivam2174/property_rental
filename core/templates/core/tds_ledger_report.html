@@ -97,6 +97,45 @@
             white-space: nowrap;
         }
 
+        .tds-master-form {
+            display: flex;
+            align-items: end;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #f3f6fb;
+            border: 1px solid #dce4ef;
+            border-radius: 7px;
+        }
+
+        .tds-master-form .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .tds-master-form input {
+            width: 130px;
+        }
+
+        .tds-save-button {
+            background: #234b83;
+            color: white;
+            border: none;
+        }
+
+        .tds-master-form .rate-note {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        @media print {
+            .tds-master-form {
+                display: none !important;
+            }
+        }
+
         .back-btn:hover {
             background: #334155;
         }
@@ -216,33 +255,28 @@
 
         <div class="field" id="month-field">
             <label for="month">Billing Month</label>
-            <input type="month" name="month" id="month"
-                   value="{{ month_value }}">
+            <input type="month" name="month" id="month" value="{{ month_value }}">
         </div>
 
         <div class="field" id="from-field">
             <label for="from_date">From Date</label>
-            <input type="date" name="from_date" id="from_date"
-                   value="{{ from_date_value }}">
+            <input type="date" name="from_date" id="from_date" value="{{ from_date_value }}">
         </div>
 
         <div class="field" id="to-field">
             <label for="to_date">To Date</label>
-            <input type="date" name="to_date" id="to_date"
-                   value="{{ to_date_value }}">
+            <input type="date" name="to_date" id="to_date" value="{{ to_date_value }}">
         </div>
 
         <div class="field">
             <label for="tenant">Tenant</label>
             <select name="tenant" id="tenant">
-                <option value="all"
-                    {% if selected_tenant == "all" %}selected{% endif %}>
+                <option value="all" {% if selected_tenant == "all" %}selected{% endif %}>
                     All Tenants
                 </option>
 
                 {% for tenant in tenants %}
-                <option value="{{ tenant.pk }}"
-                    {% if selected_tenant == tenant.pk|stringformat:"s" %}selected{% endif %}>
+                <option value="{{ tenant.pk }}" {% if selected_tenant == tenant.pk|stringformat:"s" %}selected{% endif %}>
                     {{ tenant.full_name }}
                 </option>
                 {% endfor %}
@@ -251,18 +285,54 @@
 
         <button type="submit">Apply Filters</button>
 
-        <button type="button" class="print-button"
-                onclick="window.print()">
+        <button type="button" class="print-button" onclick="window.print()">
             Print Report
         </button>
 
         <div class="back-wrapper">
             <a href="{% url 'dashboard' %}" class="back-btn">
-                 Home
+                Home
             </a>
         </div>
 
     </form>
+
+    <!-- TDS MASTER RATE SETTINGS -->
+    <div class="tds-master-form no-print">
+
+        <form method="post" action="{% url 'tds_ledger_report' %}"
+            style="display:flex; align-items:end; gap:10px; flex-wrap:wrap;">
+
+            {% csrf_token %}
+
+            <div class="field">
+                <label for="tds_rate">
+                    TDS Rate (%)
+                </label>
+
+                <input type="number" name="tds_rate" id="tds_rate" value="{{ tds_master.tds_rate }}" min="0" max="100"
+                    step="0.01" placeholder="Enter TDS %" required>
+            </div>
+
+            <button type="submit" class="tds-save-button">
+                Save TDS Rate
+            </button>
+
+            <span class="rate-note">
+                Current default: {{ tds_master.tds_rate }}%
+            </span>
+
+        </form>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div style="width:100%; color:#166534; font-size:13px;">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+    </div>
 
     <div class="table-wrapper">
         <table>
@@ -339,4 +409,5 @@
     </script>
 
 </body>
+
 </html>

@@ -11,429 +11,429 @@
     <title>Add Lease Agreement</title>
 
     <style>
-    * {
-        box-sizing: border-box;
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    body {
-        margin: 0;
-        padding: 24px;
-        background: #f3f5f8;
-        color: #1f2937;
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 14px;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 1320px;
-        margin: 0 auto;
-    }
-
-    /* PAGE HEADER */
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 22px;
-        padding-bottom: 18px;
-        border-bottom: 1px solid #d9dee7;
-    }
-
-    .page-header h1 {
-        margin: 0;
-        color: #111827;
-        font-size: 27px;
-        font-weight: 700;
-    }
-
-    .page-header p {
-        margin: 7px 0 0;
-        color: #64748b;
-        font-size: 14px;
-    }
-
-    /* HEADER BUTTONS */
-    .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 38px;
-        padding: 10px 16px;
-        border: 1px solid transparent;
-        border-radius: 5px;
-        font-family: inherit;
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: background 0.2s ease;
-    }
-
-    .btn-dashboard {
-        background: #1e293b;
-        color: #fff;
-    }
-
-    .btn-dashboard:hover {
-        background: #334155;
-    }
-
-    .btn-primary {
-        background: #0d6efd;
-        color: #fff;
-    }
-
-    .btn-primary:hover {
-        background: #0b5ed7;
-    }
-
-    .btn-secondary {
-        background: #64748b;
-        color: #fff;
-    }
-
-    .btn-secondary:hover {
-        background: #475569;
-    }
-
-    /* FORM SECTIONS */
-    .form-section {
-        margin-bottom: 22px;
-        overflow: hidden;
-        background: #fff;
-        border: 1px solid #dce1e8;
-        border-radius: 7px;
-        box-shadow: 0 2px 7px rgba(15, 23, 42, 0.04);
-    }
-
-    .section-header {
-        padding: 15px 20px;
-        background: #f1f3f5;
-        border-bottom: 1px solid #dce1e8;
-    }
-
-    .section-header h2 {
-        margin: 0;
-        color: #111827;
-        font-size: 16px;
-        font-weight: 700;
-    }
-
-    .section-body {
-        padding: 22px 20px;
-    }
-
-    .subsection-title {
-        margin: 0 0 18px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #e5e7eb;
-        color: #334155;
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    /* FORM GRID */
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 20px;
-    }
-
-    .form-group {
-        min-width: 0;
-        margin-bottom: 18px;
-    }
-
-    .form-grid .form-group {
-        margin-bottom: 0;
-    }
-
-    .form-group.full-width {
-        grid-column: 1 / -1;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        color: #374151;
-        font-size: 13px;
-        font-weight: 600;
-    }
-
-    .required {
-        color: #dc2626;
-    }
-
-    /* INPUTS */
-    input:not([type="checkbox"]):not([type="radio"]),
-    select,
-    textarea {
-        display: block;
-        width: 100%;
-        min-height: 40px;
-        padding: 10px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 5px;
-        background: #fff;
-        color: #111827;
-        font-family: inherit;
-        font-size: 14px;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    textarea {
-        min-height: 90px;
-        resize: vertical;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-        outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-    }
-
-    input[type="checkbox"],
-    input[type="radio"] {
-        accent-color: #0d6efd;
-    }
-
-    .help-text,
-    .form-text {
-        display: block;
-        margin-top: 6px;
-        color: #64748b;
-        font-size: 12px;
-        line-height: 1.5;
-    }
-
-    /* DJANGO VALIDATION ERRORS */
-    .errorlist {
-        margin: 7px 0 0;
-        padding-left: 18px;
-        color: #b91c1c;
-        font-size: 12px;
-    }
-
-    .error-message,
-    .form-errors {
-        margin-bottom: 18px;
-        padding: 12px 15px;
-        border: 1px solid #fecaca;
-        border-radius: 5px;
-        background: #fef2f2;
-        color: #991b1b;
-    }
-
-    /* FORM FOOTER */
-    .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 10px;
-        margin-top: 24px;
-        padding-top: 18px;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .btn-save {
-        border: none;
-        background: #0d6efd;
-        color: #fff;
-    }
-
-    .btn-save:hover {
-        background: #0b5ed7;
-    }
-
-    .btn-cancel {
-        border: 1px solid #cbd5e1;
-        background: #fff;
-        color: #334155;
-    }
-
-    .btn-cancel:hover {
-        background: #f1f5f9;
-    }
-
-
-.document-section {
-    margin-top: 24px;
-    background: #ffffff;
-    border: 1px solid #dfe5ee;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.document-section-header {
-    padding: 16px 20px;
-    background: #f8fafc;
-    border-bottom: 1px solid #dfe5ee;
-    font-size: 16px;
-    font-weight: 700;
-    color: #172b4d;
-}
-
-.document-section-body {
-    padding: 22px;
-}
-
-.document-description {
-    margin: 0 0 18px;
-    color: #64748b;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.document-field label {
-    display: block;
-    margin-bottom: 8px;
-    color: #334155;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.document-field input[type="file"] {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 7px;
-    background: #f8fafc;
-    color: #334155;
-    font-size: 14px;
-}
-
-.document-help {
-    display: block;
-    margin-top: 8px;
-    color: #64748b;
-    font-size: 12px;
-}
-
-.form-actions {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 24px;
-}
-
-.form-actions .btn {
-    display: inline-block;
-    padding: 11px 18px;
-    border: 0;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.form-actions .btn-save {
-    background: #0d6efd;
-    color: #ffffff;
-}
-
-.form-actions .btn-save:hover {
-    background: #0b5ed7;
-}
-
-.form-actions .btn-back {
-    background: #e9eef5;
-    color: #243247;
-}
-
-.form-actions .btn-back:hover {
-    background: #dce4ee;
-}
-
-@media (max-width: 600px) {
-    .document-section-body {
-        padding: 16px;
-    }
-
-    .form-actions {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .form-actions .btn {
-        text-align: center;
-        width: 100%;
-    }
-}
-
-
-    /* TABLET AND MOBILE */
-    @media (max-width: 768px) {
         body {
-            padding: 14px;
+            margin: 0;
+            padding: 24px;
+            background: #f3f5f8;
+            color: #1f2937;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
         }
 
-        .page-header {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .header-actions {
+        .container {
             width: 100%;
+            max-width: 1320px;
+            margin: 0 auto;
         }
 
-        .header-actions .btn {
-            flex: 1;
-        }
-
-        .form-grid {
-            grid-template-columns: 1fr;
+        /* PAGE HEADER */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             gap: 16px;
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #d9dee7;
         }
 
-        .form-group.full-width {
-            grid-column: auto;
+        .page-header h1 {
+            margin: 0;
+            color: #111827;
+            font-size: 27px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            margin: 7px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* HEADER BUTTONS */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 38px;
+            padding: 10px 16px;
+            border: 1px solid transparent;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-dashboard {
+            background: #1e293b;
+            color: #fff;
+        }
+
+        .btn-dashboard:hover {
+            background: #334155;
+        }
+
+        .btn-primary {
+            background: #0d6efd;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0b5ed7;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        /* FORM SECTIONS */
+        .form-section {
+            margin-bottom: 22px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #dce1e8;
+            border-radius: 7px;
+            box-shadow: 0 2px 7px rgba(15, 23, 42, 0.04);
+        }
+
+        .section-header {
+            padding: 15px 20px;
+            background: #f1f3f5;
+            border-bottom: 1px solid #dce1e8;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            color: #111827;
+            font-size: 16px;
+            font-weight: 700;
         }
 
         .section-body {
-            padding: 17px 14px;
+            padding: 22px 20px;
+        }
+
+        .subsection-title {
+            margin: 0 0 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #334155;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* FORM GRID */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            min-width: 0;
+            margin-bottom: 18px;
+        }
+
+        .form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        /* INPUTS */
+        input:not([type="checkbox"]):not([type="radio"]),
+        select,
+        textarea {
+            display: block;
+            width: 100%;
+            min-height: 40px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            background: #fff;
+            color: #111827;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        input[type="checkbox"],
+        input[type="radio"] {
+            accent-color: #0d6efd;
+        }
+
+        .help-text,
+        .form-text {
+            display: block;
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* DJANGO VALIDATION ERRORS */
+        .errorlist {
+            margin: 7px 0 0;
+            padding-left: 18px;
+            color: #b91c1c;
+            font-size: 12px;
+        }
+
+        .error-message,
+        .form-errors {
+            margin-bottom: 18px;
+            padding: 12px 15px;
+            border: 1px solid #fecaca;
+            border-radius: 5px;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        /* FORM FOOTER */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn-save {
+            border: none;
+            background: #0d6efd;
+            color: #fff;
+        }
+
+        .btn-save:hover {
+            background: #0b5ed7;
+        }
+
+        .btn-cancel {
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #334155;
+        }
+
+        .btn-cancel:hover {
+            background: #f1f5f9;
+        }
+
+
+        .document-section {
+            margin-top: 24px;
+            background: #ffffff;
+            border: 1px solid #dfe5ee;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .document-section-header {
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #dfe5ee;
+            font-size: 16px;
+            font-weight: 700;
+            color: #172b4d;
+        }
+
+        .document-section-body {
+            padding: 22px;
+        }
+
+        .document-description {
+            margin: 0 0 18px;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .document-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .document-field input[type="file"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .document-help {
+            display: block;
+            margin-top: 8px;
+            color: #64748b;
+            font-size: 12px;
         }
 
         .form-actions {
-            flex-direction: column-reverse;
-            align-items: stretch;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
         }
 
         .form-actions .btn {
-            width: 100%;
-        }
-    }
-
-    @media print {
-        body {
-            padding: 0;
-            background: #fff;
-        }
-
-        .header-actions,
-        .form-actions {
-            display: none;
+            display: inline-block;
+            padding: 11px 18px;
+            border: 0;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
-        .form-section {
-            box-shadow: none;
-            break-inside: avoid;
+        .form-actions .btn-save {
+            background: #0d6efd;
+            color: #ffffff;
         }
-    }
-</style>
+
+        .form-actions .btn-save:hover {
+            background: #0b5ed7;
+        }
+
+        .form-actions .btn-back {
+            background: #e9eef5;
+            color: #243247;
+        }
+
+        .form-actions .btn-back:hover {
+            background: #dce4ee;
+        }
+
+        @media (max-width: 600px) {
+            .document-section-body {
+                padding: 16px;
+            }
+
+            .form-actions {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .form-actions .btn {
+                text-align: center;
+                width: 100%;
+            }
+        }
+
+
+        /* TABLET AND MOBILE */
+        @media (max-width: 768px) {
+            body {
+                padding: 14px;
+            }
+
+            .page-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                flex: 1;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .form-group.full-width {
+                grid-column: auto;
+            }
+
+            .section-body {
+                padding: 17px 14px;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: #fff;
+            }
+
+            .header-actions,
+            .form-actions {
+                display: none;
+            }
+
+            .form-section {
+                box-shadow: none;
+                break-inside: avoid;
+            }
+        }
+    </style>
 
 </head>
 
@@ -541,12 +541,11 @@
 
                         <!-- PROPERTY -->
 
+
                         <div class="form-group">
 
                             <label for="property">
-
                                 Property <span class="required">*</span>
-
                             </label>
 
                             <select id="property" name="property" required>
@@ -555,10 +554,9 @@
 
                                 {% for property in properties %}
 
-                                <option value="{{ property.pk }}">
-
+                                <option value="{{ property.pk }}"
+                                    data-parking-spaces="{{ property.total_parking_spaces|default_if_none:0}}">
                                     {{ property.name }}{% if property.unit_no %} - Unit {{ property.unit_no }}{% endif%}
-
                                 </option>
 
                                 {% empty %}
@@ -570,12 +568,13 @@
                             </select>
 
                             <div id="propertyInfo" class="info-box">
-
-                                Selected Property: <strong id="propertyName"></strong>
-
+                                Selected Property:
+                                <strong id="propertyName"></strong>
                             </div>
 
                         </div>
+
+
 
                     </div>
 
@@ -696,129 +695,103 @@
                     </div>
 
                     <!-- EXTENSION 1 -->
-
                     <div class="subsection">
-
                         <div class="subsection-title">Lease Extension 1</div>
 
                         <div class="row">
-
                             <div class="form-group">
-
                                 <label for="extension_1_start_date">Extension 1 Start Date</label>
-
                                 <input type="date" id="extension_1_start_date" name="extension_1_start_date"
                                     value="{{ request.POST.extension_1_start_date }}">
-
                             </div>
 
                             <div class="form-group">
-
                                 <label for="extension_1_end_date">Extension 1 End Date</label>
-
                                 <input type="date" id="extension_1_end_date" name="extension_1_end_date"
                                     value="{{ request.POST.extension_1_end_date }}">
-
                             </div>
-
                         </div>
 
                         <div class="row">
-
                             <div class="form-group">
-
-                                <label for="extension_1_monthly_rent">
-
-                                    Extension 1 Monthly Rent
-
+                                <label for="extension_1_rent_increase_percent">
+                                    Extension 1 Rent Increase (%)
                                 </label>
-
-                                <input type="number" id="extension_1_monthly_rent" name="extension_1_monthly_rent"
-                                    step="0.01" min="0" value="{{ request.POST.extension_1_monthly_rent }}"
-                                    placeholder="Enter extension 1 rent">
-
+                                <input type="number" id="extension_1_rent_increase_percent"
+                                    name="extension_1_rent_increase_percent" min="0" max="100" step="0.01"
+                                    value="{{ request.POST.extension_1_rent_increase_percent|default:'0' }}">
+                                <small>Increase applied to the original monthly rent and security deposit.</small>
                             </div>
 
                             <div class="form-group">
+                                <label for="extension_1_monthly_rent">Extension 1 Monthly Rent</label>
+                                <input type="number" id="extension_1_monthly_rent" name="extension_1_monthly_rent"
+                                    step="0.01" min="0" value="{{ request.POST.extension_1_monthly_rent }}"
+                                    placeholder="Calculated automatically" readonly>
+                            </div>
+                        </div>
 
+                        <div class="row">
+                            <div class="form-group">
                                 <label for="extension_1_security_deposit">
-
                                     Extension 1 Security Deposit
-
                                 </label>
-
                                 <input type="number" id="extension_1_security_deposit"
                                     name="extension_1_security_deposit" step="0.01" min="0"
                                     value="{{ request.POST.extension_1_security_deposit }}"
-                                    placeholder="Enter extension 1 deposit">
-
+                                    placeholder="Calculated automatically" readonly>
                             </div>
-
                         </div>
-
                     </div>
 
                     <!-- EXTENSION 2 -->
-
                     <div class="subsection">
-
                         <div class="subsection-title">Lease Extension 2</div>
 
                         <div class="row">
-
                             <div class="form-group">
-
                                 <label for="extension_2_start_date">Extension 2 Start Date</label>
-
                                 <input type="date" id="extension_2_start_date" name="extension_2_start_date"
                                     value="{{ request.POST.extension_2_start_date }}">
-
                             </div>
 
                             <div class="form-group">
-
                                 <label for="extension_2_end_date">Extension 2 End Date</label>
-
                                 <input type="date" id="extension_2_end_date" name="extension_2_end_date"
                                     value="{{ request.POST.extension_2_end_date }}">
-
                             </div>
-
                         </div>
 
                         <div class="row">
-
                             <div class="form-group">
-
-                                <label for="extension_2_monthly_rent">
-
-                                    Extension 2 Monthly Rent
-
+                                <label for="extension_2_rent_increase_percent">
+                                    Extension 2 Rent Increase (%)
                                 </label>
-
-                                <input type="number" id="extension_2_monthly_rent" name="extension_2_monthly_rent"
-                                    step="0.01" min="0" value="{{ request.POST.extension_2_monthly_rent }}"
-                                    placeholder="Enter extension 2 rent">
-
+                                <input type="number" id="extension_2_rent_increase_percent"
+                                    name="extension_2_rent_increase_percent" min="0" max="100" step="0.01"
+                                    value="{{ request.POST.extension_2_rent_increase_percent|default:'0' }}">
+                                <small>Increase applied to Extension 1 rent and security deposit.</small>
                             </div>
 
                             <div class="form-group">
+                                <label for="extension_2_monthly_rent">Extension 2 Monthly Rent</label>
+                                <input type="number" id="extension_2_monthly_rent" name="extension_2_monthly_rent"
+                                    step="0.01" min="0" value="{{ request.POST.extension_2_monthly_rent }}"
+                                    placeholder="Calculated automatically" readonly>
+                            </div>
+                        </div>
 
+                        <div class="row">
+                            <div class="form-group">
                                 <label for="extension_2_security_deposit">
-
                                     Extension 2 Security Deposit
-
                                 </label>
-
                                 <input type="number" id="extension_2_security_deposit"
                                     name="extension_2_security_deposit" step="0.01" min="0"
                                     value="{{ request.POST.extension_2_security_deposit }}"
-                                    placeholder="Enter extension 2 deposit">
-
+                                    placeholder="Calculated automatically" readonly>
                             </div>
-
                         </div>
-
                     </div>
 
                     <!-- RENTAL AREA -->
@@ -849,68 +822,161 @@
                         <div class="subsection-title">Parking Details</div>
 
                         <div class="form-group">
-
-                            <label for="property_parking_display">
-
-                                Property Parking Slots
-
+                            <label for="total_parking_slots">
+                                Total Parking Spaces Available
                             </label>
 
-                            <input type="text" id="property_parking_display" readonly
-                                placeholder="Select a property to view parking slots">
+                            <input type="number" id="total_parking_slots" value="0" readonly>
 
+                            <small>
+                                Automatically populated from the selected property's
+                                Total Parking Spaces.
+                            </small>
                         </div>
 
                         <div class="row">
 
                             <div class="form-group">
-
-                                <label for="total_parking_slots">Total Parking Slots</label>
-
-                                <input type="number" id="total_parking_slots" value="0" readonly>
-
-                                <small>
-
-                                    Automatically populated from the selected property's parking slots.
-
-                                </small>
-
-                            </div>
-
-                            <div class="form-group">
-
-                                <label for="free_parking_spaces">Free Parking Slots</label>
+                                <label for="free_parking_spaces">Free Parking Spaces</label>
 
                                 <input type="number" id="free_parking_spaces" name="free_parking_spaces" min="0"
                                     value="{% if request.POST.free_parking_spaces %}{{ request.POST.free_parking_spaces }}{% else %}0{% endif %}">
-
-                                <small>Number of free parking slots.</small>
-
                             </div>
 
-                        </div>
-
-                        <div class="row">
-
                             <div class="form-group">
-
-                                <label for="paid_parking_spaces">Paid Parking Slots</label>
+                                <label for="paid_parking_spaces">Paid Parking Spaces</label>
 
                                 <input type="number" id="paid_parking_spaces" name="paid_parking_spaces" min="0"
                                     value="{% if request.POST.paid_parking_spaces %}{{ request.POST.paid_parking_spaces }}{% else %}0{% endif %}">
+                            </div>
 
-                                <small>Number of paid parking slots.</small>
+                        </div>
+
+
+
+
+
+                    </div>
+
+                    <!-- GST DETAILS -->
+
+                    <div class="section">
+
+                        <div class="section-header">GST Details</div>
+
+                        <div class="section-body">
+
+                            <div class="row">
+
+                                <div class="form-group">
+
+                                    <label for="cgst_rate">CGST Rate (%)</label>
+
+                                    <input type="number" id="cgst_rate" name="cgst_rate" step="0.01" min="0" max="100"
+                                        value="{% if request.POST.cgst_rate %}{{ request.POST.cgst_rate|default:'9' }}{% else %}9{% endif %}">
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="sgst_rate">SGST Rate (%)</label>
+
+                                    <input type="number" id="sgst_rate" name="sgst_rate" step="0.01" min="0" max="100"
+                                        value="{% if request.POST.sgst_rate %}{{ request.POST.sgst_rate|default:'9' }}{% else %}9{% endif %}">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- PAYMENT SETTINGS -->
+
+                    <div class="section">
+
+                        <div class="section-header">Payment Settings</div>
+
+                        <div class="section-body">
+
+                            <div class="row">
+
+                                <div class="form-group">
+
+                                    <label for="rent_due_day">Rent Due Day</label>
+
+                                    <input type="number" id="rent_due_day" name="rent_due_day" min="1" max="31"
+                                        value="{% if request.POST.rent_due_day %}{{ request.POST.rent_due_day }}{% else %}7{% endif %}"
+                                        required>
+
+                                    <small>Choose a day from 1 to 31.</small>
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="status">Lease Status</label>
+
+                                    <select id="status" name="status" required>
+
+                                        <option value="active" {% if request.POST.status == "active" or not request.POST.status %}selected{% endif %}>
+
+                                            Active
+
+                                        </option>
+
+                                        <option value="expired" {% if request.POST.status == "expired" %}selected{%endif%}>
+
+                                            Expired
+
+                                        </option>
+
+                                        <option value="terminated" {% if request.POST.status == "terminated"%}selected{%endif%}>
+
+                                            Terminated
+
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- TERMINATION DETAILS -->
+
+                    <div class="section">
+
+                        <div class="section-header">Termination Details</div>
+
+                        <div class="section-body">
+
+                            <div class="row">
+
+                                <div class="form-group">
+
+                                    <label for="termination_date">Termination Date</label>
+
+                                    <input type="date" id="termination_date" name="termination_date"
+                                        value="{{ request.POST.termination_date }}">
+
+                                </div>
+
+                                <div class="form-group"></div>
 
                             </div>
 
                             <div class="form-group">
 
-                                <label for="parking_charge">Monthly Parking Charge</label>
+                                <label for="termination_reason">Termination Reason</label>
 
-                                <input type="number" id="parking_charge" name="parking_charge" step="0.01" min="0"
-                                    value="{% if request.POST.parking_charge %}{{ request.POST.parking_charge }}{% else %}0{% endif %}">
-
-                                <small>Monthly charge for paid parking.</small>
+                                <textarea id="termination_reason" name="termination_reason" rows="3"
+                                    placeholder="Enter termination reason">{{ request.POST.termination_reason }}</textarea>
 
                             </div>
 
@@ -918,200 +984,66 @@
 
                     </div>
 
-                </div>
+                    <!-- NOTES -->
 
-            </div>
+                    <div class="section">
 
-            <!-- GST DETAILS -->
+                        <div class="section-header">Notes</div>
 
-            <div class="section">
+                        <div class="section-body">
 
-                <div class="section-header">GST Details</div>
+                            <div class="form-group">
 
-                <div class="section-body">
+                                <textarea id="notes" name="notes" rows="5"
+                                    placeholder="Optional notes about the lease agreement">{{ request.POST.notes }}</textarea>
 
-                    <div class="row">
-
-                        <div class="form-group">
-
-                            <label for="cgst_rate">CGST Rate (%)</label>
-
-                            <input type="number" id="cgst_rate" name="cgst_rate" step="0.01" min="0" max="100"
-                                value="{% if request.POST.cgst_rate %}{{ request.POST.cgst_rate|default:'9' }}{% else %}9{% endif %}">
-
-                        </div>
-
-                        <div class="form-group">
-
-                            <label for="sgst_rate">SGST Rate (%)</label>
-
-                            <input type="number" id="sgst_rate" name="sgst_rate" step="0.01" min="0" max="100"
-                                value="{% if request.POST.sgst_rate %}{{ request.POST.sgst_rate|default:'9' }}{% else %}9{% endif %}">
+                            </div>
 
                         </div>
 
                     </div>
 
-                </div>
+                    <div class="document-section">
 
-            </div>
-
-            <!-- PAYMENT SETTINGS -->
-
-            <div class="section">
-
-                <div class="section-header">Payment Settings</div>
-
-                <div class="section-body">
-
-                    <div class="row">
-
-                        <div class="form-group">
-
-                            <label for="rent_due_day">Rent Due Day</label>
-
-                            <input type="number" id="rent_due_day" name="rent_due_day" min="1" max="31"
-                                value="{% if request.POST.rent_due_day %}{{ request.POST.rent_due_day }}{% else %}7{% endif %}"
-                                required>
-
-                            <small>Choose a day from 1 to 31.</small>
-
+                        <div class="document-section-header">
+                            Lease Agreement Documents
                         </div>
 
-                        <div class="form-group">
+                        <div class="document-section-body">
 
-                            <label for="status">Lease Status</label>
+                            <p class="document-description">
+                                Upload the signed lease agreement PDF for this tenant.
+                            </p>
 
-                            <select id="status" name="status" required>
+                            <div class="document-field">
+                                <label for="lease_agreement_pdf">
+                                    Lease Agreement PDF
+                                </label>
 
-                                <option value="active" {% if request.POST.status == "active" or not request.POST.status%}selected{% endif %}>
+                                <input type="file" id="lease_agreement_pdf" name="lease_agreement_pdf"
+                                    accept=".pdf,application/pdf">
 
-                                    Active
-
-                                </option>
-
-                                <option value="expired" {% if request.POST.status == "expired" %}selected{% endif %}>
-
-                                    Expired
-
-                                </option>
-
-                                <option value="terminated" {% if request.POST.status == "terminated" %}selected{% endif %}>
-
-                                    Terminated
-
-                                </option>
-
-                            </select>
+                                <small class="document-help">
+                                    Select the signed lease agreement PDF.
+                                </small>
+                            </div>
 
                         </div>
-
                     </div>
 
-                </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-save">
+                            Save Lease Agreement
+                        </button>
 
-            </div>
+                        <a href="{% url 'agreement_list' %}" class="btn btn-back">
+                            Back to Agreements
+                        </a>
 
-            <!-- TERMINATION DETAILS -->
-
-            <div class="section">
-
-                <div class="section-header">Termination Details</div>
-
-                <div class="section-body">
-
-                    <div class="row">
-
-                        <div class="form-group">
-
-                            <label for="termination_date">Termination Date</label>
-
-                            <input type="date" id="termination_date" name="termination_date"
-                                value="{{ request.POST.termination_date }}">
-
-                        </div>
-
-                        <div class="form-group"></div>
-
+                        <a href="{% url 'dashboard' %}" class="btn btn-back">
+                            Home
+                        </a>
                     </div>
-
-                    <div class="form-group">
-
-                        <label for="termination_reason">Termination Reason</label>
-
-                        <textarea id="termination_reason" name="termination_reason" rows="3"
-                            placeholder="Enter termination reason">{{ request.POST.termination_reason }}</textarea>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- NOTES -->
-
-            <div class="section">
-
-                <div class="section-header">Notes</div>
-
-                <div class="section-body">
-
-                    <div class="form-group">
-
-                        <textarea id="notes" name="notes" rows="5"
-                            placeholder="Optional notes about the lease agreement">{{ request.POST.notes }}</textarea>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-<div class="document-section">
-
-    <div class="document-section-header">
-        Lease Agreement Documents
-    </div>
-
-    <div class="document-section-body">
-
-        <p class="document-description">
-            Upload the signed lease agreement PDF for this tenant.
-        </p>
-
-        <div class="document-field">
-            <label for="lease_agreement_pdf">
-                Lease Agreement PDF
-            </label>
-
-            <input
-                type="file"
-                id="lease_agreement_pdf"
-                name="lease_agreement_pdf"
-                accept=".pdf,application/pdf"
-            >
-
-            <small class="document-help">
-                Select the signed lease agreement PDF.
-            </small>
-        </div>
-
-    </div>
-</div>
-
-<div class="form-actions">
-    <button type="submit" class="btn btn-save">
-        Save Lease Agreement
-    </button>
-
-    <a href="{% url 'agreement_list' %}" class="btn btn-back">
-        Back to Agreements
-    </a>
-
-    <a href="{% url 'dashboard' %}" class="btn btn-back">
-        Home
-    </a>
-</div>
 
         </form>
 
@@ -1210,6 +1142,89 @@
             const parkingDisplay = document.getElementById("property_parking_display");
 
             const totalParkingInput = document.getElementById("total_parking_slots");
+
+            // ========================================
+            // EXTENSION RENT AND SECURITY DEPOSIT
+            // ========================================
+
+            const monthlyRentInput = document.getElementById("monthly_rent");
+            const securityDepositInput = document.getElementById("security_deposit");
+
+            const ext1PercentInput = document.getElementById(
+                "extension_1_rent_increase_percent"
+            );
+            const ext1RentInput = document.getElementById("extension_1_monthly_rent");
+            const ext1DepositInput = document.getElementById(
+                "extension_1_security_deposit"
+            );
+
+            const ext2PercentInput = document.getElementById(
+                "extension_2_rent_increase_percent"
+            );
+            const ext2RentInput = document.getElementById("extension_2_monthly_rent");
+            const ext2DepositInput = document.getElementById(
+                "extension_2_security_deposit"
+            );
+
+            function getNumericValue(input) {
+                if (!input || input.value.trim() === "") {
+                    return 0;
+                }
+
+                const value = Number(input.value);
+                return Number.isFinite(value) && value >= 0 ? value : 0;
+            }
+
+            function calculateExtensionAmounts() {
+                if (
+                    !monthlyRentInput ||
+                    !securityDepositInput ||
+                    !ext1PercentInput ||
+                    !ext1RentInput ||
+                    !ext1DepositInput ||
+                    !ext2PercentInput ||
+                    !ext2RentInput ||
+                    !ext2DepositInput
+                ) {
+                    return;
+                }
+
+                const originalRent = getNumericValue(monthlyRentInput);
+                const originalDeposit = getNumericValue(securityDepositInput);
+
+                const ext1Percent = getNumericValue(ext1PercentInput);
+                const ext2Percent = getNumericValue(ext2PercentInput);
+
+                // Extension 1: increase over original amounts.
+                const ext1Rent = originalRent * (1 + ext1Percent / 100);
+                const ext1Deposit = originalDeposit * (1 + ext1Percent / 100);
+
+                // Extension 2: increase over Extension 1 amounts.
+                const ext2Rent = ext1Rent * (1 + ext2Percent / 100);
+                const ext2Deposit = ext1Deposit * (1 + ext2Percent / 100);
+
+                ext1RentInput.value = ext1Rent.toFixed(2);
+                ext1DepositInput.value = ext1Deposit.toFixed(2);
+
+                ext2RentInput.value = ext2Rent.toFixed(2);
+                ext2DepositInput.value = ext2Deposit.toFixed(2);
+            }
+
+            // Recalculate when original amounts or percentages change.
+            [
+                monthlyRentInput,
+                securityDepositInput,
+                ext1PercentInput,
+                ext2PercentInput
+            ].forEach(function (input) {
+                if (input) {
+                    input.addEventListener("input", calculateExtensionAmounts);
+                    input.addEventListener("change", calculateExtensionAmounts);
+                }
+            });
+
+            // Calculate once when the page loads.
+            calculateExtensionAmounts();
 
             function parseDate(value) {
 
@@ -1383,77 +1398,45 @@
 
                 */
 
-            const parkingByProperty = {
 
-                    {% for property in properties %}
+            // ========================================
+            // PARKING CAPACITY FROM SELECTED PROPERTY
+            // ========================================
 
-            "{{ property.pk }}": "{{ property.parking_slot|default_if_none:''|escapejs }}"{% if not forloop.last %}, {% endif %}
+            function updateParking() {
 
-            {% endfor %}
-
-        };
-
-        function updateParking() {
-
-            if (!propertySelect) return;
-
-            const propertyId = propertySelect.value;
-
-            const slots = propertyId
-
-                ? (parkingByProperty[propertyId] || "").trim()
-
-                : "";
-
-            if (parkingDisplay) {
-
-                parkingDisplay.value = propertyId
-
-                    ? (slots || "No parking slots specified")
-
-                    : "";
-
-            }
-
-            if (totalParkingInput) {
-
-                if (!slots) {
-
-                    totalParkingInput.value = 0;
-
-                } else if (/^\d+$/.test(slots)) {
-
-                    totalParkingInput.value = Number(slots);
-
-                } else {
-
-                    totalParkingInput.value = slots
-
-                        .split(/[,;\n]+/)
-
-                        .map(function (slot) {
-
-                            return slot.trim();
-
-                        })
-
-                        .filter(Boolean).length;
-
+                if (!propertySelect || !totalParkingInput) {
+                    return;
                 }
 
+                const selectedOption =
+                    propertySelect.options[propertySelect.selectedIndex];
+
+                if (!selectedOption || !selectedOption.value) {
+                    totalParkingInput.value = 0;
+                    return;
+                }
+
+                const parkingSpaces = Number(
+                    selectedOption.getAttribute("data-parking-spaces") || 0
+                );
+
+                totalParkingInput.value =
+                    Number.isFinite(parkingSpaces) ? parkingSpaces : 0;
             }
 
-        }
+            // Update parking when property changes
+            if (propertySelect) {
 
-        if (propertySelect) {
+                propertySelect.addEventListener(
+                    "change",
+                    updateParking
+                );
 
-            propertySelect.addEventListener("change", updateParking);
-
-            updateParking();
-
-        }
-
-});
+                // Populate parking on initial page load
+                updateParking();
+            }
+     });
 
     </script>
 

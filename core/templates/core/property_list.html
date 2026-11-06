@@ -593,7 +593,7 @@
                             <th>Unit No.</th>
                             <th>Tower</th>
                             <th>Area (sq. ft.)</th>
-                            <th>Parking</th>
+                            <th>Total Parking Spaces</th>
                             <th>Status</th>
                             <th class="action-column">Actions</th>
                         </tr>
@@ -639,7 +639,7 @@
                                 {% endif %}
                             </td>
 
-                            <td>{{ property.parking_slot|default:"—" }}</td>
+                            <td>{{ property.total_parking_spaces|default_if_none:"0" }}</td>
 
                             <td>
                                 {% if property.occupancy_status == "occupied" %}

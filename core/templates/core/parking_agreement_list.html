@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Parking Lease Agreements</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 25px;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #243247;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            margin: 0;
+            color: #234b83;
+        }
+
+        .subtitle {
+            margin-top: 7px;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 11px 17px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-back {
+            background: #e5edf7;
+            color: #234b83;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(30, 50, 80, 0.07);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1050px;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #234b83;
+            color: white;
+            padding: 14px 12px;
+            text-align: left;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e8edf3;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        tbody tr:hover {
+            background: #f7faff;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-expired {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-terminated {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px;
+            color: #718096;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .table-card {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h2>Parking Lease Agreements</h2>
+            <div class="subtitle">
+                Manage independent parking space allocations.
+            </div>
+        </div>
+
+        <a href="{% url 'parking_register' %}" class="btn btn-back">
+            ← Back to Parking Register
+        </a>
+    </div>
+
+    <div class="table-card">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Agreement No.</th>
+                    <th>Property</th>
+                    <th>Tenant</th>
+                    <th>Agreement Date</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Free Spaces</th>
+                    <th>Paid Spaces</th>
+                    <th>Total Spaces</th>
+                    <th>Monthly Charge</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for agreement in agreements %}
+
+                <tr>
+                    <td>{{ agreement.agreement_number }}</td>
+
+                    <td>{{ agreement.property.name }}</td>
+
+                    <td>{{ agreement.tenant.full_name }}</td>
+
+                    <td>{{ agreement.agreement_date|date:"d-m-Y" }}</td>
+
+                    <td>{{ agreement.start_date|date:"d-m-Y" }}</td>
+
+                    <td>
+                        {% if agreement.end_date %}
+                            {{ agreement.end_date|date:"d-m-Y" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>{{ agreement.free_spaces }}</td>
+
+                    <td>{{ agreement.paid_spaces }}</td>
+
+                    <td>{{ agreement.total_allocated_spaces }}</td>
+
+                    <td>₹ {{ agreement.monthly_parking_charge|floatformat:2 }}</td>
+
+                    <td>
+                        {% if agreement.status == "active" %}
+                            <span class="status status-active">Active</span>
+                        {% elif agreement.status == "expired" %}
+                            <span class="status status-expired">Expired</span>
+                        {% else %}
+                            <span class="status status-terminated">Terminated</span>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="11" class="empty">
+                        No parking lease agreements found.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>

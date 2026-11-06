@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -527,456 +527,422 @@
 
 <body>
 
-<div class="page-container">
+    <div class="page-container">
 
-    <div class="top-bar">
-        <a href="{% url 'property_list' %}" class="nav-link">
-            ← Back to Properties
-        </a>
+        <div class="top-bar">
+            <a href="{% url 'property_list' %}" class="nav-link">
+                ← Back to Properties
+            </a>
 
-        <a href="{% url 'dashboard' %}" class="nav-link dashboard">
-            ▦ Dashboard
-        </a>
-    </div>
-
-    <header class="page-header">
-        <div class="header-icon">⌂</div>
-
-        <div>
-            <h1>
-                {% if property %}Edit Property{% else %}Property Master{% endif %}
-            </h1>
-            <p>
-                Manage property ownership, financial records, compliance and documents.
-            </p>
+            <a href="{% url 'dashboard' %}" class="nav-link dashboard">
+                ▦ Dashboard
+            </a>
         </div>
 
-        <div class="header-tag">PROPERTY MANAGEMENT</div>
-    </header>
+        <header class="page-header">
+            <div class="header-icon">⌂</div>
 
-    {% if messages %}
+            <div>
+                <h1>
+                    {% if property %}Edit Property{% else %}Property Master{% endif %}
+                </h1>
+                <p>
+                    Manage property ownership, financial records, compliance and documents.
+                </p>
+            </div>
+
+            <div class="header-tag">PROPERTY MANAGEMENT</div>
+        </header>
+
+        {% if messages %}
         <div class="messages">
             {% for message in messages %}
-                <div class="message {% if message.tags == 'error' %}error{% endif %}">
-                    {{ message }}
-                </div>
+            <div class="message {% if message.tags == 'error' %}error{% endif %}">
+                {{ message }}
+            </div>
             {% endfor %}
         </div>
-    {% endif %}
+        {% endif %}
 
-    <div class="form-card">
+        <div class="form-card">
 
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
 
-            <!-- 01 PROPERTY DETAILS -->
+                <!-- 01 PROPERTY DETAILS -->
 
-            <section class="section">
-                <div class="section-heading">
-                    <div class="section-icon">⌂</div>
-                    <div>
-                        <h2>Property Details</h2>
-                        <p>Ownership, identification and location</p>
-                    </div>
-                    <span class="section-number">01</span>
-                </div>
-
-                <div class="form-grid">
-
-                    <div class="field">
-                        <label for="owner">Property Owner</label>
-                        <select id="owner" name="owner">
-                            <option value="">-- Select Owner --</option>
-                            {% for owner in owners %}
-                                <option
-                                    value="{{ owner.id }}"
-                                    {% if property and property.owner_id == owner.id %}selected{% endif %}
-                                >{{ owner }}</option>
-                            {% endfor %}
-                        </select>
+                <section class="section">
+                    <div class="section-heading">
+                        <div class="section-icon">⌂</div>
+                        <div>
+                            <h2>Property Details</h2>
+                            <p>Ownership, identification and location</p>
+                        </div>
+                        <span class="section-number">01</span>
                     </div>
 
-                    <div class="field">
-                        <label for="name">Property Description <span class="required">*</span></label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value="{{ property.name|default:'' }}"
-                            placeholder="Enter property name or description"
-                            required
-                        >
-                    </div>
-
-                    <div class="field full">
-                        <label for="address">Property Address</label>
-                        <textarea
-                            id="address"
-                            name="address"
-                            placeholder="Enter complete property address"
-                        >{{ property.address|default:'' }}</textarea>
-                    </div>
-
-                    <div class="field">
-                        <label for="unit_no">Unit No</label>
-                        <input
-                            type="text"
-                            id="unit_no"
-                            name="unit_no"
-                            value="{{ property.unit_no|default:'' }}"
-                            placeholder="Example: 101"
-                        >
-                    </div>
-
-                    <div class="field">
-                        <label for="tower">Tower</label>
-                        <input
-                            type="text"
-                            id="tower"
-                            name="tower"
-                            value="{{ property.tower|default:'' }}"
-                            placeholder="Enter tower or block"
-                        >
-                    </div>
-
-                    <div class="field">
-                        <label for="city">City</label>
-                        <input
-                            type="text"
-                            id="city"
-                            name="city"
-                            value="{{ property.city|default:'' }}"
-                            placeholder="Enter city"
-                        >
-                    </div>
-
-                    <div class="field">
-                        <label for="state">State</label>
-                        <input
-                            type="text"
-                            id="state"
-                            name="state"
-                            value="{{ property.state|default:'' }}"
-                            placeholder="Enter state"
-                        >
-                    </div>
-
-                    <div class="field">
-                        <label for="pincode">PIN Code</label>
-                        <input
-                            type="text"
-                            id="pincode"
-                            name="pincode"
-                            value="{{ property.pincode|default:'' }}"
-                            maxlength="10"
-                            placeholder="Enter PIN code"
-                        >
-                    </div>
-
-                    <div class="field">
-                        <label for="purchased_on">Purchased On</label>
-                        <input
-                            type="date"
-                            id="purchased_on"
-                            name="purchased_on"
-                            value="{{ property.purchased_on|date:'Y-m-d' }}"
-                        >
-                    </div>
-
-                    <div class="field full">
-                        <label for="municipality_property_id">Municipality Property ID</label>
-                        <input
-                            type="text"
-                            id="municipality_property_id"
-                            name="municipality_property_id"
-                            value="{{ property.municipality_property_id|default:'' }}"
-                            placeholder="Enter municipal corporation property ID"
-                        >
-                        <small class="field-help">
-                            Enter the official municipal property identification number, if available.
-                        </small>
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- 02 PURCHASE DETAILS -->
-
-            <section class="section">
-                <div class="section-heading">
-                    <div class="section-icon">₹</div>
-                    <div>
-                        <h2>Purchase Details</h2>
-                        <p>Acquisition cost and purchase records</p>
-                    </div>
-                    <span class="section-number">02</span>
-                </div>
-
-                <div class="form-grid">
-
-                    <div class="field">
-                        <label for="total_area">Total Area (sq. ft.)</label>
-                        <input type="number" step="0.01" id="total_area" name="total_area"
-                               value="{{ property.total_area|default:'0' }}" placeholder="0.00">
-                    </div>
-
-                    <div class="field">
-                        <label for="price">Price (₹)</label>
-                        <input type="number" step="0.01" id="price" name="price"
-                               value="{{ property.price|default:'0' }}" placeholder="0.00">
-                    </div>
-
-                    <div class="field">
-                        <label for="per_sqft_rate">Per Sq. Ft. Rate (₹)</label>
-                        <input type="number" step="0.01" id="per_sqft_rate" name="per_sqft_rate"
-                               value="{{ property.per_sqft_rate|default:'0' }}" placeholder="0.00">
-                    </div>
-
-                    <div class="field">
-                        <label for="stamp_duty">Stamp Duty (₹)</label>
-                        <input type="number" step="0.01" id="stamp_duty" name="stamp_duty"
-                               value="{{ property.stamp_duty|default:'0' }}" placeholder="0.00">
-                    </div>
-
-                    <div class="field">
-                        <label for="total_purchase_price">Total Purchase Price (₹)</label>
-                        <input type="number" step="0.01" id="total_purchase_price"
-                               name="total_purchase_price"
-                               value="{{ property.total_purchase_price|default:'0' }}"
-                               placeholder="0.00">
-                    </div>
-
-                    <div class="field">
-                        <label for="gst_number">GST Number</label>
-                        <input type="text" id="gst_number" name="gst_number"
-                               value="{{ property.gst_number|default:'' }}"
-                               placeholder="Enter GST number">
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- 03 LAP DETAILS -->
-
-            <section class="section">
-                <div class="section-heading">
-                    <div class="section-icon">▤</div>
-                    <div>
-                        <h2>Loan Against Property (LAP)</h2>
-                        <p>Loan amount, installments and maturity</p>
-                    </div>
-                    <span class="section-number">03</span>
-                </div>
-
-                <div class="form-grid">
-
-                    <div class="field">
-                        <label for="lap_amount">LAP Amount (₹)</label>
-                        <input type="number" step="0.01" id="lap_amount" name="lap_amount"
-                               value="{{ property.lap_amount|default:'0' }}" placeholder="0.00">
-                    </div>
-
-                    <div class="field">
-                        <label for="monthly_installment">Monthly Installment (₹)</label>
-                        <input type="number" step="0.01" id="monthly_installment"
-                               name="monthly_installment"
-                               value="{{ property.monthly_installment|default:'0' }}"
-                               placeholder="0.00">
-                    </div>
-
-                    <div class="field">
-                        <label for="lap_maturity">LAP Maturity</label>
-                        <input type="date" id="lap_maturity" name="lap_maturity"
-                               value="{{ property.lap_maturity|date:'Y-m-d' }}">
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- 04 PARKING AND STATUS -->
-
-            <section class="section">
-                <div class="section-heading">
-                    <div class="section-icon">▣</div>
-                    <div>
-                        <h2>Parking & Status</h2>
-                        <p>Parking allocation and property availability</p>
-                    </div>
-                    <span class="section-number">04</span>
-                </div>
-
-                <div class="form-grid">
-
-                    <div class="field">
-                        <label for="parking_slot">Parking Slot</label>
-                        <input type="text" id="parking_slot" name="parking_slot"
-                               value="{{ property.parking_slot|default:'' }}"
-                               placeholder="Example: P-101">
-                    </div>
-
-                    <div class="field">
-                        <label for="status">Property Status</label>
-                        <select id="status" name="status">
-                            <option value="active"
-                                {% if not property or property.status == "active" %}selected{% endif %}>
-                                Active
-                            </option>
-                            <option value="sold_out"
-                                {% if property and property.status == "sold_out" %}selected{% endif %}>
-                                Sold-out
-                            </option>
-                            <option value="inactive"
-                                {% if property and property.status == "inactive" %}selected{% endif %}>
-                                Inactive
-                            </option>
-                        </select>
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- 05 MUNICIPAL AND PROPERTY TAX -->
-
-            <section class="section">
-                <div class="section-heading">
-                    <div class="section-icon">▤</div>
-                    <div>
-                        <h2>Municipal & Property Tax</h2>
-                        <p>Mutation status, current tax and previous dues</p>
-                    </div>
-                    <span class="section-number">05</span>
-                </div>
-
-                <div class="compliance-note">
-                    Maintain municipal identification and tax arrears details for property compliance and record keeping.
-                </div>
-
-                <div class="form-grid">
-
-                    <div class="field">
-                        <label for="mutation_done">Mutation Done?</label>
-                        <select id="mutation_done" name="mutation_done">
-                            <option value="False"
-                                {% if property and not property.mutation_done %}selected{% endif %}>
-                                No
-                            </option>
-                            <option value="True"
-                                {% if property and property.mutation_done %}selected{% endif %}>
-                                Yes
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="field">
-                        <label for="has_previous_tax_arrears">Any Previous Arrears?</label>
-                        <select id="has_previous_tax_arrears" name="has_previous_tax_arrears">
-                            <option value="False"
-                                {% if property and not property.has_previous_tax_arrears %}selected{% endif %}>
-                                No
-                            </option>
-                            <option value="True"
-                                {% if property and property.has_previous_tax_arrears %}selected{% endif %}>
-                                Yes
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="field">
-                        <label for="tax_amount">Tax Amount (₹)</label>
-                        <input type="number" step="0.01" min="0" id="tax_amount"
-                               name="tax_amount" value="0"
-                               placeholder="Enter property tax amount">
-                        <small class="field-help">
-                            Retains the existing property tax amount input.
-                        </small>
-                    </div>
-
-                    <div class="field">
-                        <label for="pending_property_tax">Pending Property Tax (₹)</label>
-                        <input type="number" step="0.01" min="0" id="pending_property_tax"
-                               name="pending_property_tax"
-                               value="{{ property.pending_property_tax|default:'0' }}"
-                               placeholder="Enter outstanding tax">
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- 06 PROPERTY DOCUMENTS -->
-
-            <section class="section">
-                <div class="section-heading">
-                    <div class="section-icon">▧</div>
-                    <div>
-                        <h2>Property Documents</h2>
-                        <p>Upload and organize property-related PDF records</p>
-                    </div>
-                    <span class="section-number">06</span>
-                </div>
-
-                <div class="compliance-note">
-                    Accepted format: PDF only. Maximum file size: 300 MB per file.
-                </div>
-
-                <div id="documents-container" class="documents-container">
-                    <div class="document-row">
+                    <div class="form-grid">
 
                         <div class="field">
-                            <label>Document Name</label>
-                            <input type="text" name="document_name"
-                                   placeholder="e.g. Sale Deed">
+                            <label for="owner">Property Owner</label>
+                            <select id="owner" name="owner">
+                                <option value="">-- Select Owner --</option>
+                                {% for owner in owners %}
+                                <option value="{{ owner.id }}" {% if property and property.owner_id == owner.id
+                                    %}selected{% endif %}>{{ owner }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
 
                         <div class="field">
-                            <label>Upload Document</label>
-                            <input type="file" name="document"
-                                   accept=".pdf,application/pdf">
-                            <small class="document-help">
-                                PDF only. Maximum file size: 300 MB.
+                            <label for="name">Property Description <span class="required">*</span></label>
+                            <input type="text" id="name" name="name" value="{{ property.name|default:'' }}"
+                                placeholder="Enter property name or description" required>
+                        </div>
+
+                        <div class="field full">
+                            <label for="address">Property Address</label>
+                            <textarea id="address" name="address"
+                                placeholder="Enter complete property address">{{ property.address|default:'' }}</textarea>
+                        </div>
+
+                        <div class="field">
+                            <label for="unit_no">Unit No</label>
+                            <input type="text" id="unit_no" name="unit_no" value="{{ property.unit_no|default:'' }}"
+                                placeholder="Example: 101">
+                        </div>
+
+                        <div class="field">
+                            <label for="tower">Tower</label>
+                            <input type="text" id="tower" name="tower" value="{{ property.tower|default:'' }}"
+                                placeholder="Enter tower or block">
+                        </div>
+
+                        <div class="field">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" value="{{ property.city|default:'' }}"
+                                placeholder="Enter city">
+                        </div>
+
+                        <div class="field">
+                            <label for="state">State</label>
+                            <input type="text" id="state" name="state" value="{{ property.state|default:'' }}"
+                                placeholder="Enter state">
+                        </div>
+
+                        <div class="field">
+                            <label for="pincode">PIN Code</label>
+                            <input type="text" id="pincode" name="pincode" value="{{ property.pincode|default:'' }}"
+                                maxlength="10" placeholder="Enter PIN code">
+                        </div>
+
+                        <div class="field">
+                            <label for="purchased_on">Purchased On</label>
+                            <input type="date" id="purchased_on" name="purchased_on"
+                                value="{{ property.purchased_on|date:'Y-m-d' }}">
+                        </div>
+
+                        <div class="field full">
+                            <label for="municipality_property_id">Municipality Property ID</label>
+                            <input type="text" id="municipality_property_id" name="municipality_property_id"
+                                value="{{ property.municipality_property_id|default:'' }}"
+                                placeholder="Enter municipal corporation property ID">
+                            <small class="field-help">
+                                Enter the official municipal property identification number, if available.
                             </small>
                         </div>
 
-                        <div></div>
+                    </div>
+                </section>
 
+                <!-- 02 PURCHASE DETAILS -->
+
+                <section class="section">
+                    <div class="section-heading">
+                        <div class="section-icon">₹</div>
+                        <div>
+                            <h2>Purchase Details</h2>
+                            <p>Acquisition cost and purchase records</p>
+                        </div>
+                        <span class="section-number">02</span>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="field">
+                            <label for="total_area">Total Area (sq. ft.)</label>
+                            <input type="number" step="0.01" min="0" id="total_area" name="total_area"
+                                value="{{ property.total_area|default:'0' }}" placeholder="Enter total area">
+                        </div>
+
+                        <div class="field">
+                            <label for="price">Price (₹)</label>
+                            <input type="number" step="0.01" min="0" id="price" name="price"
+                                value="{{ property.price|default:'0' }}" placeholder="Enter purchase price">
+                        </div>
+
+                        <div class="field">
+                            <label for="per_sqft_rate">Per Sq. Ft. Rate (₹)</label>
+                            <input type="number" step="0.01" min="0" id="per_sqft_rate" name="per_sqft_rate"
+                                value="{{ property.per_sqft_rate|default:'0' }}" placeholder="Automatically calculated"
+                                readonly>
+                            <small class="field-help">
+                                Automatically calculated using Price ÷ Total Area.
+                            </small>
+                        </div>
+
+                        <div class="field">
+                            <label for="stamp_duty">Stamp Duty (₹)</label>
+                            <input type="number" step="0.01" min="0" id="stamp_duty" name="stamp_duty"
+                                value="{{ property.stamp_duty|default:'0' }}" placeholder="Enter stamp duty">
+                        </div>
+
+                        <div class="field">
+                            <label for="total_purchase_price">Total Purchase Price (₹)</label>
+                            <input type="number" step="0.01" min="0" id="total_purchase_price"
+                                name="total_purchase_price" value="{{ property.total_purchase_price|default:'0' }}"
+                                placeholder="Automatically calculated" readonly>
+                            <small class="field-help">
+                                Automatically calculated using Price + Stamp Duty.
+                            </small>
+                        </div>
+
+                        <div class="field">
+                            <label for="gst_number">GST Number</label>
+                            <input type="text" id="gst_number" name="gst_number"
+                                value="{{ property.gst_number|default:'' }}" placeholder="Enter GST number">
+                        </div>
+
+                    </div>
+                </section>
+
+
+
+                <!-- 03 LAP DETAILS -->
+
+                <section class="section">
+                    <div class="section-heading">
+                        <div class="section-icon">▤</div>
+                        <div>
+                            <h2>Loan Against Property (LAP)</h2>
+                            <p>Loan amount, installments and maturity</p>
+                        </div>
+                        <span class="section-number">03</span>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="field">
+                            <label for="lap_amount">LAP Amount (₹)</label>
+                            <input type="number" step="0.01" id="lap_amount" name="lap_amount"
+                                value="{{ property.lap_amount|default:'0' }}" placeholder="0.00">
+                        </div>
+
+                        <div class="field">
+                            <label for="monthly_installment">Monthly Installment (₹)</label>
+                            <input type="number" step="0.01" id="monthly_installment" name="monthly_installment"
+                                value="{{ property.monthly_installment|default:'0' }}" placeholder="0.00">
+                        </div>
+
+                        <div class="field">
+                            <label for="lap_maturity">LAP Maturity</label>
+                            <input type="date" id="lap_maturity" name="lap_maturity"
+                                value="{{ property.lap_maturity|date:'Y-m-d' }}">
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 04 PARKING AND STATUS -->
+
+                <section class="section">
+                    <div class="section-heading">
+                        <div class="section-icon">▣</div>
+                        <div>
+                            <h2>Parking & Status</h2>
+                            <p>Total parking capacity and property availability</p>
+                        </div>
+                        <span class="section-number">04</span>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="field">
+                            <label for="total_parking_spaces">Total Parking Spaces</label>
+                            <input type="number" id="total_parking_spaces" name="total_parking_spaces" min="0" step="1"
+                                value="{{ property.total_parking_spaces|default:0 }}"
+                                placeholder="Enter total parking spaces">
+                            <small class="field-help">
+                                Enter the total parking capacity available at this property.
+                            </small>
+                        </div>
+
+                        <div class="field">
+                            <label for="status">Property Status</label>
+                            <select id="status" name="status">
+
+                                <option value="active" {% if not property or property.status=="active" %}selected{%
+                                    endif %}>
+                                    Active
+                                </option>
+
+                                <option value="sold_out" {% if property and property.status=="sold_out" %}selected{%
+                                    endif %}>
+                                    Sold-out
+                                </option>
+
+                                <option value="inactive" {% if property and property.status=="inactive" %}selected{%
+                                    endif %}>
+                                    Inactive
+                                </option>
+
+                            </select>
+                        </div>
+
+                    </div>
+                </section>
+
+
+
+
+                <!-- 05 MUNICIPAL AND PROPERTY TAX -->
+
+                <section class="section">
+                    <div class="section-heading">
+                        <div class="section-icon">▤</div>
+                        <div>
+                            <h2>Municipal & Property Tax</h2>
+                            <p>Mutation status, current tax and previous dues</p>
+                        </div>
+                        <span class="section-number">05</span>
+                    </div>
+
+                    <div class="compliance-note">
+                        Maintain municipal identification and tax arrears details for property compliance and record
+                        keeping.
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="field">
+                            <label for="mutation_done">Mutation Done?</label>
+                            <select id="mutation_done" name="mutation_done">
+                                <option value="False" {% if property and not property.mutation_done %}selected{% endif
+                                    %}>
+                                    No
+                                </option>
+                                <option value="True" {% if property and property.mutation_done %}selected{% endif %}>
+                                    Yes
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="has_previous_tax_arrears">Any Previous Arrears?</label>
+                            <select id="has_previous_tax_arrears" name="has_previous_tax_arrears">
+                                <option value="False" {% if property and not property.has_previous_tax_arrears
+                                    %}selected{% endif %}>
+                                    No
+                                </option>
+                                <option value="True" {% if property and property.has_previous_tax_arrears %}selected{%
+                                    endif %}>
+                                    Yes
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="tax_amount">Tax Amount (₹)</label>
+                            <input type="number" step="0.01" min="0" id="tax_amount" name="tax_amount" value="0"
+                                placeholder="Enter property tax amount">
+                            <small class="field-help">
+                                Retains the existing property tax amount input.
+                            </small>
+                        </div>
+
+                        <div class="field">
+                            <label for="pending_property_tax">Pending Property Tax (₹)</label>
+                            <input type="number" step="0.01" min="0" id="pending_property_tax"
+                                name="pending_property_tax" value="{{ property.pending_property_tax|default:'0' }}"
+                                placeholder="Enter outstanding tax">
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 06 PROPERTY DOCUMENTS -->
+
+                <section class="section">
+                    <div class="section-heading">
+                        <div class="section-icon">▧</div>
+                        <div>
+                            <h2>Property Documents</h2>
+                            <p>Upload and organize property-related PDF records</p>
+                        </div>
+                        <span class="section-number">06</span>
+                    </div>
+
+                    <div class="compliance-note">
+                        Accepted format: PDF only. Maximum file size: 300 MB per file.
+                    </div>
+
+                    <div id="documents-container" class="documents-container">
+                        <div class="document-row">
+
+                            <div class="field">
+                                <label>Document Name</label>
+                                <input type="text" name="document_name" placeholder="e.g. Sale Deed">
+                            </div>
+
+                            <div class="field">
+                                <label>Upload Document</label>
+                                <input type="file" name="document" accept=".pdf,application/pdf">
+                                <small class="document-help">
+                                    PDF only. Maximum file size: 300 MB.
+                                </small>
+                            </div>
+
+                            <div></div>
+
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-add" onclick="addDocumentRow()">
+                        + Add Another Document
+                    </button>
+                </section>
+
+                <!-- ACTIONS -->
+
+                <div class="form-footer">
+                    <div class="footer-note">
+                        Please verify the property details, financial information and uploaded documents before saving.
+                    </div>
+
+                    <div class="footer-actions">
+                        <a href="{% url 'property_list' %}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+
+                        <button type="submit" class="btn btn-primary">
+                            ✓
+                            {% if property %}Update Property{% else %}Add Property{% endif %}
+                        </button>
                     </div>
                 </div>
 
-                <button type="button" class="btn btn-add" onclick="addDocumentRow()">
-                    + Add Another Document
-                </button>
-            </section>
-
-            <!-- ACTIONS -->
-
-            <div class="form-footer">
-                <div class="footer-note">
-                    Please verify the property details, financial information and uploaded documents before saving.
-                </div>
-
-                <div class="footer-actions">
-                    <a href="{% url 'property_list' %}" class="btn btn-secondary">
-                        Cancel
-                    </a>
-
-                    <button type="submit" class="btn btn-primary">
-                        ✓
-                        {% if property %}Update Property{% else %}Add Property{% endif %}
-                    </button>
-                </div>
-            </div>
-
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
-<script>
-function addDocumentRow() {
-    const container = document.getElementById("documents-container");
-    const row = document.createElement("div");
+    <script>
+        function addDocumentRow() {
+            const container = document.getElementById("documents-container");
+            const row = document.createElement("div");
 
-    row.className = "document-row";
+            row.className = "document-row";
 
-    row.innerHTML = `
+            row.innerHTML = `
         <div class="field">
             <label>Document Name</label>
             <input
@@ -1009,9 +975,62 @@ function addDocumentRow() {
         </div>
     `;
 
-    container.appendChild(row);
-}
-</script>
+            container.appendChild(row);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const areaInput = document.getElementById("total_area");
+            const priceInput = document.getElementById("price");
+            const rateInput = document.getElementById("per_sqft_rate");
+            const stampDutyInput = document.getElementById("stamp_duty");
+            const totalPriceInput = document.getElementById("total_purchase_price");
+
+            function getAmount(input) {
+                const value = Number(input.value);
+
+                if (!Number.isFinite(value) || value < 0) {
+                    return 0;
+                }
+
+                return value;
+            }
+
+            function calculatePurchaseDetails() {
+
+                const area = getAmount(areaInput);
+                const price = getAmount(priceInput);
+                const stampDuty = getAmount(stampDutyInput);
+
+                // Calculate price per square foot.
+                let perSqftRate = 0;
+
+                if (area > 0) {
+                    perSqftRate = price / area;
+                }
+
+                // Calculate total purchase price.
+                const totalPurchasePrice = price + stampDuty;
+
+                // Update calculated fields.
+                rateInput.value = perSqftRate.toFixed(2);
+                totalPriceInput.value = totalPurchasePrice.toFixed(2);
+            }
+
+            // Recalculate whenever input values change.
+            [areaInput, priceInput, stampDutyInput].forEach(function (input) {
+
+                input.addEventListener("input", calculatePurchaseDetails);
+                input.addEventListener("change", calculatePurchaseDetails);
+
+            });
+
+            // Calculate values when the page initially loads.
+            calculatePurchaseDetails();
+
+        });
+    </script>
 
 </body>
+
 </html>

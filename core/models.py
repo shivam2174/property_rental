@@ -6,6 +6,7 @@ from django.conf import settings
 
 from django.db import models
 
+from django.core.exceptions import ValidationError
 
 
 
@@ -265,6 +266,12 @@ class Property(models.Model):
     parking_slot = models.CharField(
         max_length=100,
         blank=True,
+    )
+
+    total_parking_spaces = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Total Parking Spaces",
+        help_text="Total parking capacity available at this property.",
     )
 
     # -----------------------------------------------------
@@ -618,6 +625,27 @@ class LeaseAgreement(models.Model):
         default=0,
         help_text="Security deposit for this lease agreement.",
     )
+
+    # =====================================================
+    # RENT INCREASE PERCENTAGES
+    # =====================================================
+
+    extension_1_rent_increase_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        verbose_name="Extension 1 Rent Increase (%)",
+    )
+
+    extension_2_rent_increase_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        verbose_name="Extension 2 Rent Increase (%)",
+    )
+
+
+
         # =====================================================
     # LEASE EXTENSION 1
     # =====================================================
@@ -925,6 +953,185 @@ class RentHistory(models.Model):
             f"{self.effective_from}"
         )
 
+
+
+# =========================================================
+# PARKING LEASE AGREEMENT
+# Independent Parking Management
+# =========================================================
+
+class ParkingLeaseAgreement(models.Model):
+
+    AGREEMENT_STATUS = [
+        ("active", "Active"),
+        ("expired", "Expired"),
+        ("terminated", "Terminated"),
+    ]
+
+    # -----------------------------------------------------
+    # AGREEMENT DETAILS
+    # -----------------------------------------------------
+
+    agreement_number = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="Parking Agreement Number",
+    )
+
+    agreement_date = models.DateField()
+
+    # -----------------------------------------------------
+    # PROPERTY AND TENANT
+    # -----------------------------------------------------
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.PROTECT,
+        related_name="parking_agreements",
+    )
+
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.PROTECT,
+        related_name="parking_agreements",
+    )
+
+    # -----------------------------------------------------
+    # PARKING AGREEMENT PERIOD
+    # -----------------------------------------------------
+
+    start_date = models.DateField()
+
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    # -----------------------------------------------------
+    # PARKING ALLOCATION
+    # -----------------------------------------------------
+
+    free_spaces = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Free Parking Spaces",
+    )
+
+    paid_spaces = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Paid Parking Spaces",
+    )
+
+    monthly_rate_per_space = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        verbose_name="Monthly Rate Per Paid Space",
+    )
+
+    # -----------------------------------------------------
+    # STATUS
+    # -----------------------------------------------------
+
+    status = models.CharField(
+        max_length=20,
+        choices=AGREEMENT_STATUS,
+        default="active",
+    )
+
+    # -----------------------------------------------------
+    # OTHER DETAILS
+    # -----------------------------------------------------
+
+    notes = models.TextField(
+        blank=True,
+    )
+
+    agreement_document = models.FileField(
+        upload_to="parking_agreements/",
+        blank=True,
+        null=True,
+        verbose_name="Parking Agreement PDF",
+    )
+
+    # -----------------------------------------------------
+    # TIMESTAMPS
+    # -----------------------------------------------------
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    # -----------------------------------------------------
+    # META
+    # -----------------------------------------------------
+
+    class Meta:
+        ordering = ["-start_date", "-id"]
+        verbose_name = "Parking Lease Agreement"
+        verbose_name_plural = "Parking Lease Agreements"
+
+    # -----------------------------------------------------
+    # CALCULATED FIELDS
+    # -----------------------------------------------------
+
+    @builtins.property
+    def total_allocated_spaces(self):
+        return self.free_spaces + self.paid_spaces
+
+    @builtins.property
+    def monthly_parking_charge(self):
+        return (
+            self.paid_spaces * self.monthly_rate_per_space
+        )
+
+    # -----------------------------------------------------
+    # VALIDATION
+    # -----------------------------------------------------
+
+    def clean(self):
+
+        super().clean()
+
+        errors = {}
+
+        if (
+            self.start_date
+            and self.end_date
+            and self.end_date < self.start_date
+        ):
+            errors["end_date"] = (
+                "End date cannot be earlier than start date."
+            )
+
+        if (
+            self.monthly_rate_per_space is not None
+            and self.monthly_rate_per_space < 0
+        ):
+            errors["monthly_rate_per_space"] = (
+                "Parking rate cannot be negative."
+            )
+
+        if (
+            self.free_spaces == 0
+            and self.paid_spaces == 0
+        ):
+            errors["paid_spaces"] = (
+                "Allocate at least one parking space."
+            )
+
+        if errors:
+            raise ValidationError(errors)
+
+    def __str__(self):
+        return (
+            f"{self.agreement_number} - "
+            f"{self.tenant.full_name} - "
+            f"{self.property.name}"
+        )
 
 # =========================================================
 # LEASE RENEWAL REMINDERS
@@ -1322,6 +1529,25 @@ class TDSLedger(models.Model):
     )
 
 
+
+class TDSMaster(models.Model):
+
+    tds_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("10.00"),
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    def __str__(self):
+        return f"TDS Rate: {self.tds_rate}%"
+
+    class Meta:
+        verbose_name = "TDS Master"
+        verbose_name_plural = "TDS Master"
 
 # =========================================================
 # INVOICE ITEM
